@@ -1,0 +1,9 @@
+
+Location: All countries
+Year: 2014-2019
+Context: Cause
+Age: all 5 year brackets
+Measure: YLL (Years of life lost)
+Sex: Male and Female
+Cause: all Level 2 causes plus level 1 where no level 2
+http://ghdx.healthdata.org/gbd-results-tool?params=gbd-api-2019-permalink/8c83f18dc7ee2adb6e0d6a3d9fb9a3c2
