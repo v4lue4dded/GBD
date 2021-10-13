@@ -1,4 +1,15 @@
+# Current:
+Location: All countries
+Year: 2014-2019
+Context: Cause
+Age: all 5 year brackets
+Measure: YLL (Years of life lost), Deaths
+Sex: Male and Female
+Cause: all Level 2 causes
 
+
+
+# OLD:
 Location: All countries
 Year: 2014-2019
 Context: Cause

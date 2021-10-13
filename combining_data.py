@@ -1,45 +1,45 @@
-from my_setup import * 
+from os import listdir
+import os
+path = os.getcwd()
+os.chdir(path.split('GBD', 1)[0] + 'GBD')
+import my_config as config
+import json
 import pandas as pd
-import sqlalchemy as sa
+from sqlalchemy import create_engine
+from zipfile import ZipFile
 import urllib
 
+engine = create_engine('postgresql://'+config.db_login["user"] +':'+ config.db_login["pw"]+'@localhost:5432/gbd')
+con = engine.connect()
+
+##################################################################################################
+
+data_dir = 'data\\download\\'
+download_id = 'b1f210b2'
 list_of_dfs = list()
-from os import listdir
-
-data_dir = 'download_1\data'
-
 for i_file in range(1, len(listdir(data_dir))+1):
-    i_df = pd.read_csv(data_dir + '\IHME-GBD_2019_DATA-b8585613-'+ str(i_file) +'.csv', sep=',')
+    print(i_file)
+    file_name = f'IHME-GBD_2019_DATA-{download_id}-{str(i_file)}'
+    zip_file = ZipFile(data_dir + file_name +'.zip')
+    i_df = pd.read_csv(zip_file.open(file_name + '.csv'), sep=',')
     list_of_dfs.append(i_df) 
 
 for i_df in list_of_dfs:
     print(i_df.shape)
 
-
 df_full = pd.concat(list_of_dfs)
-
 df_full.to_csv("df_full.csv", index = False, sep = '\t', encoding='utf-8-sig')
 
 ##################################################################################################
 
 df_full = pd.read_csv("df_full.csv", sep = '\t', encoding='utf-8-sig')
 
-
-
-params = urllib.parse.quote_plus("DRIVER={SQL Server Native Client 11.0};"
-                                 "SERVER=MW-S-HCHE01;"
-                                 "DATABASE=global_burden_disease;"
-                                 "Trusted_Connection=yes")
-
-engine = sa.create_engine("mssql+pyodbc:///?odbc_connect={}".format(params))
-
-df_full.to_sql('import_2021_05_19', if_exists = 'replace', con = engine, index = False)
-
+df_full.to_sql(name=f'import', con=engine, schema='db01_import', if_exists='replace', index=False, chunksize=10000)
 ##################################################################################################
 
 df_export = pd.read_sql('select * from global_burden_disease.dbo.export_power_bi_v01', con=engine)
 
-print(power_bi_type_cast(df_export), df_export.shape)
+print(config.power_bi_type_cast(df_export), df_export.shape)
 
 df_export.to_csv("df_powerbi.csv", index = False, sep = '\t', encoding='utf-8-sig')
 
