@@ -1,3 +1,20 @@
+
+
+
+
+select
+
+from       gbd.db03_clean_tables.cb_location_country
+cross join gbd.db03_clean_tables.cb_cause_hierarchy_l2
+cross join gbd.db03_clean_tables.cb_cause_hierarchy_l2
+
+
+
+
+
+
+
+
 drop table if exists gbd.db02_processing.export_power_bi_v01;
 create table         gbd.db02_processing.export_power_bi_v01 as
 select 
@@ -13,8 +30,8 @@ select
 , sum(po.pop_lower) as pop_lower
 , sum(po.pop_val  ) as pop_val
 , sum(po.pop_upper) as pop_upper
-from      gbd.db01_import.cause                     yl
-left join gbd.db03_clean_tables.pop_age_year_groups po on yl.location_id = po.location_id
+from      gbd.db01_import.cause                    yl
+left join gbd.db03_clean_tables.pop_groups_country po on yl.location_id = po.location_id
                                                       and yl.sex_id      = po.sex_id
                                                       and yl.age_id      = po.age_group_id
                                                       and yl.year        = po.year
