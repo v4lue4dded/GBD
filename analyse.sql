@@ -1,38 +1,53 @@
-select
-count(*)
-from gbd.db01_import.import
-;
-
 drop table if exists gbd.db02_processing.export_power_bi_v01;
 create table         gbd.db02_processing.export_power_bi_v01 as
 select 
-  location_id
-, location_name
-, sex_name
-, age_name
-, year
-, cause_name
-, measure_name
-, metric_name
-, sum(lower) as lower
-, sum(val  ) as val  
-, sum(upper) as upper
-from gbd.db01_import.import
-where measure_name = 'YLLs (Years of Life Lost)'
+  yl.location_id
+, yl.location_name
+, yl.sex_name
+, yl.age_name
+, yl.year
+, yl.cause_name
+, sum(yl.lower    ) as yll_lower
+, sum(yl.val      ) as yll_val
+, sum(yl.upper    ) as yll_upper
+, sum(po.pop_lower) as pop_lower
+, sum(po.pop_val  ) as pop_val
+, sum(po.pop_upper) as pop_upper
+from      gbd.db01_import.cause                     yl
+left join gbd.db03_clean_tables.pop_age_year_groups po on yl.location_id = po.location_id
+                                                      and yl.sex_id      = po.sex_id
+                                                      and yl.age_id      = po.age_group_id
+                                                      and yl.year        = po.year
+                                                      and yl.location_id = po.location_id
+where yl.measure_name = 'YLLs (Years of Life Lost)' and yl.metric_name = 'Number'
 group by 
-  location_id
-, location_name
-, sex_name
-, age_name
-, measure_name
-, year
-, cause_name
-, metric_name
+  yl.location_id
+, yl.location_name
+, yl.sex_name
+, yl.age_name
+, yl.year
+, yl.cause_name
+, yl.measure_name
 ;
 
+
 select
-distinct year
-from gbd.db01_import.import
+*
+from      gbd.db01_import.cause                     yl
+full join gbd.db03_clean_tables.pop_age_year_groups po on yl.location_id = po.location_id
+                                                      and yl.sex_id      = po.sex_id
+                                                      and yl.age_id      = po.age_group_id
+                                                      and yl.year        = po.year
+                                                      and yl.location_id = po.location_id
+left join gbd.db01_import.cb_all_locations_hierarchies lh on po.location_id = lh.location_id
+where yl.location_name is null
+or  (po.location_name is null)
+;
+
+
+select
+distinct metric_name
+from gbd.db01_import.cause
 
 -- nice age query
 select
@@ -47,7 +62,7 @@ select
      '5 to 9' , '05 to 09'),
      '95 plus', '95 to inf') as age_name_clean
 , round(sum(val))
-from gbd.db01_import.import
+from gbd.db01_import.cause
 where year = 2019
 and location_name = 'Germany'
 group by
@@ -75,7 +90,7 @@ select
 , round(sum(im.val))
 , round(sum(sum(im.val)) over())
 , round(sum(sum(im.val)) over(partition by left(ch.cause_outline,1)))
-from gbd.db01_import.import im
+from gbd.db01_import.cause im
 left join gbd.db01_import.cb_cause_hierarchy ch on im.cause_id = ch.cause_id
 left join gbd.db01_import.cb_cause_hierarchy c2 on ch.parent_id = c2.cause_id
 where year = 2019
@@ -101,7 +116,7 @@ order by ch.cause_outline
 
 select
 *
-from gbd.db01_import.import
+from gbd.db01_import.cause
 where year = 2019
 and location_name = 'Germany'
 and age_name = '10 to 14'

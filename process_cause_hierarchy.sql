@@ -1,8 +1,3 @@
-select
- distinct  level
-from gbd.db01_import.cb_cause_hierarchy
-;
-
 drop table if exists gbd.db03_clean_tables.cb_cause_hierarchy_l4;
 create table         gbd.db03_clean_tables.cb_cause_hierarchy_l4 as
 select
@@ -74,6 +69,8 @@ alter table gbd.db03_clean_tables.cb_cause_hierarchy_l3 add primary key (l3_caus
 alter table gbd.db03_clean_tables.cb_cause_hierarchy_l2 add primary key (l2_cause_id);
 alter table gbd.db03_clean_tables.cb_cause_hierarchy_l1 add primary key (l1_cause_id);
 
+
+-- checking
 select *
 from (
       select (select count(*) from gbd.db01_import.cb_cause_hierarchy where level = 4) freq_import, (select count(*) from gbd.db03_clean_tables.cb_cause_hierarchy_l4) as freq_clean, 'l4' as level
@@ -82,9 +79,4 @@ union select (select count(*) from gbd.db01_import.cb_cause_hierarchy where leve
 union select (select count(*) from gbd.db01_import.cb_cause_hierarchy where level = 1) freq_import, (select count(*) from gbd.db03_clean_tables.cb_cause_hierarchy_l1) as freq_clean, 'l1' as level
 ) x
 order by level
-
-
-select
-*
-from gbd.db03_clean_tables.cb_cause_hierarchy_l4
 ;
