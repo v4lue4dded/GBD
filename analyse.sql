@@ -1,20 +1,5 @@
 
 
-
-
-select
-
-from       gbd.db03_clean_tables.cb_location_country
-cross join gbd.db03_clean_tables.cb_cause_hierarchy_l2
-cross join gbd.db03_clean_tables.cb_cause_hierarchy_l2
-
-
-
-
-
-
-
-
 drop table if exists gbd.db02_processing.export_power_bi_v01;
 create table         gbd.db02_processing.export_power_bi_v01 as
 select 

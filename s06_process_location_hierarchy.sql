@@ -76,5 +76,5 @@ drop table if exists gbd.db03_clean_tables.cb_location_country;
 create table         gbd.db03_clean_tables.cb_location_country as
 select
   l3_location_id   as location_id
-, l1_location_name as location_name
+, l3_location_name as location_name
 from gbd.db02_processing.cb_location_hierarchy_l3

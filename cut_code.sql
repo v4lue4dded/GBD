@@ -1,0 +1,98 @@
+--
+-- select
+-- *
+-- from      gbd.db04_modelling.export_power_bi_long new
+-- full join gbd.db04_modelling.export_power_bi_long_old old
+-- on  new.year           = old.year
+-- and new.location_name  = old.location_name
+-- and new.age_group_name = old.age_name
+-- and lower(new.sex_name)       = lower(old.sex_name)
+-- and new.l2_cause_name  = old.cause_name
+-- where (new.year is null or old.year is null)
+-- and coalesce(new.year, old.year ) = 2015
+-- ;
+--
+-- select
+-- distinct  sex_name
+-- from      gbd.db04_modelling.export_power_bi_long
+--
+--
+-- select
+-- distinct  sex_name
+-- from      gbd.db04_modelling.export_power_bi_long_old
+--
+
+-- ;
+--
+--
+-- select
+--  distinct sex_name
+-- from gbd.db03_clean_tables.cb_sex  a
+--
+-- select
+--  distinct age_group_name
+-- from gbd.db03_clean_tables.cb_age_group  a
+-- where a.age_group_name in (
+--   '<1 year'
+-- , '1 to 4'
+-- , '5 to 9'
+-- , '10 to 14'
+-- , '15 to 19'
+-- , '20 to 24'
+-- , '25 to 29'
+-- , '30 to 34'
+-- , '35 to 39'
+-- , '40 to 44'
+-- , '45 to 49'
+-- , '50 to 54'
+-- , '55 to 59'
+-- , '60 to 64'
+-- , '65 to 69'
+-- , '70 to 74'
+-- , '75 to 79'
+-- , '80 to 84'
+-- , '85 to 89'
+-- , '90 to 94'
+-- , '95 plus'
+-- )
+--
+--
+--
+--
+-- select
+--  distinct age_group_name
+-- from gbd.db02_processing.export_basis a
+--
+--
+-- select
+-- *
+-- from gbd.db03_clean_tables.cb_age_group a
+-- inner join (select distinct age from gbd.db01_import.cause) b on a.age_group_id = b.age
+--
+-- select year           , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long group by year           order by deaths_present asc;
+-- select location_name  , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long group by location_name  order by deaths_present asc;
+-- select age_group_name , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long group by age_group_name order by deaths_present asc;
+-- select sex_name       , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long group by sex_name       order by deaths_present asc;
+-- select l1_cause_name  , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long group by l1_cause_name  order by deaths_present asc;
+-- select l2_cause_name  , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long group by l2_cause_name  order by deaths_present asc;
+--
+--
+--
+-- select age_group_name , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long where l2_cause_name = 'Mental disorders' group by age_group_name order by deaths_present asc;
+-- select sex_name       , count(*) anz, sum(population_present) as population_present, sum(deaths_present) as deaths_present, sum(yll_present) as yll_present from gbd.db04_modelling.export_power_bi_long where l2_cause_name = 'Mental disorders' group by sex_name       order by deaths_present asc;
+--
+--
+-- select
+-- *
+-- from gbd.db04_modelling.export_power_bi_long
+-- where l2_cause_name = 'Maternal and neonatal disorders'
+--
+-- select
+-- *
+-- from gbd.db04_modelling.export_power_bi_long
+--
+--
+-- select
+-- *
+-- from gbd.db03_clean_tables.cb_cause_hierarchy_l4
+-- where l2_cause_name = 'Sense organ diseases'

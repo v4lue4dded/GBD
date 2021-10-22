@@ -14,8 +14,13 @@ con = engine.connect()
 
 export_dir = 'data\\export\\'
 
-df_export = pd.read_sql('select * from gbd.db04_modelling.export_power_bi_long', con=engine)
+df_measure = pd.read_sql('select * from gbd.db04_modelling.export_measure', con=engine)
+df_measure.to_csv(f"{export_dir}df_measure.csv", index = False, sep = '\t', encoding='utf-8-sig')
 
-print(config.power_bi_type_cast(df_export), df_export.shape)
+print(config.power_bi_type_cast(df_measure), df_measure.shape)
 
-df_export.to_csv(f"{export_dir}df_powerbi.csv", index = False, sep = '\t', encoding='utf-8-sig')
+
+df_population = pd.read_sql('select * from gbd.db04_modelling.export_population', con=engine)
+df_population.to_csv(f"{export_dir}df_population.csv", index = False, sep = '\t', encoding='utf-8-sig')
+
+print(config.power_bi_type_cast(df_population), df_population.shape)
