@@ -1,13 +1,24 @@
 # Current:
 Location: All countries
+Year: 1990-2019 (in 5 year steps)
+Context: Cause
+Age: all 5 year brackets
+Measure: YLL (Years of life lost), Deaths
+Sex: Male and Female
+Cause: all Level 2 causes
+http://ghdx.healthdata.org/gbd-results-tool?params=gbd-api-2019-permalink/75ff05a1e599e9d4e433bdaebe75ffa6
+download_id = 9f27d6f5
+
+# Current:
+Location: All countries
 Year: 2014-2019
 Context: Cause
 Age: all 5 year brackets
 Measure: YLL (Years of life lost), Deaths
 Sex: Male and Female
 Cause: all Level 2 causes
-
-
+http://ghdx.healthdata.org/gbd-results-tool?params=gbd-api-2019-permalink/ad93124ce6c87bba9b1637dba4b24645
+download_id = 
 
 # OLD:
 Location: All countries
@@ -18,3 +29,4 @@ Measure: YLL (Years of life lost)
 Sex: Male and Female
 Cause: all Level 2 causes plus level 1 where no level 2
 http://ghdx.healthdata.org/gbd-results-tool?params=gbd-api-2019-permalink/8c83f18dc7ee2adb6e0d6a3d9fb9a3c2
+download_id = b1f210b2
