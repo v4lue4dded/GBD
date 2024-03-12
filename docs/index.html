@@ -90,57 +90,76 @@
     <span id="waiting"><b>Loading World Bank Data...</b></span>
 
     <main style="display:none">
-        <div id="worldbank_year_table"></div>
-        <div id="worldbank_region_table"></div>
-        <div id="worldbank_country_table"></div>
+        <div id="gdb_year_table"></div>
+        <div id="gdb_l1_cause_table"></div>
+        <div id="gdb_l2_cause_table"></div>
     </main>
     <script>
-        var df_measure = [];
-
+        var gbd_data = [];
+        var un_country_info_data = [];
+        var population_data = [];
+        var basis_data = [];
         function download_data() {
-            // Remove the Promise.all and directly call the d3.csv loader
-            d3.tsv('data/df_measure.csv', function(row) {
-                // Convert string representations of numbers to actual numbers
-                return {
-                    year: +row["year"],
-                    population_id: row["population_id"],
-                    l1_cause_id: row["l1_cause_id"],
-                    l1_cause_name: row["l1_cause_name"],
-                    l2_cause_id: row["l2_cause_id"],
-                    l2_cause_name: row["l2_cause_name"],
-                    deaths_val: +row["deaths_val"],
-                    deaths_lower: +row["deaths_lower"],
-                    deaths_upper: +row["deaths_upper"],
-                    yll_val: +row["yll_val"],
-                    yll_lower: +row["yll_lower"],
-                    yll_upper: +row["yll_upper"],
-                    deaths_present: +row["deaths_present"], // Ensure these are also treated as numerical values
-                    yll_present: +row["yll_present"],
-                };
-            }, function(error, data) {
-                if (error) {
-                    console.error("Error loading the CSV file: ", error);
-                    return;
-                }
+            // Return a new Promise from the function
+            return new Promise((resolve, reject) => {
+                d3.tsv('data/df_measure_small.csv', function(row) {
+                    // Convert string representations of numbers to actual numbers
+                    return {
+                        year: +row["year"],
+                        population_id: row["population_id"],
+                        l1_cause_id: row["l1_cause_id"],
+                        l1_cause_name: row["l1_cause_name"],
+                        l2_cause_id: row["l2_cause_id"],
+                        l2_cause_name: row["l2_cause_name"],
+                        deaths_val: +row["deaths_val"],
+                        deaths_lower: +row["deaths_lower"],
+                        deaths_upper: +row["deaths_upper"],
+                        yll_val: +row["yll_val"],
+                        yll_lower: +row["yll_lower"],
+                        yll_upper: +row["yll_upper"],
+                        deaths_present: +row["deaths_present"],
+                        yll_present: +row["yll_present"],
+                    };
+                }, function(error, data) {
+                    if (error) {
+                        console.error("Error loading the CSV file: ", error);
+                        reject(error); // Reject the Promise if there's an error
+                    } else {
+                        gbd_data = data;
+                        console.log(gbd_data);
+                        // Data is now loaded, remove loading indicator and display main content
+                        d3.selectAll('#waiting').remove();
+                        d3.selectAll('main').style('display', '');
 
-                df_measure = data;
-                console.log(df_measure);
+                        resolve(gbd_data); // Resolve the Promise with the loaded data
+                    }
+                });
+                d3.tsv('data/df_population.csv', function(row) {
+                    // Convert string representations of numbers to actual numbers
+                    return {
+                        year: row["year"],
+                        population_id: row["population_id"],
+                        pop_val: +row["pop_val"],
+                        pop_upper: +row["pop_upper"],
+                        pop_lower: +row["pop_lower"],
+                        pop_present: +row["pop_present"],
+                    };
+                }, function(error, data) {
+                    if (error) {
+                        console.error("Error loading the CSV file: ", error);
+                        reject(error); // Reject the Promise if there's an error
+                    } else {
+                        population_data = data;
+                        console.log(population_data);
+                        // Data is now loaded, remove loading indicator and display main content
+                        d3.selectAll('#waiting').remove();
+                        d3.selectAll('main').style('display', '');
 
-                // Data is now loaded, proceed to remove loading indicator and display main content
-                d3.selectAll('#waiting').remove();
-                d3.selectAll('main').style('display', '');
-
-                // Here you can also initialize Crossfilter with df_measure
-                // var cf = crossfilter(df_measure);
-                // Now you can proceed to use Crossfilter for further filtering and analysis
+                        resolve(population_data); // Resolve the Promise with the loaded data
+                    }
+                });
             });
         }
-
-        // Call download_data to load the data
-        download_data();
-
-
-
 
         // ###########################################################################
         // ## Create and Render the Charts
@@ -148,18 +167,18 @@
         function render() {
             // ### Prepare the data
             // Output the data set to the console if you want to take a look.
-            console.log("Data:", gdp_data);
-            console.log("Regions:", regions);
-            console.log("Countries:", countries);
+            console.log(gbd_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
-            var xf = crossfilter(gdp_data);
+            var xf = crossfilter(gbd_data);
             // Prepare the Crossfilter **dimensions** we can filter the data on.
             // With this we can filter based on country, region, year
             // Notice the _region_ dimension is added even though the dataset doesn't link directly to
             // a region.
-            var country_dim = xf.dimension(function (d) { return d.country_code; });
-            var region_dim = xf.dimension(function (d) { return countries[d.country_code].region_id; });
             var year_dim = xf.dimension(function (d) { return d.year; });
+            var population_id_dim = xf.dimension(function (d) { return d.population_id; });
+            var l1_cause_name_dim = xf.dimension(function (d) { return d.l1_cause_name; });
+            var l2_cause_name_dim = xf.dimension(function (d) { return d.l2_cause_name; });
+
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
             // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
@@ -203,38 +222,36 @@
 
             function reduceAdd(p, v) {
                 ++p.count;
-                p.gdp += v.gdp;
-                p.population += v.population;
-                p.land_area += v.land_area;
-                p.gdp_per_capita = p.population ? (p.gdp * 1000000000) / p.population : 0;
+                p.deaths_val += v.deaths_val
+                p.yll_val += v.yll_val
                 return p;
             };
 
             function reduceRemove(p, v) {
                 --p.count;
-                p.gdp -= v.gdp;
-                p.population -= v.population;
-                p.land_area -= v.land_area;
-                p.gdp_per_capita = p.population ? (p.gdp * 1000000000) / p.population : 0;
+                p.deaths_val -= v.deaths_val
+                p.yll_val -= v.yll_val
                 return p;
             };
 
             function reduceInitial() {
                 return {
                     count: 0,
-                    gdp: 0,
-                    gdp_per_capita: 0,
-                    population: 0,
-                    land_area: 0
+                    deaths_val: 0,
+                    yll_val: 0,
                 };
             };
 
             const common_columns = [
                 // Assign this column to a variable `gdp_column` so we can refer to it below for setting the default sort.
                 {
-                    header: { text: "GDP" },
-                    cells: { html: function (d) { return "$" + (d3.format(',')(Math.round(d.value.gdp))) + "b"; } },
-                    sort: function (d) { return Math.round(d.value.gdp); },
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "deaths" },
+                    cells: { html: function (d) { return (d3.format(',')(Math.round(d.value.deaths_val))); } },
+                    sort: function (d) { return d.value.deaths_val; },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -242,37 +259,9 @@
                         }
                     }
                 }, {
-                    // These columns use custom formatters to set the html content of the cell
-                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                    // These column also use the `vis` visualization support to render a bar
-                    // graph based on the cell value.
-                    header: { text: "Population" },
-                    cells: { html: function (d) { return d3.format(',')(d.value.population); } },
-                    sort: function (d) { return d.value.population; },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightblue'
-                        }
-                    }
-                }, {
-                    header: { text: "Land Area" },
-                    cells: { html: function (d) { return (d3.format(',')(Math.round(d.value.land_area))) + "km<sup>2</sup>"; } },
-                    sort: function (d) { return Math.round(d.value.land_area); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightgreen'
-                        }
-                    }
-                }, {
-                    // By default, the `bar` visualization will base the bar width as a percentage of the
-                    // total value of all cells.  This isn't always appropriate, though, such as in the case
-                    // of GDP per capita.  So, here we manually set the `total_value` to be the maximum
-                    // per capita value.  Look out for Monaco!
-                    header: { text: "GDP per capita" },
-                    cells: { html: function (d) { return "$" + (d3.format(',')(Math.round(d.value.gdp_per_capita))); } },
-                    sort: function (d) { return Math.round(d.value.gdp_per_capita); },
+                    header: { text: "Years of live lost" },
+                    cells: { html: function (d) { return (d3.format(',')(Math.round(d.value.yll_val))); } },
+                    sort: function (d) { return d.value.yll_val; },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -286,7 +275,7 @@
                 anchorId,
                 dimension,
                 dataGroupReduce,
-                initialSortColumn = "GDP",
+                initialSortColumn,
                 columns,
                 customOptions = {}
             }) {
@@ -328,10 +317,10 @@
 
             // Example usage for Year Table
             createDataTable({
-                anchorId: '#worldbank_year_table',
+                anchorId: '#gdb_year_table',
                 dimension: year_dim,
                 dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
-                initialSortColumn: "GDP",
+                initialSortColumn: "Year",
                 columns: [
                     {
                         // The "year" column is styled to have a background that matches the color for the
@@ -345,71 +334,37 @@
                 ].concat(deepClone(common_columns))
             });
             createDataTable({
-                anchorId: '#worldbank_region_table',
-                dimension: region_dim,
+                anchorId: '#gdb_l1_cause_table',
+                dimension: l1_cause_name_dim,
                 dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
-                initialSortColumn: "GDP",
+                initialSortColumn: "l1_cause",
                 columns: [
                     {
-                        header: { text: "Region" },
+                        header: { text: "l1_cause" },
                         cells: {
-                            text: function (d) { return regions[d.key].name; },
+                            text: function (d) { return d.key; },
                         },
-                        sort: function (d) { return regions[d.key].name; },
+                        sort: function (d) { return d.key; },
                     }
                 ].concat(deepClone(common_columns))
             });
 
             createDataTable({
-                anchorId: '#worldbank_region_table',
-                dimension: region_dim,
+                anchorId: '#gdb_l2_cause_table',
+                dimension: l2_cause_name_dim,
                 dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
-                initialSortColumn: "GDP",
+                initialSortColumn: "l2_cause",
                 columns: [
                     {
-                        header: { text: "Region" },
+                        header: { text: "l2_cause" },
                         cells: {
-                            text: function (d) { return regions[d.key].name; },
+                            text: function (d) { return d.key; },
                         },
-                        sort: function (d) { return regions[d.key].name; },
+                        sort: function (d) { return d.key; },
                     }
                 ].concat(deepClone(common_columns)),
                 customOptions: {
                     // Any region-specific options can go here
-                }
-            });
-
-
-            createDataTable({
-                anchorId: '#worldbank_country_table',
-                dimension: country_dim,
-                dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
-                initialSortColumn: "GDP",
-                columns: [
-                    {
-                        header: { text: "Country" },
-                        cells: {
-                            html: function (d) { return '<b>' + countries[d.key].name + '</b>'; },
-                        },
-                        sort: function (d) { return countries[d.key].name; },
-                    }, {
-                        header: { text: "Region" },
-                        cells: {
-                            text: function (d) { return regions[countries[d.key].region_id].name; },
-                        },
-                        sort: function (d) { return regions[countries[d.key].region_id].name; },
-                    }
-                ].concat(deepClone(common_columns)),
-                customOptions: {
-                    limit_rows: 10,
-                    filter: function (d) { return d.value.gdp > 0; },
-                    pagination: true,
-                    searchable: true,
-                    cell_options: {
-                        styles: {
-                            padding: "0 0.25em"
-                        }
-                    }
                 }
             });
 

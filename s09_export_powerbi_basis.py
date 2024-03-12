@@ -26,6 +26,6 @@ df_measure = pd.read_sql('select * from gbd.db04_modelling.export_measure', con=
 df_measure.to_csv(f"{export_dir}df_measure.csv", index = False, sep = '\t', encoding='utf-8-sig')
 print(config.power_bi_type_cast(df_measure), df_measure.shape)
 
-df_measure = pd.read_sql('select * from gbd.db03_clean_tables.un_country_info', con=engine)
-df_measure.to_csv(f"{export_dir}df_un_country_info.csv", index = False, sep = '\t', encoding='utf-8-sig')
-print(config.power_bi_type_cast(df_measure), df_measure.shape)
+df_un_country_info = pd.read_sql('select * from gbd.db03_clean_tables.un_country_info', con=engine)
+df_un_country_info.to_csv(f"{export_dir}df_un_country_info.csv", index = False, sep = '\t', encoding='utf-8-sig')
+print(config.power_bi_type_cast(df_un_country_info), df_un_country_info.shape)
