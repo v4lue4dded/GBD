@@ -15,9 +15,6 @@
     <link rel="stylesheet" href="chartCollectionCode/css/c3.css" />
     <script src="chartCollectionCode/js/c3.js"></script>
     <script src="chartCollectionCode/js/c3-table.js"></script>
-    <script src="chartCollectionCode/js/c3-plot.js"></script>
-    <script src="chartCollectionCode/js/c3-layers.js"></script>
-    <script src="chartCollectionCode/js/c3-legend.js"></script>
 
     <!-- Styles -->
     <style>
@@ -96,9 +93,7 @@
     </main>
     <script>
         var gbd_data = [];
-        var un_country_info_data = [];
         var population_data = [];
-        var basis_data = [];
         function download_data() {
             // Return a new Promise from the function
             return new Promise((resolve, reject) => {
@@ -126,6 +121,7 @@
                         reject(error); // Reject the Promise if there's an error
                     } else {
                         gbd_data = data;
+                        console.log("gbd_data");
                         console.log(gbd_data);
                         // Data is now loaded, remove loading indicator and display main content
                         d3.selectAll('#waiting').remove();
@@ -169,15 +165,18 @@
             // Output the data set to the console if you want to take a look.
             console.log(gbd_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
-            var xf = crossfilter(gbd_data);
+            var gbdXf = crossfilter(gbd_data);
+            var populationXf = crossfilter(population_data);
+
             // Prepare the Crossfilter **dimensions** we can filter the data on.
             // With this we can filter based on country, region, year
             // Notice the _region_ dimension is added even though the dataset doesn't link directly to
             // a region.
-            var year_dim = xf.dimension(function (d) { return d.year; });
-            var population_id_dim = xf.dimension(function (d) { return d.population_id; });
-            var l1_cause_name_dim = xf.dimension(function (d) { return d.l1_cause_name; });
-            var l2_cause_name_dim = xf.dimension(function (d) { return d.l2_cause_name; });
+            var year_dimGbd = gbdXf.dimension(function (d) { return d.year; });
+            var population_id_dimGbd = gbdXf.dimension(function (d) { return d.population_id; });
+            var l1_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l1_cause_name; });
+            var l2_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l2_cause_name; });
+            var population_id_dimPopulation = populationXf.dimension(function (d) { return d.population_id; });
 
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
@@ -243,7 +242,6 @@
             };
 
             const common_columns = [
-                // Assign this column to a variable `gdp_column` so we can refer to it below for setting the default sort.
                 {
                     // These columns use custom formatters to set the html content of the cell
                     // adding commas, units, rounding, etc.  You can add raw HTML if you like.
@@ -280,6 +278,8 @@
                 customOptions = {}
             }) {
                 var data = dimension.group().reduce(dataGroupReduce.add, dataGroupReduce.remove, dataGroupReduce.init).all();
+                console.log(anchorId)
+                console.log(data)
 
                 var tableOptions = {
                     anchor: anchorId,
@@ -318,7 +318,7 @@
             // Example usage for Year Table
             createDataTable({
                 anchorId: '#gdb_year_table',
-                dimension: year_dim,
+                dimension: year_dimGbd,
                 dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
                 initialSortColumn: "Year",
                 columns: [
@@ -335,7 +335,7 @@
             });
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                dimension: l1_cause_name_dim,
+                dimension: l1_cause_name_dimGbd,
                 dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
                 initialSortColumn: "l1_cause",
                 columns: [
@@ -351,7 +351,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                dimension: l2_cause_name_dim,
+                dimension: l2_cause_name_dimGbd,
                 dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
                 initialSortColumn: "l2_cause",
                 columns: [
