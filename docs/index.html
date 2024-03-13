@@ -88,6 +88,7 @@
 
     <main style="display:none">
         <div id="gdb_year_table"></div>
+        <div id="gdb_population_id_table"></div>
         <div id="gdb_l1_cause_table"></div>
         <div id="gdb_l2_cause_table"></div>
     </main>
@@ -95,64 +96,60 @@
         var gbd_data = [];
         var population_data = [];
         function download_data() {
-            // Return a new Promise from the function
             return new Promise((resolve, reject) => {
-                d3.tsv('data/df_measure_small.csv', function(row) {
-                    // Convert string representations of numbers to actual numbers
-                    return {
-                        year: +row["year"],
-                        population_id: row["population_id"],
-                        l1_cause_id: row["l1_cause_id"],
-                        l1_cause_name: row["l1_cause_name"],
-                        l2_cause_id: row["l2_cause_id"],
-                        l2_cause_name: row["l2_cause_name"],
-                        deaths_val: +row["deaths_val"],
-                        deaths_lower: +row["deaths_lower"],
-                        deaths_upper: +row["deaths_upper"],
-                        yll_val: +row["yll_val"],
-                        yll_lower: +row["yll_lower"],
-                        yll_upper: +row["yll_upper"],
-                        deaths_present: +row["deaths_present"],
-                        yll_present: +row["yll_present"],
-                    };
-                }, function(error, data) {
-                    if (error) {
-                        console.error("Error loading the CSV file: ", error);
-                        reject(error); // Reject the Promise if there's an error
-                    } else {
-                        gbd_data = data;
-                        console.log("gbd_data");
-                        console.log(gbd_data);
-                        // Data is now loaded, remove loading indicator and display main content
-                        d3.selectAll('#waiting').remove();
-                        d3.selectAll('main').style('display', '');
-
-                        resolve(gbd_data); // Resolve the Promise with the loaded data
-                    }
+                let p1 = new Promise((resolve, reject) => {
+                    d3.tsv('data/df_measure_small.csv', function(row) {
+                        return {
+                            year: +row["year"],
+                            population_id: row["population_id"],
+                            l1_cause_id: row["l1_cause_id"],
+                            l1_cause_name: row["l1_cause_name"],
+                            l2_cause_id: row["l2_cause_id"],
+                            l2_cause_name: row["l2_cause_name"],
+                            deaths_val: +row["deaths_val"],
+                            deaths_lower: +row["deaths_lower"],
+                            deaths_upper: +row["deaths_upper"],
+                            yll_val: +row["yll_val"],
+                            yll_lower: +row["yll_lower"],
+                            yll_upper: +row["yll_upper"],
+                            deaths_present: +row["deaths_present"],
+                            yll_present: +row["yll_present"],
+                        };
+                    }, function(error, data) {
+                        if (error) reject(error);
+                        else {
+                            gbd_data = data;
+                            resolve();
+                        }
+                    });
                 });
-                d3.tsv('data/df_population.csv', function(row) {
-                    // Convert string representations of numbers to actual numbers
-                    return {
-                        year: row["year"],
-                        population_id: row["population_id"],
-                        pop_val: +row["pop_val"],
-                        pop_upper: +row["pop_upper"],
-                        pop_lower: +row["pop_lower"],
-                        pop_present: +row["pop_present"],
-                    };
-                }, function(error, data) {
-                    if (error) {
-                        console.error("Error loading the CSV file: ", error);
-                        reject(error); // Reject the Promise if there's an error
-                    } else {
-                        population_data = data;
-                        console.log(population_data);
-                        // Data is now loaded, remove loading indicator and display main content
-                        d3.selectAll('#waiting').remove();
-                        d3.selectAll('main').style('display', '');
 
-                        resolve(population_data); // Resolve the Promise with the loaded data
-                    }
+                let p2 = new Promise((resolve, reject) => {
+                    d3.tsv('data/df_population.csv', function(row) {
+                        return {
+                            year: +row["year"],
+                            population_id: row["population_id"],
+                            pop_val: +row["pop_val"],
+                            pop_upper: +row["pop_upper"],
+                            pop_lower: +row["pop_lower"],
+                            pop_present: +row["pop_present"],
+                        };
+                    }, function(error, data) {
+                        if (error) reject(error);
+                        else {
+                            population_data = data;
+                            resolve();
+                        }
+                    });
+                });
+
+                Promise.all([p1, p2]).then(() => {
+                    d3.selectAll('#waiting').remove();
+                    d3.selectAll('main').style('display', '');
+                    resolve();
+                }).catch(error => {
+                    console.error("Error loading data: ", error);
+                    reject(error);
                 });
             });
         }
@@ -172,10 +169,14 @@
             // With this we can filter based on country, region, year
             // Notice the _region_ dimension is added even though the dataset doesn't link directly to
             // a region.
+            // gbd
             var year_dimGbd = gbdXf.dimension(function (d) { return d.year; });
             var population_id_dimGbd = gbdXf.dimension(function (d) { return d.population_id; });
             var l1_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l1_cause_name; });
             var l2_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l2_cause_name; });
+
+            // population
+            var year_dimPopulation = populationXf.dimension(function (d) { return d.year; });
             var population_id_dimPopulation = populationXf.dimension(function (d) { return d.population_id; });
 
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
@@ -219,27 +220,65 @@
                 }
             }
 
-            function reduceAdd(p, v) {
-                ++p.count;
+            function leftJoinAndCombine(arr1, arr2) {
+                // Create a new array to hold the result of the left join
+                const result = arr1.map(item1 => {
+                    // Find an item in arr2 that has a matching key with the current item1
+                    const item2 = arr2.find(item2 => item2.key === item1.key);
+
+                    // If a matching item is found in arr2, combine the value objects
+                    if (item2) {
+                        return {
+                            key: item1.key,
+                            value: {
+                                ...item1.value,
+                                ...item2.value, // This combines item1's and item2's values
+                            }
+                        };
+                    }
+
+                    // If no matching item is found, return item1 as it is
+                    return item1;
+                });
+
+                return result;
+            }
+
+            function reduceAddGbd(p, v) {
                 p.deaths_val += v.deaths_val
                 p.yll_val += v.yll_val
                 return p;
             };
 
-            function reduceRemove(p, v) {
-                --p.count;
+            function reduceRemoveGbd(p, v) {
                 p.deaths_val -= v.deaths_val
                 p.yll_val -= v.yll_val
                 return p;
             };
 
-            function reduceInitial() {
+            function reduceInitialGbd() {
                 return {
-                    count: 0,
                     deaths_val: 0,
                     yll_val: 0,
                 };
             };
+
+            function reduceAddPopulation(p, v) {
+                p.pop_val += v.pop_val
+                return p;
+            };
+
+            function reduceRemovePopulation(p, v) {
+                p.pop_val -= v.pop_val
+                return p;
+            };
+
+            function reduceInitialPopulation() {
+                return {
+                    pop_val: 0,
+                };
+            };
+
 
             const common_columns = [
                 {
@@ -269,15 +308,32 @@
                 },
             ]
 
+            function synchronizeFilters() {
+                // Get all currently filtered dimensions in gbd_data
+                var filtered_population_id = new Set(population_id_dimGbd.group().all()
+                    .filter(function(d) { return d.value > 0; })
+                    .map(function(d) { return d.key; }));
+                var filtered_year = new Set(year_dimGbd.group().all()
+                    .filter(function(d) { return d.value > 0; })
+                    .map(function(d) { return d.key; }));
+
+                // Apply filter to population_data using the Set for efficient lookups
+                population_id_dimPopulation.filter(function(d) {
+                    return filtered_population_id.has(d);
+                });
+                year_dimPopulation.filter(function(d) {
+                    return filtered_year.has(d);
+                });
+            }
+
             function createDataTable({
                 anchorId,
-                dimension,
-                dataGroupReduce,
+                data,
+                filter_dimension,
                 initialSortColumn,
                 columns,
                 customOptions = {}
             }) {
-                var data = dimension.group().reduce(dataGroupReduce.add, dataGroupReduce.remove, dataGroupReduce.init).all();
                 console.log(anchorId)
                 console.log(data)
 
@@ -302,9 +358,10 @@
                     handlers: {
                         'select': function (selections) {
                             if (selections.length)
-                                dimension.filter(function (key) { return selections.map(function (d) { return d.key; }).indexOf(key) >= 0; });
+                                filter_dimension.filter(function (key) { return selections.map(function (d) { return d.key; }).indexOf(key) >= 0; });
                             else
-                                dimension.filterAll();
+                                filter_dimension.filterAll();
+                            synchronizeFilters();
                             redraw();
                         }
                     },
@@ -315,11 +372,19 @@
                 charts.push(newTable);
             }
 
-            // Example usage for Year Table
+            year_dataGbd = year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
+            year_dataPopulation = year_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
+            year_data = leftJoinAndCombine(year_dataGbd, year_dataPopulation);
+            console.log("year_dataGbd")
+            console.log(year_dataGbd)
+            console.log("year_dataPopulation")
+            console.log(year_dataPopulation)
+            console.log("year_data")
+            console.log(year_data)            
             createDataTable({
                 anchorId: '#gdb_year_table',
-                dimension: year_dimGbd,
-                dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
+                data: year_data,
+                filter_dimension: year_dimGbd,
                 initialSortColumn: "Year",
                 columns: [
                     {
@@ -331,12 +396,39 @@
                         },
                         sort: function (d) { return d.key; }
                     }
-                ].concat(deepClone(common_columns))
+                ].concat(deepClone(common_columns)).concat([
+                {
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "Population" },
+                    cells: { html: function (d) { return (d3.format(',')(Math.round(d.value.pop_val))); } },
+                    sort: function (d) { return d.value.pop_val; },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person" },
+                    cells: { html: function (d) { return (d3.format(',')((d.value.yll_val/d.value.pop_val).toFixed(3))); } },
+                    sort: function (d) { return d.value.yll_val; },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                },
+            ])
             });
+
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                dimension: l1_cause_name_dimGbd,
-                dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
+                data: l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                filter_dimension: l1_cause_name_dimGbd,
                 initialSortColumn: "l1_cause",
                 columns: [
                     {
@@ -351,8 +443,8 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                dimension: l2_cause_name_dimGbd,
-                dataGroupReduce: { add: reduceAdd, remove: reduceRemove, init: reduceInitial },
+                data: l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                filter_dimension: l2_cause_name_dimGbd,
                 initialSortColumn: "l2_cause",
                 columns: [
                     {
