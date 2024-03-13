@@ -98,7 +98,7 @@
         function download_data() {
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    d3.tsv('data/df_measure_small.csv', function(row) {
+                    d3.tsv('data/df_measure.csv', function(row) {
                         return {
                             year: +row["year"],
                             population_id: row["population_id"],
@@ -220,29 +220,9 @@
                 }
             }
 
-            function leftJoinAndCombine(arr1, arr2) {
-                // Create a new array to hold the result of the left join
-                const result = arr1.map(item1 => {
-                    // Find an item in arr2 that has a matching key with the current item1
-                    const item2 = arr2.find(item2 => item2.key === item1.key);
-
-                    // If a matching item is found in arr2, combine the value objects
-                    if (item2) {
-                        return {
-                            key: item1.key,
-                            value: {
-                                ...item1.value,
-                                ...item2.value, // This combines item1's and item2's values
-                            }
-                        };
-                    }
-
-                    // If no matching item is found, return item1 as it is
-                    return item1;
-                });
-
-                return result;
-            }
+            // Use fancy aggregation logic in order to keep track of how frequently a particular category appears at each filter level and switch on or off the amount of population that needs to be added based on this.
+            
+            const getValForSearchKey = (data, searchKey, colName) => data.find(item => item.key === searchKey)?.value[colName];
 
             function reduceAddGbd(p, v) {
                 p.deaths_val += v.deaths_val
@@ -308,6 +288,7 @@
                 },
             ]
 
+            filter_dimension.filter(function (key) { return selections.map(function (d) { return d.key; }).indexOf(key) >= 0; });
             function synchronizeFilters() {
                 // Get all currently filtered dimensions in gbd_data
                 var filtered_population_id = new Set(population_id_dimGbd.group().all()
@@ -374,16 +355,13 @@
 
             year_dataGbd = year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
             year_dataPopulation = year_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
-            year_data = leftJoinAndCombine(year_dataGbd, year_dataPopulation);
             console.log("year_dataGbd")
             console.log(year_dataGbd)
             console.log("year_dataPopulation")
             console.log(year_dataPopulation)
-            console.log("year_data")
-            console.log(year_data)            
             createDataTable({
                 anchorId: '#gdb_year_table',
-                data: year_data,
+                data: year_dataGbd,
                 filter_dimension: year_dimGbd,
                 initialSortColumn: "Year",
                 columns: [
@@ -403,7 +381,7 @@
                     // These column also use the `vis` visualization support to render a bar
                     // graph based on the cell value.
                     header: { text: "Population" },
-                    cells: { html: function (d) { return (d3.format(',')(Math.round(d.value.pop_val))); } },
+                    cells: { html: function (d) { return (d3.format(',')(Math.round(getValForSearchKey(year_dataPopulation, d.key, "pop_val")))); } },
                     sort: function (d) { return d.value.pop_val; },
                     vis: 'bar',
                     vis_options: {
@@ -413,8 +391,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person" },
-                    cells: { html: function (d) { return (d3.format(',')((d.value.yll_val/d.value.pop_val).toFixed(3))); } },
-                    sort: function (d) { return d.value.yll_val; },
+                    cells: { html: function (d) { return (d3.format(',')((d.value.yll_val/getValForSearchKey(year_dataPopulation, d.key, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return d.value.yll_val/getValForSearchKey(year_dataPopulation, d.key, "pop_val"); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -425,9 +403,12 @@
             ])
             });
 
+            l1_cause_data = l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all() 
+            console.log("l1_cause_data")
+            console.log(l1_cause_data)            
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                data: l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                data: l1_cause_data,
                 filter_dimension: l1_cause_name_dimGbd,
                 initialSortColumn: "l1_cause",
                 columns: [
