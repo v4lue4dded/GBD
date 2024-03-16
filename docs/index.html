@@ -88,7 +88,7 @@
 
     <main style="display:none">
         <div id="gdb_year_table"></div>
-        <div id="gdb_population_id_table"></div>
+        <div id="gdb_location_name_table"></div>
         <div id="gdb_l1_cause_table"></div>
         <div id="gdb_l2_cause_table"></div>
     </main>
@@ -99,9 +99,10 @@
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
                     d3.tsv('data/df_measure.csv', function(row) {
+                    // d3.tsv('data/df_measure_small.csv', function(row) {
                         return {
                             year: +row["year"],
-                            population_id: row["population_id"],
+                            location_name: row["location_name"],
                             l1_cause_id: row["l1_cause_id"],
                             l1_cause_name: row["l1_cause_name"],
                             l2_cause_id: row["l2_cause_id"],
@@ -128,7 +129,7 @@
                     d3.tsv('data/df_population.csv', function(row) {
                         return {
                             year: +row["year"],
-                            population_id: row["population_id"],
+                            location_name: row["location_name"],
                             pop_val: +row["pop_val"],
                             pop_upper: +row["pop_upper"],
                             pop_lower: +row["pop_lower"],
@@ -171,13 +172,13 @@
             // a region.
             // gbd
             var year_dimGbd = gbdXf.dimension(function (d) { return d.year; });
-            var population_id_dimGbd = gbdXf.dimension(function (d) { return d.population_id; });
+            var location_name_dimGbd = gbdXf.dimension(function (d) { return d.location_name; });
             var l1_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l1_cause_name; });
             var l2_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l2_cause_name; });
 
             // population
             var year_dimPopulation = populationXf.dimension(function (d) { return d.year; });
-            var population_id_dimPopulation = populationXf.dimension(function (d) { return d.population_id; });
+            var location_name_dimPopulation = populationXf.dimension(function (d) { return d.location_name; });
 
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
@@ -288,29 +289,11 @@
                 },
             ]
 
-            filter_dimension.filter(function (key) { return selections.map(function (d) { return d.key; }).indexOf(key) >= 0; });
-            function synchronizeFilters() {
-                // Get all currently filtered dimensions in gbd_data
-                var filtered_population_id = new Set(population_id_dimGbd.group().all()
-                    .filter(function(d) { return d.value > 0; })
-                    .map(function(d) { return d.key; }));
-                var filtered_year = new Set(year_dimGbd.group().all()
-                    .filter(function(d) { return d.value > 0; })
-                    .map(function(d) { return d.key; }));
-
-                // Apply filter to population_data using the Set for efficient lookups
-                population_id_dimPopulation.filter(function(d) {
-                    return filtered_population_id.has(d);
-                });
-                year_dimPopulation.filter(function(d) {
-                    return filtered_year.has(d);
-                });
-            }
-
             function createDataTable({
                 anchorId,
                 data,
                 filter_dimension,
+                filter_dimension_2,
                 initialSortColumn,
                 columns,
                 customOptions = {}
@@ -338,11 +321,14 @@
                     },
                     handlers: {
                         'select': function (selections) {
-                            if (selections.length)
+                            if (selections.length) {
                                 filter_dimension.filter(function (key) { return selections.map(function (d) { return d.key; }).indexOf(key) >= 0; });
-                            else
+                                filter_dimension_2.filter(function (key) { return selections.map(function (d) { return d.key; }).indexOf(key) >= 0; });
+                            }
+                            else {
                                 filter_dimension.filterAll();
-                            synchronizeFilters();
+                                filter_dimension_2.filterAll();
+                            }
                             redraw();
                         }
                     },
@@ -363,6 +349,7 @@
                 anchorId: '#gdb_year_table',
                 data: year_dataGbd,
                 filter_dimension: year_dimGbd,
+                filter_dimension_2: year_dimPopulation,
                 initialSortColumn: "Year",
                 columns: [
                     {
@@ -403,6 +390,59 @@
             ])
             });
 
+
+            location_name_dataGbd = location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
+            location_name_dataPopulation = location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
+            console.log("location_name_dataGbd")
+            console.log(location_name_dataGbd)
+            console.log("location_name_dataPopulation")
+            console.log(location_name_dataPopulation)
+            createDataTable({
+                anchorId: '#gdb_location_name_table',
+                data: location_name_dataGbd,
+                filter_dimension: location_name_dimGbd,
+                filter_dimension_2: location_name_dimPopulation,
+                initialSortColumn: "location_name",
+                columns: [
+                    {
+                        // The "location_name" column is styled to have a background that matches the color for the
+                        // location_name this country is in.
+                        header: { text: "location_name" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    }
+                ].concat(deepClone(common_columns)).concat([
+                {
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "Population" },
+                    cells: { html: function (d) { return (d3.format(',')(Math.round(getValForSearchKey(location_name_dataPopulation, d.key, "pop_val")))); } },
+                    sort: function (d) { return getValForSearchKey(location_name_dataPopulation, d.key, "pop_val"); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person" },
+                    cells: { html: function (d) { return (d3.format(',')((d.value.yll_val/getValForSearchKey(location_name_dataPopulation, d.key, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return d.value.yll_val/getValForSearchKey(location_name_dataPopulation, d.key, "pop_val"); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                },
+            ])
+            });
+
+
             l1_cause_data = l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all() 
             console.log("l1_cause_data")
             console.log(l1_cause_data)            
@@ -410,6 +450,7 @@
                 anchorId: '#gdb_l1_cause_table',
                 data: l1_cause_data,
                 filter_dimension: l1_cause_name_dimGbd,
+                filter_dimension_2: l1_cause_name_dimGbd,
                 initialSortColumn: "l1_cause",
                 columns: [
                     {
@@ -426,6 +467,7 @@
                 anchorId: '#gdb_l2_cause_table',
                 data: l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
                 filter_dimension: l2_cause_name_dimGbd,
+                filter_dimension_2: l2_cause_name_dimGbd,
                 initialSortColumn: "l2_cause",
                 columns: [
                     {

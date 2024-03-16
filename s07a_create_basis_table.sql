@@ -15,9 +15,9 @@ create table         gbd.db04_modelling.cb_age_group_export as
 select
 *
 from (
-         select  28 as age_group_id ,  '<1 year' as age_group_name ,'00 years'  as age_group_name_sorted
-   union select   5 as age_group_id ,   '1 to 4' as age_group_name ,'01 to 04'   as age_group_name_sorted
-   union select   6 as age_group_id ,   '5 to 9' as age_group_name ,'05 to 09'   as age_group_name_sorted
+         select  28 as age_group_id ,  '<1 year' as age_group_name ,'00 years' as age_group_name_sorted
+   union select   5 as age_group_id ,   '1 to 4' as age_group_name ,'01 to 04' as age_group_name_sorted
+   union select   6 as age_group_id ,   '5 to 9' as age_group_name ,'05 to 09' as age_group_name_sorted
    union select   7 as age_group_id , '10 to 14' as age_group_name ,'10 to 14' as age_group_name_sorted
    union select   8 as age_group_id , '15 to 19' as age_group_name ,'15 to 19' as age_group_name_sorted
    union select   9 as age_group_id , '20 to 24' as age_group_name ,'20 to 24' as age_group_name_sorted

@@ -1,0 +1,15 @@
+name: gbd
+channels:
+  - defaults
+dependencies:
+  - python=3.8  # Specifying Python version, adjust as needed
+  - pyodbc
+  - pandas
+  - numpy
+  - sqlalchemy
+  - jupyter
+  - pip
+  - psycopg2
+  - openpyxl
+  - pip:
+      - pprint  # pprint is part of the standard library, listed here just in case
