@@ -269,6 +269,13 @@
                 return rounded;
             }
 
+            year_dataGbd = year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
+            year_dataPopulation = year_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
+            location_name_dataGbd = location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
+            location_name_dataPopulation = location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
+            l1_cause_data = l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
+            l2_cause_data = l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
+
             const common_columns = [
                 {
                     // These columns use custom formatters to set the html content of the cell
@@ -353,8 +360,6 @@
             }
 
 
-            year_dataGbd = year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
-            year_dataPopulation = year_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
             createDataTable({
                 anchorId: '#gdb_year_table',
                 data: year_dataGbd,
@@ -402,8 +407,6 @@
 
 
 
-            location_name_dataGbd = location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
-            location_name_dataPopulation = location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
             createDataTable({
                 anchorId: '#gdb_location_name_table',
                 data: location_name_dataGbd,
@@ -449,7 +452,6 @@
             });
 
 
-            l1_cause_data = l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all()
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
                 data: l1_cause_data,
@@ -468,7 +470,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                data: l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                data: l2_cause_data,
                 filter_dimensions: [l2_cause_name_dimGbd],
                 initialSortColumn: "l2_cause",
                 columns: [
