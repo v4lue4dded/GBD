@@ -99,7 +99,7 @@
         function download_data() {
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    d3.tsv('data/df_measure_small.csv', function (row) {
+                    d3.tsv('data/df_measure.csv', function (row) {
                         // d3.tsv('data/df_measure_small.csv', function(row) {
                         return {
                             year: +row["year"],
@@ -166,6 +166,7 @@
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
             var gbdXf = crossfilter(gbd_data);
             var populationXf = crossfilter(population_data);
+            var specialKey = "specialKeyGKQ0W8G8OX"
 
             // Prepare the Crossfilter **dimensions** we can filter the data on.
             // With this we can filter based on country, region, year
@@ -180,6 +181,8 @@
             // population
             var year_dimPopulation = populationXf.dimension(function (d) { return d.year; });
             var location_name_dimPopulation = populationXf.dimension(function (d) { return d.location_name; });
+            var l1_cause_name_dimPopulation = populationXf.dimension(function (d) { return specialKey; });
+            var l2_cause_name_dimPopulation = populationXf.dimension(function (d) { return specialKey; });
 
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
@@ -285,42 +288,72 @@
                     "gbd": location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
                     "population": location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
                 },
-                "l1_cause": {
-                    "gbd": l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all()
+                "l1_cause_name": {
+                    "gbd": l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": l1_cause_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
                 },
-                "l2_cause": {
-                    "gbd": l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all()
+                "l2_cause_name": {
+                    "gbd": l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": l2_cause_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
                 },
             };
 
-            const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey)?.value[valueCol];
+            console.log("dataDict")
+            console.log(dataDict)
+
+            const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
 
             const common_columns = [
-                {
-                    // These columns use custom formatters to set the html content of the cell
-                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                    // These column also use the `vis` visualization support to render a bar
-                    // graph based on the cell value.
-                    header: { text: "deaths" },
-                    cells: { html: function (d) { return (d3.format(',')(round_z(d.value.deaths_val))); } },
-                    sort: function (d) { return round_z(d.value.deaths_val); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightsalmon'
+                    {
+                        // These columns use custom formatters to set the html content of the cell
+                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                        // These column also use the `vis` visualization support to render a bar
+                        // graph based on the cell value.
+                        header: { text: "deaths" },
+                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); }},
+                        sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightsalmon'
+                            }
                         }
-                    }
-                }, {
-                    header: { text: "Years of live lost" },
-                    cells: { html: function (d) { return (d3.format(',')(round_z(d.value.yll_val))); } },
-                    sort: function (d) { return round_z(d.value.yll_val); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightblue'
+                    }, {
+                        header: { text: "Years of live lost" },
+                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "yll_val")))); } },
+                        sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "yll_val")); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightblue'
+                            }
                         }
-                    }
-                },
+                    },
+                    {
+                        // These columns use custom formatters to set the html content of the cell
+                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                        // These column also use the `vis` visualization support to render a bar
+                        // graph based on the cell value.
+                        header: { text: "Population" },
+                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
+                        sort: function (d) { round_z(getVal("population", d.value, d.key, "pop_val")); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightgreen'
+                            }
+                        }
+                    }, {
+                        header: { text: "Years of live lost per Person" },
+                        cells: { html: function (d) { return (d3.format(',')((getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                        sort: function (d) { return getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val"); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightblue'
+                            }
+                        }
+                    },
             ]
 
             function createDataTable({
@@ -378,53 +411,6 @@
                 charts.push(newTable);
             }
 
-            createDataTable({
-                anchorId: '#gdb_year_table',
-                data: year_dataGbd,
-                filter_dimensions: [year_dimGbd, year_dimPopulation],
-                initialSortColumn: "Year",
-                columns: [
-                    {
-                        // The "year" column is styled to have a background that matches the color for the
-                        // year this country is in.
-                        header: { text: "Year" },
-                        cells: {
-                            text: function (d) { return d.key; }
-                        },
-                        sort: function (d) { return d.key; }
-                    }
-                ].concat(deepClone(common_columns)).concat([
-                    {
-                        // These columns use custom formatters to set the html content of the cell
-                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                        // These column also use the `vis` visualization support to render a bar
-                        // graph based on the cell value.
-                        header: { text: "Population" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getValForSearchKey(year_dataPopulation, d.key, "pop_val")))); } },
-                        sort: function (d) { round_z(getValForSearchKey(year_dataPopulation, d.key, "pop_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightgreen'
-                            }
-                        }
-                    }, {
-                        header: { text: "Years of live lost per Person" },
-                        cells: { html: function (d) { return (d3.format(',')((getValForSearchKey(year_dataGbd, d.key, "yll_val") / getValForSearchKey(year_dataPopulation, d.key, "pop_val")).toFixed(3))); } },
-                        sort: function (d) { return d.value.yll_val / getValForSearchKey(year_dataPopulation, d.key, "pop_val"); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightblue'
-                            }
-                        }
-                    },
-                ])
-            });
-
-
-
-
             function columnNameFill(inputArray, newValue) {
                 return inputArray.map(item => ({
                     key: item.key,
@@ -433,7 +419,7 @@
             }
 
             createDataTable({
-                anchorId: '#gdb_year_table2',
+                anchorId: '#gdb_year_table',
                 data: columnNameFill(dataDict["year"]["gbd"], "year"),
                 filter_dimensions: [year_dimGbd, year_dimPopulation],
                 initialSortColumn: "Year",
@@ -447,63 +433,12 @@
                         },
                         sort: function (d) { return d.key; }
                     },
-                    {
-                        // These columns use custom formatters to set the html content of the cell
-                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                        // These column also use the `vis` visualization support to render a bar
-                        // graph based on the cell value.
-                        header: { text: "deaths" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); }},
-                        sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightsalmon'
-                            }
-                        }
-                    }, {
-                        header: { text: "Years of live lost" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "yll_val")))); } },
-                        sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "yll_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightblue'
-                            }
-                        }
-                    },
-                    {
-                        // These columns use custom formatters to set the html content of the cell
-                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                        // These column also use the `vis` visualization support to render a bar
-                        // graph based on the cell value.
-                        header: { text: "Population" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
-                        sort: function (d) { round_z(getVal("population", d.value, d.key, "pop_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightgreen'
-                            }
-                        }
-                    }, {
-                        header: { text: "Years of live lost per Person" },
-                        cells: { html: function (d) { return (d3.format(',')((getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val")).toFixed(3))); } },
-                        sort: function (d) { return getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val"); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightblue'
-                            }
-                        }
-                    },
-                ]
+                ].concat(deepClone(common_columns))
             });
-
 
             createDataTable({
                 anchorId: '#gdb_location_name_table',
-                data: location_name_dataGbd,
+                data: columnNameFill(dataDict["location_name"]["gbd"], "location_name"),
                 filter_dimensions: [location_name_dimGbd, location_name_dimPopulation],
                 initialSortColumn: "location_name",
                 columns: [
@@ -515,40 +450,13 @@
                             text: function (d) { return d.key; }
                         },
                         sort: function (d) { return d.key; }
-                    }
-                ].concat(deepClone(common_columns)).concat([
-                    {
-                        // These columns use custom formatters to set the html content of the cell
-                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                        // These column also use the `vis` visualization support to render a bar
-                        // graph based on the cell value.
-                        header: { text: "Population" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getValForSearchKey(location_name_dataPopulation, d.key, "pop_val")))); } },
-                        sort: function (d) { return getValForSearchKey(location_name_dataPopulation, d.key, "pop_val"); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightgreen'
-                            }
-                        }
-                    }, {
-                        header: { text: "Years of live lost per Person" },
-                        cells: { html: function (d) { return (d3.format(',')((d.value.yll_val / getValForSearchKey(location_name_dataPopulation, d.key, "pop_val")).toFixed(3))); } },
-                        sort: function (d) { return d.value.yll_val / getValForSearchKey(location_name_dataPopulation, d.key, "pop_val"); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightblue'
-                            }
-                        }
                     },
-                ])
+                ].concat(deepClone(common_columns))
             });
-
 
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                data: l1_cause_data,
+                data: columnNameFill(dataDict["l1_cause_name"]["gbd"], "l1_cause_name"),
                 filter_dimensions: [l1_cause_name_dimGbd],
                 initialSortColumn: "l1_cause",
                 columns: [
@@ -564,7 +472,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                data: l2_cause_data,
+                data: columnNameFill(dataDict["l2_cause_name"]["gbd"], "l2_cause_name"),
                 filter_dimensions: [l2_cause_name_dimGbd],
                 initialSortColumn: "l2_cause",
                 columns: [
