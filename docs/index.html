@@ -99,8 +99,8 @@
         function download_data() {
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    d3.tsv('data/df_measure.csv', function (row) {
-                        // d3.tsv('data/df_measure_small.csv', function(row) {
+                    // d3.tsv('data/df_measure.csv', function (row) {
+                        d3.tsv('data/df_measure_small.csv', function(row) {
                         return {
                             year: +row["year"],
                             location_name: row["location_name"],
@@ -297,9 +297,12 @@
                     "population": l2_cause_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
                 },
             };
+            
 
-            console.log("dataDict")
-            console.log(dataDict)
+            console.log("diff in list")
+            console.log([year_dimGbd, year_dimPopulation])
+            console.log([dataDict["year"]["gbd"], dataDict["year"]["population"]])
+            console.log(Object.values(dataDict["year"]))
 
             const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
 
@@ -336,7 +339,7 @@
                         // graph based on the cell value.
                         header: { text: "Population" },
                         cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
-                        sort: function (d) { round_z(getVal("population", d.value, d.key, "pop_val")); },
+                        sort: function (d) {return round_z(getVal("population", d.value, d.key, "pop_val")); },
                         vis: 'bar',
                         vis_options: {
                             styles: {
