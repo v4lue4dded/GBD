@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crossfilter Example</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter2/1.5.2/crossfilter.min.js"></script>
+</head>
+<body>
+    <div id="output1"></div>
+    <div id="output2"></div>
+
+    <script>
+        // Sample datasets
+        var dataset1 = [
+            {name: "Alice", age: 30, city: "New York"},
+            {name: "Bob", age: 25, city: "Paris"},
+            {name: "Charlie", age: 35, city: "New York"}
+        ];
+
+        var dataset2 = [
+            {name: "Dave", employer: "Company A", city: "New York"},
+            {name: "Eve", employer: "Company B", city: "Paris"},
+            {name: "Frank", employer: "Company C", city: "New York"}
+        ];
+
+        // Create Crossfilter instances
+        var cf1 = crossfilter(dataset1);
+        var cf2 = crossfilter(dataset2);
+
+        // Apply a filter on the first dataset
+        var dim1 = cf1.dimension(function(d) { return d.city; });
+        dim1.filter("New York");
+
+        // Function to apply filter from cf1 to cf2
+        function applyFilterFromCf1ToCf2() {
+            var selectedCities = dim1.top(Infinity).map(function(d) { return d.city; });
+            var dim2 = cf2.dimension(function(d) { return d.city; });
+            dim2.filterFunction(function(d) { return selectedCities.indexOf(d) !== -1; });
+            
+            return dim2.top(Infinity); // Returns filtered dataset2
+        }
+
+        var filteredDataset2 = applyFilterFromCf1ToCf2();
+
+        // Display the results using D3
+        d3.select("#output1").selectAll("div")
+            .data(dim1.top(Infinity))
+            .enter().append("div")
+            .text(function(d) { return d.name + " from " + d.city; });
+
+        d3.select("#output2").selectAll("div")
+            .data(filteredDataset2)
+            .enter().append("div")
+            .text(function(d) { return d.name + " works at " + d.employer; });
+    </script>
+</body>
+</html>

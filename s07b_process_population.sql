@@ -2,12 +2,12 @@ drop table if exists gbd.db04_modelling.export_population;
 create table         gbd.db04_modelling.export_population as
 select
    eb.year as year
--- , eb.location_id
--- , eb.location_name
--- , eb.age_group_id
--- , eb.age_group_name
--- , eb.sex_id
--- , eb.sex_name
+, eb.location_id
+, eb.location_name
+, eb.age_group_id
+, eb.age_group_name_sorted
+, eb.sex_id
+, eb.sex_name
 , concat(eb.year, '--', eb.location_id, '--', eb.age_group_id, '--', eb.sex_id) population_id
 , po.val     as pop_val
 , po.upper   as pop_upper

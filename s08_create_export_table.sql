@@ -3,12 +3,12 @@ drop table if exists gbd.db04_modelling.export_measure;
 create table         gbd.db04_modelling.export_measure as
 select
   eb.year
--- , eb.location_id
--- , eb.location_name
--- , eb.age_group_id
--- , eb.age_group_name
--- , eb.sex_id
--- , eb.sex_name
+, eb.location_id
+, eb.location_name
+, eb.age_group_id
+, eb.age_group_name_sorted
+, eb.sex_id
+, eb.sex_name
 , eb.population_id
 , eb.l1_cause_id
 , eb.l1_cause_name
