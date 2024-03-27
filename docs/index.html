@@ -307,12 +307,6 @@
                 },
             };
 
-
-            console.log("diff in list")
-            console.log([year_dimGbd, year_dimPopulation])
-            console.log([dataDict["year"]["gbd"], dataDict["year"]["population"]])
-            console.log(Object.values(dataDict["year"]))
-
             const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
 
             const common_columns = [
@@ -321,7 +315,7 @@
                     // adding commas, units, rounding, etc.  You can add raw HTML if you like.
                     // These column also use the `vis` visualization support to render a bar
                     // graph based on the cell value.
-                    header: { text: "deaths" },
+                    header: { text: "Deaths" },
                     cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); } },
                     sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
                     vis: 'bar',
@@ -363,7 +357,8 @@
                     vis: 'color',
                     vis_options: {
                         styles: {
-                            'range': ['lightsalmon', 'lightyellow', 'lightgreen']
+                            'domain': [0, 0.003, 0.05],
+                            'range': ['lightsalmon', 'lightyellow', 'lightblue'],
                         }
                     }
                 },
@@ -406,6 +401,7 @@
                     handlers: {
                         'select': function (selections) {
                             // Check if there are selections
+                            console.log(selections)
                             if (selections.length) {
                                 // Iterate over filter_dimensions and apply filter
                                 filter_dimensions.forEach(function (filter_dimension) {
@@ -456,10 +452,10 @@
                 anchorId: '#gdb_location_name_table',
                 data: columnNameFill(dataDict["location_name"]["gbd"], "location_name"),
                 filter_dimensions: [location_name_dimGbd, location_name_dimPopulation],
-                initialSortColumn: "location_name",
+                initialSortColumn: "Country",
                 columns: [
                     {
-                        header: { text: "location_name" },
+                        header: { text: "Country" },
                         cells: {
                             text: function (d) { return d.key; }
                         },
@@ -472,10 +468,10 @@
                 anchorId: '#gdb_sex_name_table',
                 data: columnNameFill(dataDict["sex_name"]["gbd"], "sex_name"),
                 filter_dimensions: [sex_name_dimGbd, sex_name_dimPopulation],
-                initialSortColumn: "sex_name",
+                initialSortColumn: "Sex",
                 columns: [
                     {
-                        header: { text: "sex_name" },
+                        header: { text: "Sex" },
                         cells: {
                             text: function (d) { return d.key; }
                         },
@@ -488,10 +484,10 @@
                 anchorId: '#gdb_age_group_name_sorted_table',
                 data: columnNameFill(dataDict["age_group_name_sorted"]["gbd"], "age_group_name_sorted"),
                 filter_dimensions: [age_group_name_sorted_dimGbd, age_group_name_sorted_dimPopulation],
-                initialSortColumn: "age_group_name_sorted",
+                initialSortColumn: "Age group",
                 columns: [
                     {
-                        header: { text: "age_group_name_sorted" },
+                        header: { text: "Age group" },
                         cells: {
                             text: function (d) { return d.key; }
                         },
@@ -504,10 +500,10 @@
                 anchorId: '#gdb_l1_cause_table',
                 data: columnNameFill(dataDict["l1_cause_name"]["gbd"], "l1_cause_name"),
                 filter_dimensions: [l1_cause_name_dimGbd],
-                initialSortColumn: "l1_cause",
+                initialSortColumn: "L1 cause",
                 columns: [
                     {
-                        header: { text: "l1_cause" },
+                        header: { text: "L1 cause" },
                         cells: {
                             text: function (d) { return d.key; },
                         },
@@ -520,10 +516,10 @@
                 anchorId: '#gdb_l2_cause_table',
                 data: columnNameFill(dataDict["l2_cause_name"]["gbd"], "l2_cause_name"),
                 filter_dimensions: [l2_cause_name_dimGbd],
-                initialSortColumn: "l2_cause",
+                initialSortColumn: "L2 cause",
                 columns: [
                     {
-                        header: { text: "l2_cause" },
+                        header: { text: "L2 cause" },
                         cells: {
                             text: function (d) { return d.key; },
                         },

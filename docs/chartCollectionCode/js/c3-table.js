@@ -264,10 +264,16 @@
             case 'bar':
               return d3.select(this).classed('bar', true).style('width', column.value(d) / column.value_total * 100 + '%');
             case 'color':
-              // Assuming column.value(d) returns a value between -5 and 5
+              // Retrieve domain and range from column.vis_options
+              var domain = column.vis_options.styles.domain;
+              var range = column.vis_options.styles.range;
+              
+              // Create color scale using the retrieved domain and range
               var colorScale = d3.scale.linear()
-                                 .domain([0, 0.003, 0.05])
-                                 .range(['lightsalmon', 'lightyellow', 'lightgreen']); // Use yellow for the midpoint for a smooth transition
+                                 .domain(domain)
+                                 .range(range);
+              
+              // Apply color based on data value
               return d3.select(this).style('background-color', colorScale(column.value(d)));
             default:
               return d3.select(this).attr({
