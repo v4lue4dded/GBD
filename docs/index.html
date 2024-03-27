@@ -89,6 +89,8 @@
     <main style="display:none">
         <div id="gdb_year_table"></div>
         <div id="gdb_year_table2"></div>
+        <div id="gdb_sex_name_table"></div>
+        <div id="gdb_age_group_name_sorted_table"></div>
         <div id="gdb_location_name_table"></div>
         <div id="gdb_l1_cause_table"></div>
         <div id="gdb_l2_cause_table"></div>
@@ -100,13 +102,13 @@
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
                     // d3.tsv('data/df_measure.csv', function (row) {
-                        d3.tsv('data/df_measure_small.csv', function(row) {
+                    d3.tsv('data/df_measure_small.csv', function (row) {
                         return {
                             year: +row["year"],
+                            age_group_name_sorted: row["age_group_name_sorted"],
+                            sex_name: row["sex_name"],
                             location_name: row["location_name"],
-                            l1_cause_id: row["l1_cause_id"],
                             l1_cause_name: row["l1_cause_name"],
-                            l2_cause_id: row["l2_cause_id"],
                             l2_cause_name: row["l2_cause_name"],
                             deaths_val: +row["deaths_val"],
                             deaths_lower: +row["deaths_lower"],
@@ -131,6 +133,8 @@
                         return {
                             year: +row["year"],
                             location_name: row["location_name"],
+                            age_group_name_sorted: row["age_group_name_sorted"],
+                            sex_name: row["sex_name"],
                             pop_val: +row["pop_val"],
                             pop_upper: +row["pop_upper"],
                             pop_lower: +row["pop_lower"],
@@ -175,12 +179,16 @@
             // gbd
             var year_dimGbd = gbdXf.dimension(function (d) { return d.year; });
             var location_name_dimGbd = gbdXf.dimension(function (d) { return d.location_name; });
+            var sex_name_dimGbd = gbdXf.dimension(function (d) { return d.sex_name; });
+            var age_group_name_sorted_dimGbd = gbdXf.dimension(function (d) { return d.age_group_name_sorted; });
             var l1_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l1_cause_name; });
             var l2_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l2_cause_name; });
 
             // population
             var year_dimPopulation = populationXf.dimension(function (d) { return d.year; });
             var location_name_dimPopulation = populationXf.dimension(function (d) { return d.location_name; });
+            var age_group_name_sorted_dimPopulation = populationXf.dimension(function (d) { return d.age_group_name_sorted; });
+            var sex_name_dimPopulation = populationXf.dimension(function (d) { return d.sex_name; });
             var l1_cause_name_dimPopulation = populationXf.dimension(function (d) { return specialKey; });
             var l2_cause_name_dimPopulation = populationXf.dimension(function (d) { return specialKey; });
 
@@ -272,13 +280,6 @@
                 return rounded;
             }
 
-            year_dataGbd = year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
-            year_dataPopulation = year_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
-            location_name_dataGbd = location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
-            location_name_dataPopulation = location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all();
-            l1_cause_data = l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
-            l2_cause_data = l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all();
-
             var dataDict = {
                 "year": {
                     "gbd": year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
@@ -287,6 +288,14 @@
                 "location_name": {
                     "gbd": location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
                     "population": location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "sex_name": {
+                    "gbd": sex_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": sex_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "age_group_name_sorted": {
+                    "gbd": age_group_name_sorted_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": age_group_name_sorted_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
                 },
                 "l1_cause_name": {
                     "gbd": l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
@@ -297,7 +306,7 @@
                     "population": l2_cause_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
                 },
             };
-            
+
 
             console.log("diff in list")
             console.log([year_dimGbd, year_dimPopulation])
@@ -307,56 +316,57 @@
             const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
 
             const common_columns = [
-                    {
-                        // These columns use custom formatters to set the html content of the cell
-                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                        // These column also use the `vis` visualization support to render a bar
-                        // graph based on the cell value.
-                        header: { text: "deaths" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); }},
-                        sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightsalmon'
-                            }
+                {
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "deaths" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); } },
+                    sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
                         }
-                    }, {
-                        header: { text: "Years of live lost" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "yll_val")))); } },
-                        sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "yll_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightblue'
-                            }
+                    }
+                }, {
+                    header: { text: "Years of live lost" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "yll_val")))); } },
+                    sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
                         }
-                    },
-                    {
-                        // These columns use custom formatters to set the html content of the cell
-                        // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                        // These column also use the `vis` visualization support to render a bar
-                        // graph based on the cell value.
-                        header: { text: "Population" },
-                        cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
-                        sort: function (d) {return round_z(getVal("population", d.value, d.key, "pop_val")); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightgreen'
-                            }
+                    }
+                },
+                {
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "Population" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
+                    sort: function (d) { return round_z(getVal("population", d.value, d.key, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
                         }
-                    }, {
-                        header: { text: "Years of live lost per Person" },
-                        cells: { html: function (d) { return (d3.format(',')((getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val")).toFixed(3))); } },
-                        sort: function (d) { return getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val"); },
-                        vis: 'bar',
-                        vis_options: {
-                            styles: {
-                                'background-color': 'lightblue'
-                            }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': ['lightsalmon', 'lightyellow', 'lightgreen']
                         }
-                    },
+                    }
+                },
             ]
 
             function createDataTable({
@@ -386,6 +396,11 @@
                             mouseleave: function () {
                                 this.classList.remove('hover');
                             }
+                        }
+                    },
+                    cell_options: {
+                        styles: {
+                            'text-align': 'right',
                         }
                     },
                     handlers: {
@@ -428,8 +443,6 @@
                 initialSortColumn: "Year",
                 columns: [
                     {
-                        // The "year" column is styled to have a background that matches the color for the
-                        // year this country is in.
                         header: { text: "Year" },
                         cells: {
                             text: function (d) { return d.key; }
@@ -446,9 +459,39 @@
                 initialSortColumn: "location_name",
                 columns: [
                     {
-                        // The "location_name" column is styled to have a background that matches the color for the
-                        // location_name this country is in.
                         header: { text: "location_name" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_sex_name_table',
+                data: columnNameFill(dataDict["sex_name"]["gbd"], "sex_name"),
+                filter_dimensions: [sex_name_dimGbd, sex_name_dimPopulation],
+                initialSortColumn: "sex_name",
+                columns: [
+                    {
+                        header: { text: "sex_name" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_age_group_name_sorted_table',
+                data: columnNameFill(dataDict["age_group_name_sorted"]["gbd"], "age_group_name_sorted"),
+                filter_dimensions: [age_group_name_sorted_dimGbd, age_group_name_sorted_dimPopulation],
+                initialSortColumn: "age_group_name_sorted",
+                columns: [
+                    {
+                        header: { text: "age_group_name_sorted" },
                         cells: {
                             text: function (d) { return d.key; }
                         },
