@@ -107,7 +107,7 @@
         }
 
         function download_data() {
-            updateLoadingMessage(`download_data started: ${Math.round(performance.now())}ms since page load`);
+            updateLoadingMessage(`download_data started: ${Math.round(performance.now())}ms start`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {                    
                     // Using XMLHttpRequest to fetch the ZIP file
@@ -121,12 +121,12 @@
                             let zip = new JSZip();
                             zip.loadAsync(this.response)
                                 .then(function(zip) {
-                                    updateLoadingMessage(`parsing ZIP file: ${Math.round(performance.now())}ms since page load should take about 20 seconds`);
+                                    updateLoadingMessage(`parsing ZIP file: ${Math.round(performance.now())}ms start should take about 20 seconds`);
                                     // Assuming 'df_measure.csv' is the file name inside the ZIP
                                     return zip.file('df_measure.csv').async("string");
                                 })
                                 .then(function(csvContent) {
-                                    updateLoadingMessage(`CSV content obtained: ${Math.round(performance.now())}ms since page load`);
+                                    updateLoadingMessage(`CSV content obtained: ${Math.round(performance.now())}ms start`);
                                     
                                     // Remove potential Byte Order Mark (BOM)
                                     csvContent = csvContent.charCodeAt(0) === 0xFEFF ? csvContent.slice(1) : csvContent;
@@ -151,21 +151,21 @@
                                     });
                                     // Resolve the promise with the parsed data
                                     gbd_data = data;
-                                    updateLoadingMessage(`Data parsed and promise resolved: ${Math.round(performance.now())}ms since page load`);
+                                    updateLoadingMessage(`Data parsed and promise resolved: ${Math.round(performance.now())}ms start`);
                                     resolve();
                                 });
                         } else {
-                            updateLoadingMessage(`XHR request failed: ${Math.round(performance.now())}ms since page load`);
+                            updateLoadingMessage(`XHR request failed: ${Math.round(performance.now())}ms start`);
                             reject(new Error('Failed to load df_measure.zip'));
                         }
                     };
 
                     xhr.onerror = function() {
-                        updateLoadingMessage(`XHR encountered an error: ${Math.round(performance.now())}ms since page load`);
+                        updateLoadingMessage(`XHR encountered an error: ${Math.round(performance.now())}ms start`);
                         reject(new Error('Network error while loading df_measure.zip'));
                     };
 
-                    updateLoadingMessage(`loading ZIP file: ${Math.round(performance.now())}ms since page load should take about 8 seconds`);
+                    updateLoadingMessage(`loading ZIP file: ${Math.round(performance.now())}ms start should take about 8 seconds`);
                     xhr.send();
                 });
 
