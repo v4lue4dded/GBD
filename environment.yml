@@ -11,5 +11,7 @@ dependencies:
   - pip
   - psycopg2
   - openpyxl
+  - pyarrow
+  - fastparquet
   - pip:
-      - pprint  # pprint is part of the standard library, listed here just in case
+      - pprint

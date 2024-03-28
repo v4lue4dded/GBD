@@ -1,5 +1,6 @@
-*.csv
-*.zip
+data/*
+df_measure.csv
+dashboard_v*
 download_1/
 private
 .idea

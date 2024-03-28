@@ -11,7 +11,7 @@ import urllib
 engine = create_engine('postgresql://'+config.db_login["user"] +':'+ config.db_login["pw"]+'@localhost:5432/gbd')
 con = engine.connect()
 
-export_dir = 'docs\\data\\'
+export_dir = 'docs\\data_doc\\'
 
 df_basis = pd.read_sql('select * from gbd.db04_modelling.export_basis_population', con=engine)
 df_basis.to_csv(f"{export_dir}df_basis.csv", index = False, sep = '\t', encoding='utf-8-sig')
@@ -23,7 +23,9 @@ df_population.to_csv(f"{export_dir}df_population.csv", index = False, sep = '\t'
 
 df_measure = pd.read_sql('select * from gbd.db04_modelling.export_measure', con=engine)
 df_measure.to_csv(f"{export_dir}df_measure.csv", index = False, sep = '\t', encoding='utf-8-sig')
+df_measure.to_parquet(f"{export_dir}df_measure.parquet")
 df_measure.loc[lambda df: df.location_id < 10].to_csv(f"{export_dir}df_measure_small.csv", index = False, sep = '\t', encoding='utf-8-sig')
+df_measure.loc[lambda df: df.location_id < 10].to_parquet(f"{export_dir}df_measure_small.parquet", index = False)
 # print(config.power_bi_type_cast(df_measure), df_measure.shape)
 
 df_un_country_info = pd.read_sql('select * from gbd.db03_clean_tables.un_country_info', con=engine)
