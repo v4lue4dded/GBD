@@ -102,26 +102,34 @@
         var gbd_data = [];
         var population_data = [];
         function download_data() {
+            console.log(`download_data started: ${performance.now()}ms since page load`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
+                    console.log(`Starting p1 promise: ${performance.now()}ms since page load`);
+                    
                     // Using XMLHttpRequest to fetch the ZIP file
                     let xhr = new XMLHttpRequest();
                     xhr.open('GET', 'data_doc/df_measure.zip', true);
                     xhr.responseType = 'blob'; // Get the data as a Blob
 
                     xhr.onload = function(e) {
+                        console.log(`XHR onload triggered: ${performance.now()}ms since page load`);
+                        
                         if (this.status === 200) {
                             // Use JSZip to read the ZIP file
                             let zip = new JSZip();
                             zip.loadAsync(this.response)
                                 .then(function(zip) {
+                                    console.log(`ZIP file loaded: ${performance.now()}ms since page load`);
                                     // Assuming 'df_measure.csv' is the file name inside the ZIP
                                     return zip.file('df_measure.csv').async("string");
                                 })
                                 .then(function(csvContent) {
+                                    console.log(`CSV content obtained: ${performance.now()}ms since page load`);
+                                    
                                     // Remove potential Byte Order Mark (BOM)
                                     csvContent = csvContent.charCodeAt(0) === 0xFEFF ? csvContent.slice(1) : csvContent;
-                                    // Now we have the CSV content, parse it with d3.csv.parse
+                                    // Now we have the CSV content, parse it with d3.tsv.parse
                                     let data = d3.tsv.parse(csvContent, function(row) {
                                         return {
                                             year: +row["year"],
@@ -142,21 +150,24 @@
                                     });
                                     // Resolve the promise with the parsed data
                                     gbd_data = data;
+                                    console.log(`Data parsed and promise resolved: ${performance.now()}ms since page load`);
                                     resolve();
                                 });
                         } else {
+                            console.log(`XHR request failed: ${performance.now()}ms since page load`);
                             reject(new Error('Failed to load df_measure.zip'));
                         }
                     };
 
                     xhr.onerror = function() {
+                        console.log(`XHR encountered an error: ${performance.now()}ms since page load`);
                         reject(new Error('Network error while loading df_measure.zip'));
                     };
 
+                    console.log(`Sending XHR: ${performance.now()}ms since page load`);
                     xhr.send();
                 });
 
-                // Assuming you want to keep loading df_population.csv directly, without changes
                 let p2 = new Promise((resolve, reject) => {
                     d3.tsv('data_doc/df_population.csv', function (row) {
                         return {
