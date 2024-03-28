@@ -115,9 +115,7 @@
                     xhr.open('GET', 'data_doc/df_measure.zip', true);
                     xhr.responseType = 'blob'; // Get the data as a Blob
 
-                    xhr.onload = function(e) {
-                        updateLoadingMessage(`loading ZIP file: ${Math.round(performance.now())}ms since page load should take about 8 seconds`);
-                        
+                    xhr.onload = function(e) {                        
                         if (this.status === 200) {
                             // Use JSZip to read the ZIP file
                             let zip = new JSZip();
@@ -167,7 +165,7 @@
                         reject(new Error('Network error while loading df_measure.zip'));
                     };
 
-                    updateLoadingMessage(`Sending XHR: ${Math.round(performance.now())}ms since page load`);
+                    updateLoadingMessage(`loading ZIP file: ${Math.round(performance.now())}ms since page load should take about 8 seconds`);
                     xhr.send();
                 });
 
