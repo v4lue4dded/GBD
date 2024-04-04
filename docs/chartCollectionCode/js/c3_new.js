@@ -883,10 +883,8 @@ Cls.initClass();
 
 // A mixin to add support for registering and triggering events
 c3.Dispatch = class Dispatch {
-    constructor() { 
-        this.dispatcher = {};
-        this.trigger = this.trigger.bind(this);
-    }
+    constructor() { this.dispatcher = {}; }
+
     // Register an event handler to catch events fired by the visualization.
     // Multiple handlers can be set by specifying a namespace for the event name like `event.namespace`
     // Remove a handler by passing `null` for the handler
@@ -993,7 +991,7 @@ c3.Dispatch = class Dispatch {
 //       ]
 //   });
 //   my_table.on('redraw', function() { console.log("Table redraw was called; add customizations here."); });
-Cls = (c3.Base = class Base extends c3.Dispatch {
+Cls = (c3.Base = class Base {
     static initClass() {
         this._next_uid = 0;
         // [String, DOM node] Optional selector string or DOM node to attach visualization to.
@@ -1022,12 +1020,12 @@ Cls = (c3.Base = class Base extends c3.Dispatch {
     }
 
     constructor(opt) {
-        super();
         this.render = this.render.bind(this);
         this.resize = this.resize.bind(this);
         this.redraw = this.redraw.bind(this);
         this.restyle = this.restyle.bind(this);
         initialize();
+        c3.util.extend(this, new c3.Dispatch);
         c3.util.extend(this, opt);
         this.uid = c3.Base._next_uid++;
     }
