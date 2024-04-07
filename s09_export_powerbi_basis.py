@@ -92,11 +92,19 @@ yll_upper = lambda x: round(x.yll_upper),
 
 categorical_cols = ['year', 'location_name', 'age_group_name_sorted', 'sex_name', 'l1_cause_name', 'l2_cause_name']
 df_measure_narrow_encoded, decoding_dict = encode_dataframe(df_measure_narrow, categorical_cols)
-chunk_file_names = save_df_in_chunks(df_measure_narrow_encoded, 200000, f"{export_dir}df_measure_narrow_encoded")
+chunk_file_names = save_df_in_chunks(df_measure_narrow_encoded, 100000, f"{export_dir}df_measure_narrow_encoded")
 with open(f"{export_dir}df_measure_narrow_import_dict.json", 'w') as json_file:
     json.dump({
         "decoding_dict": decoding_dict,
         "chunk_file_names": chunk_file_names,
+        }, json_file)
+
+df_measure_narrow_small_encoded = df_measure_narrow_encoded.loc[lambda df: df.location_name < 5]
+chunk_file_names_small = save_df_in_chunks(df_measure_narrow_small_encoded, 10000, f"{export_dir}df_measure_narrow_small_encoded")
+with open(f"{export_dir}df_measure_narrow_small_import_dict.json", 'w') as json_file:
+    json.dump({
+        "decoding_dict": decoding_dict,
+        "chunk_file_names": chunk_file_names_small,
         }, json_file)
 
 df_un_country_info = pd.read_sql('select * from gbd.db03_clean_tables.un_country_info', con=engine)

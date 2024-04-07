@@ -1,109 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
-<body>
-    <main style="display:none">
-        <div>
-            <div id='subjectA' style="float: left;"></div>
-            <div id='nameA'></div>
-            <div id='markA' style="float: right;"></div>
-            <div id='subjectB' style="float: left;"></div>
-            <div id='nameB'></div>
-            <div id='markB' style="float: right;"></div>
-        </div>
-    </main>
-    <script src="https://d3js.org/d3.v6.min.js"></script>
-    <script src="https://d3js.org/d3-scale-chromatic.v2.min.js"></script>
-    <script src="chartCollectionCode/lib/crossfilter.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dc/4.2.7/dc.min.js"></script>
-    <script>
-        // Set a default color scheme for all charts
-        dc.config.defaultColors(d3.schemeSet3);
-
-        // Dataset A 
-        var datasetA = [{"Subject":"s1","Name":"A","Mark":"50"},{"Subject":"s2","Name":"B","Mark":"40"},{"Subject":"s3","Name":"C","Mark":"40"}];
-        // Dataset B
-        var datasetB = [{"Subject":"s1","Name":"A","Mark":"50"},{"Subject":"s2","Name":"B","Mark":"40"},{"Subject":"C3","Name":"C","Mark":"40"}];
-
-        // Initialization of crossfilter for the datasetA, datasetB
-        var CFA = crossfilter(datasetA);
-        var CFB = crossfilter(datasetB);
-
-        // Creating the dimensions (make sure this is done after initializing crossfilters)
-        var subject_DA = CFA.dimension(function(d) { return d.Subject; });
-        var name_DA = CFA.dimension(function(d) { return d.Name; });
-        var subject_DB = CFB.dimension(function(d) { return d.Subject; });
-        var name_DB = CFB.dimension(function(d) { return d.Name; });
-        
-        // Mirror dimensions (for cross-dataset filtering)
-        var mirror_subject_DA = subject_DA; // Simplified for demonstration
-        var mirror_name_DA = name_DA;       // Simplified for demonstration
-        var mirror_subject_DB = subject_DB; // Simplified for demonstrationf
-        var mirror_name_DB = name_DB;       // Simplified for demonstration
-
-        function mirror_dimension() {
-            var dims = Array.prototype.slice.call(arguments, 0);
-            function mirror(fname) {
-                return function(v) {
-                    dims.forEach(function(dim) {
-                        dim[fname](v);
-                    });
-                };
-            }
-            return {
-                filter: mirror('filter'),
-                filterExact: mirror('filterExact'),
-                filterRange: mirror('filterRange'),
-                filterFunction: mirror('filterFunction')
-            };
+<html>
+<head>
+    <style>
+        .container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 3px solid #73AD21;
         }
+        .top-layer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
+        }
+        .bottom-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(0, 0, 255, 0.5); /* Semi-transparent blue */
+        }
+    </style>
+</head>
+<body>
 
-        // Define charts
-        var subjectAChart = dc.barChart('#subjectA');
-        var subjectBChart = dc.barChart('#subjectB');
-        var nameAChart = dc.pieChart('#nameA');
-        var nameBChart = dc.pieChart('#nameB');
-        // The rest of your code remains unchanged until you get to the chart color settings...
+<div class="container">
+    <div class="bottom-layer"></div>
+    <div class="top-layer"></div>
+</div>
 
-        // Adjusting the colors for each chart with an alternative scheme from d3-scale-chromatic
-        subjectAChart
-            .width(250).height(200)
-            .margins({top: 5, left: 10, right: 10, bottom: 20})
-            .dimension(mirror_dimension(subject_DA, mirror_subject_DB))
-            .group(subject_DA)
-            .gap(2)
-            .title(function(d){ return d.key; })
-            .label(function (d) { return d.key; })
-            .elasticX(true)
-            .colors(d3.scaleOrdinal(d3.schemeSet3)) // Adjusted
-            .xAxis().ticks(4);
-
-        subjectBChart
-            .width(250).height(200)
-            .margins({top: 5, left: 10, right: 10, bottom: 20})
-            .dimension(mirror_dimension(subject_DB, mirror_subject_DA))
-            .group(subject_DB)
-            .gap(2)
-            .title(function(d){ return d.key; })
-            .label(function (d) { return d.key; })
-            .elasticX(true)
-            .colors(d3.scaleOrdinal(d3.schemeSet2)) // Adjusted
-            .xAxis().ticks(4);
-
-        nameAChart
-            .width(200).height(200)
-            .dimension(mirror_dimension(name_DA, mirror_name_DB))
-            .group(name_DA)
-            .colors(d3.scaleOrdinal(d3.schemeSet1)) // Adjusted
-            .innerRadius(25);
-
-        nameBChart
-            .width(200).height(200)
-            .dimension(mirror_dimension(name_DB, mirror_name_DA))
-            .group(name_DB)
-            .colors(d3.scaleOrdinal(d3.schemeAccent)) // Adjusted
-            .innerRadius(25);
-
-        dc.renderAll();
-    </script>
 </body>
 </html>
