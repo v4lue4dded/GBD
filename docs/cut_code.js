@@ -31,3 +31,7 @@ function synchronizeFilters() {
         return filtered_year.has(d);
     });
 }
+
+
+
+
