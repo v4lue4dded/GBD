@@ -184,22 +184,26 @@
                 }
                 const { chunk_file_names: chunkFileNames, decoding_dict: decodingDict } = importInfo;
                 updateLoadingMessage(`info read at: ${Math.round(performance.now())}ms`);
-                // Initiate all load operations in parallel
-                const loadPromises = chunkFileNames.map(fileName => {
+
+                // Initiate all load and decode operations in parallel
+                const decodePromises = chunkFileNames.map(fileName => {
                     const chunkPath = `${basePath}${fileName}`;
-                    return loadDataAndReconstruct(chunkPath); // Don't await here
+                    return loadDataAndReconstruct(chunkPath)
+                        .then(chunkData => {
+                            // return chunkData; // if decoding not wanted
+                            return decodeData(chunkData, decodingDict);
+                        });
                 });
-                updateLoadingMessage(`requests send read at: ${Math.round(performance.now())}ms`);
+                updateLoadingMessage(`requests sent read at: ${Math.round(performance.now())}ms`);
+
                 // Wait for all promises to resolve
-                const chunks = await Promise.all(loadPromises);
+                const decodedChunks = await Promise.all(decodePromises);
 
                 updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
-                let combinedData = [].concat(...chunks); // Flatten the array of arrays
+                let combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
                 updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
 
-                const decodedData = decodeData(combinedData, decodingDict);
-                updateLoadingMessage(`data decoded at: ${Math.round(performance.now())}ms`);
-                return decodedData; // Return the decoded data
+                return combinedData; // Return the combined decoded data
             } catch (error) {
                 console.error("Error in data loading and decoding workflow:", error);
                 return [];
@@ -246,7 +250,7 @@
                 });
 
                 Promise.all([p1, p2]).then(() => {
-                    d3.selectAll('#waiting').remove();
+                    // d3.selectAll('#waiting').remove();
                     d3.selectAll('main').style('display', '');
                     resolve();
                 }).catch(error => {
