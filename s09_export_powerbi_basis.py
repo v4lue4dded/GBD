@@ -47,6 +47,8 @@ def save_df_in_chunks(df, chunk_size, export_location):
         chunk = df[i*chunk_size:(i+1)*chunk_size]
         chunk_file_name = f'{export_location}_chunk_{i}.json'
         chunk.to_json(chunk_file_name, orient='split', index=False)
+        # chunk_file_name = f'{export_location}_chunk_{i}.parquet'
+        # chunk.to_parquet(chunk_file_name, index=False)        
         chunk_file_names.append(os.path.basename(chunk_file_name))
         print(f"Saved {chunk_file_name}")
     return chunk_file_names
@@ -92,7 +94,7 @@ yll_upper = lambda x: round(x.yll_upper),
 
 categorical_cols = ['year', 'location_name', 'age_group_name_sorted', 'sex_name', 'l1_cause_name', 'l2_cause_name']
 df_measure_narrow_encoded, decoding_dict = encode_dataframe(df_measure_narrow, categorical_cols)
-chunk_file_names = save_df_in_chunks(df_measure_narrow_encoded, 100000, f"{export_dir}df_measure_narrow_encoded")
+chunk_file_names = save_df_in_chunks(df_measure_narrow_encoded, 200000, f"{export_dir}df_measure_narrow_encoded")
 with open(f"{export_dir}df_measure_narrow_import_dict.json", 'w') as json_file:
     json.dump({
         "decoding_dict": decoding_dict,
@@ -100,7 +102,7 @@ with open(f"{export_dir}df_measure_narrow_import_dict.json", 'w') as json_file:
         }, json_file)
 
 df_measure_narrow_small_encoded = df_measure_narrow_encoded.loc[lambda df: df.location_name < 5]
-chunk_file_names_small = save_df_in_chunks(df_measure_narrow_small_encoded, 10000, f"{export_dir}df_measure_narrow_small_encoded")
+chunk_file_names_small = save_df_in_chunks(df_measure_narrow_small_encoded, 20000, f"{export_dir}df_measure_narrow_small_encoded")
 with open(f"{export_dir}df_measure_narrow_small_import_dict.json", 'w') as json_file:
     json.dump({
         "decoding_dict": decoding_dict,

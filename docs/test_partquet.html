@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+(async () => {
+    const { parquetRead } = await import("https://cdn.jsdelivr.net/npm/hyparquet@0.7.4/src/hyparquet.js");
+    const res = await fetch("data_doc/df_measure_narrow_encoded_chunk_0.parquet");
+    const arrayBuffer = await res.arrayBuffer();
+    console.log("blub");
+    await parquetRead({
+      file: arrayBuffer,
+      onComplete: data => console.log(data)
+    });
+    console.log("done");
+})();
+</script>
+</body>
+</html>
