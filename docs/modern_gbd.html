@@ -140,11 +140,11 @@
             }
         }
         // Example usage
-        loadDataAndReconstruct("data_doc/df_measure_narrow_encoded_chunk_0.json").then(reconstructedData => {
-            console.log("reconstructedData JSNO");
-            console.log(reconstructedData);
-            // Do something with the reconstructed data
-        });
+        // loadDataAndReconstruct("data_doc/df_measure_narrow_encoded_chunk_0.json").then(reconstructedData => {
+        //     console.log("reconstructedData JSNO");
+        //     console.log(reconstructedData);
+        //     // Do something with the reconstructed data
+        // });
 
         // async function loadDataFromParquet(url) {
         //     try {
@@ -273,7 +273,7 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
                     .then(decodedData => {
                         console.log("Decoded Data:");
                         console.log(decodedData);
