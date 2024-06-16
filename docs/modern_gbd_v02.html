@@ -214,6 +214,7 @@
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
                     loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                     .then(decodedData => {
                         console.log("Decoded Data:");
                         console.log(decodedData);
@@ -261,19 +262,19 @@
 
         /**
          * Create dimensions for multiple datasets from raw data.
-         * @param {Object} dataDict - Dictionary of raw data arrays with their names as keys.
+         * @param {Object} dataSourceDict - Dictionary of raw data arrays with their names as keys.
          * @param {Array} dimensionNames - List of dimension names to create.
          * @param {*} specialKey - A placeholder value to use for excluded dimensions.
          * @returns {Object} - An object containing crossfilter instances and dimensions for each dataset.
          */
-         function createDimensionsForData(dataDict, dimensionNames, specialKey) {
+         function createDimensionsForData(dataSourceDict, dimensionNames, specialKey) {
             // Initialize an empty object to store crossfilters and dimensions
             var result = {};
 
             // Iterate over each dataset entry in the data dictionary
-            for (var dataType in dataDict) {
-                if (dataDict.hasOwnProperty(dataType)) {
-                    var rawData = dataDict[dataType];
+            for (var dataType in dataSourceDict) {
+                if (dataSourceDict.hasOwnProperty(dataType)) {
+                    var rawData = dataSourceDict[dataType];
                     // Create a Crossfilter instance from the raw data
                     var crossfilterInstance = crossfilter(rawData);
                     // Initialize a dictionary to store dimensions for the current crossfilter
@@ -310,59 +311,43 @@
             return result;
         }
 
-        // ###########################################################################
-        // ## Create and Render the Charts
-        // This function will create the various charts and tables for this example.
-        function render() {
-            // ### Prepare the data
-            // Output the data set to the console if you want to take a look.
-            console.log(gbd_data);
-            // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
-
-            var specialKey = "specialKeyGKQ0W8G8OX"
-
-            // List of dimension names
-            // Dictionary of crossfilters
-            var dataDict = {
-                gbd: gbd_data,
-                population: population_data
+        /**
+         * Generates aggregation functions for the given columns.
+         * @param {Array} columns - List of columns to aggregate.
+         * @returns {Object} - An object containing add, remove, and initial functions for the specified columns.
+         */
+         function createAggFunctions(columns) {
+            return {
+                add: function(p, v) {
+                    columns.forEach(function(column) {
+                        p[column] += v[column];
+                    });
+                    return p;
+                },
+                remove: function(p, v) {
+                    columns.forEach(function(column) {
+                        p[column] -= v[column];
+                    });
+                    return p;
+                },
+                initial: function() {
+                    var initialObject = {};
+                    columns.forEach(function(column) {
+                        initialObject[column] = 0;
+                    });
+                    return initialObject;
+                }
             };
-
-            // List of dimension names
-            var dimensionNames = [
-                'year',
-                'location_name',
-                'sex_name',
-                'age_group_name_sorted',
-                'l1_cause_name',
-                'l2_cause_name'
-            ];
-
-            var CFDict = createDimensionsForData(dataDict, dimensionNames, specialKey);
-
-            // Output the dimensions
-            console.log(CFDict);
-
-
-            // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
-            // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
-            // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
-            // lets the user indicate when that needs to be done.
-            var charts = [];
-            function redraw() {
-                for (var _i = 0, charts_redraw = charts; _i < charts_redraw.length; _i++) {
-                    var chart = charts_redraw[_i];
-                    chart.redraw();
-                }
+        }
+        function round_z(value) {
+            let rounded = Math.round(value);
+            if (Math.sign(rounded) === -1 && Math.abs(rounded) === 0) {
+                return 0;
             }
-            function restyle() {
-                for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
-                    var chart = charts_restyle[_i];
-                    chart.restyle();
-                }
-            }
+            return rounded;
+        }
 
-            function deepClone(item) {
+        function deepClone(item) {
                 if (Array.isArray(item)) {
                     // Handle array
                     return item.map(deepClone);
@@ -385,81 +370,62 @@
                 }
             }
 
-            // Use fancy aggregation logic in order to keep track of how frequently a particular category appears at each filter level and switch on or off the amount of population that needs to be added based on this.
+        // ###########################################################################
+        // ## Create and Render the Charts
+        // This function will create the various charts and tables for this example.
+        function render() {
+            // ### Prepare the data
+            // Output the data set to the console if you want to take a look.
+            console.log(gbd_data);
+            // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
 
-            const getValForSearchKey = (data, searchKey, colName) => data.find(item => item.key === searchKey)?.value[colName];
+            var specialKey = "specialKeyGKQ0W8G8OX"
 
-            function reduceAddGbd(p, v) {
-                p.deaths_val += v.deaths_val
-                p.yll_val += v.yll_val
-                return p;
+            // List of dimension names
+            // Dictionary of crossfilters
+            var dataSourceDict = {
+                gbd: gbd_data,
+                population: population_data
             };
 
-            function reduceRemoveGbd(p, v) {
-                p.deaths_val -= v.deaths_val
-                p.yll_val -= v.yll_val
-                return p;
-            };
+            // List of dimension names
+            var dimensionNames = [
+                'year',
+                'location_name',
+                'sex_name',
+                'age_group_name_sorted',
+                'l1_cause_name',
+                'l2_cause_name'
+            ];
 
-            function reduceInitialGbd() {
-                return {
-                    deaths_val: 0,
-                    yll_val: 0,
-                };
-            };
+            var CFDict = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
 
-            function reduceAddPopulation(p, v) {
-                p.pop_val += v.pop_val
-                return p;
-            };
+            // Output the dimensions
+            console.log(CFDict);
 
-            function reduceRemovePopulation(p, v) {
-                p.pop_val -= v.pop_val
-                return p;
-            };
 
-            function reduceInitialPopulation() {
-                return {
-                    pop_val: 0,
-                };
-            };
-
-            function round_z(value) {
-                let rounded = Math.round(value);
-                if (Math.sign(rounded) === -1 && Math.abs(rounded) === 0) {
-                    return 0;
-                }
-                return rounded;
+            aggColumns = {
+                'gbd': ['deaths_val', 'yll_val'],
+                'population': ['pop_val']
             }
 
-            var dataDict = {
-                "year": {
-                    "gbd":   CFDict['gbd']['d']['year'].group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
-                    "population":   CFDict['population']['d']['year'].group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
-                },
-                "location_name": {
-                    "gbd":   CFDict['gbd']['d']['location_name'].group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
-                    "population":   CFDict['population']['d']['location_name'].group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
-                },
-                "sex_name": {
-                    "gbd":   CFDict['gbd']['d']['sex_name'].group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
-                    "population":   CFDict['population']['d']['sex_name'].group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
-                },
-                "age_group_name_sorted": {
-                    "gbd":   CFDict['gbd']['d']['age_group_name_sorted'].group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
-                    "population":   CFDict['population']['d']['age_group_name_sorted'].group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
-                },
-                "l1_cause_name": {
-                    "gbd":   CFDict['gbd']['d']['l1_cause_name'].group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
-                    "population":   CFDict['population']['d']['l1_cause_name'].group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
-                },
-                "l2_cause_name": {
-                    "gbd":   CFDict['gbd']['d']['l2_cause_name'].group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
-                    "population":   CFDict['population']['d']['l2_cause_name'].group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
-                },
-            };
+            // Create aggFunctions based on aggColumns
+            var aggFunctions = {};
+            for (var dataSource in aggColumns) {
+                if (aggColumns.hasOwnProperty(dataSource)) {
+                    aggFunctions[dataSource] = createAggFunctions(aggColumns[dataSource]);
+                }
+            }
 
-            const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            aggDict = {}
+            for (var dataSource in CFDict){
+                aggDict[dataSource] = {}
+                for (var dimension in CFDict[dataSource]['d']){
+                    aggDict[dataSource][dimension] = CFDict[dataSource]['d'][dimension].group().reduce(aggFunctions[dataSource].add, aggFunctions[dataSource].remove, aggFunctions[dataSource].initial).all();
+                }
+            }
+
+            const getVal = (dataSource, dimension, searchKey, valueCol) => aggDict[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
 
             const common_columns = [
                 {
@@ -516,6 +482,24 @@
                     }
                 },
             ]
+
+            // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
+            // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
+            // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
+            // lets the user indicate when that needs to be done.
+            var charts = [];
+            function redraw() {
+                for (var _i = 0, charts_redraw = charts; _i < charts_redraw.length; _i++) {
+                    var chart = charts_redraw[_i];
+                    chart.redraw();
+                }
+            }
+            function restyle() {
+                for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
+                    var chart = charts_restyle[_i];
+                    chart.restyle();
+                }
+            }
 
             function createDataTable({
                 anchorId,
@@ -588,7 +572,7 @@
 
             createDataTable({
                 anchorId: '#gdb_year_table',
-                data: columnNameFill(dataDict["year"]["gbd"], "year"),
+                data: columnNameFill(aggDict["gbd"]["year"], "year"),
                 filter_dimensions: [CFDict['gbd']['d']['year'], CFDict['population']['d']['year']],
                 initialSortColumn: "Year",
                 columns: [
@@ -604,7 +588,7 @@
 
             createDataTable({
                 anchorId: '#gdb_location_name_table',
-                data: columnNameFill(dataDict["location_name"]["gbd"], "location_name"),
+                data: columnNameFill(aggDict["gbd"]["location_name"], "location_name"),
                 filter_dimensions: [CFDict['gbd']['d']['location_name'], CFDict['population']['d']['location_name']],
                 initialSortColumn: "Population",
                 customOptions: {
@@ -626,7 +610,7 @@
 
             createDataTable({
                 anchorId: '#gdb_sex_name_table',
-                data: columnNameFill(dataDict["sex_name"]["gbd"], "sex_name"),
+                data: columnNameFill(aggDict["gbd"]["sex_name"], "sex_name"),
                 filter_dimensions: [CFDict['gbd']['d']['sex_name'], CFDict['population']['d']['sex_name']],
                 initialSortColumn: "Sex",
                 columns: [
@@ -642,7 +626,7 @@
 
             createDataTable({
                 anchorId: '#gdb_age_group_name_sorted_table',
-                data: columnNameFill(dataDict["age_group_name_sorted"]["gbd"], "age_group_name_sorted"),
+                data: columnNameFill(aggDict["gbd"]["age_group_name_sorted"], "age_group_name_sorted"),
                 filter_dimensions: [CFDict['gbd']['d']['age_group_name_sorted'], CFDict['population']['d']['age_group_name_sorted']],
                 initialSortColumn: "Age group",
                 columns: [
@@ -658,7 +642,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                data: columnNameFill(dataDict["l1_cause_name"]["gbd"], "l1_cause_name"),
+                data: columnNameFill(aggDict["gbd"]["l1_cause_name"], "l1_cause_name"),
                 filter_dimensions: [CFDict['gbd']['d']['l1_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
@@ -674,7 +658,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                data: columnNameFill(dataDict["l2_cause_name"]["gbd"], "l2_cause_name"),
+                data: columnNameFill(aggDict["gbd"]["l2_cause_name"], "l2_cause_name"),
                 filter_dimensions: [CFDict['gbd']['d']['l2_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
