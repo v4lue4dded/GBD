@@ -90,8 +90,8 @@
     <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
 
     <main style="display:none">
-        <div id="gdb_year_table"></div>
-        <div id="gdb_year_table2"></div>
+        <div id="gdb_year0_table"></div>
+        <div id="gdb_year1_table"></div>
         <div id="gdb_sex_name_table"></div>
         <div id="gdb_age_group_name_sorted_table"></div>
         <div id="gdb_location_name_table"></div>
@@ -213,8 +213,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                     .then(decodedData => {
                         console.log("Decoded Data:");
                         console.log(decodedData);
@@ -398,12 +398,6 @@
                 'l2_cause_name'
             ];
 
-            var CFDict = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
-
-            // Output the dimensions
-            console.log(CFDict);
-
-
             aggColumns = {
                 'gbd': ['deaths_val', 'yll_val'],
                 'population': ['pop_val']
@@ -417,25 +411,31 @@
                 }
             }
 
-            aggDict = {}
-            for (var dataSource in CFDict){
-                aggDict[dataSource] = {}
-                for (var dimension in CFDict[dataSource]['d']){
-                    aggDict[dataSource][dimension] = CFDict[dataSource]['d'][dimension].group().reduce(aggFunctions[dataSource].add, aggFunctions[dataSource].remove, aggFunctions[dataSource].initial).all();
+            function generateAggregationDict(CrossFilterDimesonsDict, aggregationFunctions) {
+                // Initialize an empty object to store the aggregated data
+                var aggregationDict = {};
+                for (var dataSource in CrossFilterDimesonsDict){
+                    aggregationDict[dataSource] = {}
+                    for (var dimension in CrossFilterDimesonsDict[dataSource]['d']){
+                        aggregationDict[dataSource][dimension] = CrossFilterDimesonsDict[dataSource]['d'][dimension].group().reduce(aggregationFunctions[dataSource].add, aggFunctions[dataSource].remove, aggFunctions[dataSource].initial).all();
+                    }
                 }
+                return aggregationDict;
             }
 
-            const getVal = (dataSource, dimension, searchKey, valueCol) => aggDict[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
+            const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
+            const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+
 
             const common_columns = [
                 {
-                    // These columns use custom formatters to set the html content of the cell
-                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                    // These column also use the `vis` visualization support to render a bar
-                    // graph based on the cell value.
                     header: { text: "Deaths" },
-                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); } },
-                    sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal0("gbd", d.value, d.key, "deaths_val")))); } },
+                    sort: function (d) { return round_z(getVal0("gbd", d.value, d.key, "deaths_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -445,8 +445,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost" },
-                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "yll_val")))); } },
-                    sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "yll_val")); },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal0("gbd", d.value, d.key, "yll_val")))); } },
+                    sort: function (d) { return round_z(getVal0("gbd", d.value, d.key, "yll_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -455,13 +455,9 @@
                     }
                 },
                 {
-                    // These columns use custom formatters to set the html content of the cell
-                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
-                    // These column also use the `vis` visualization support to render a bar
-                    // graph based on the cell value.
                     header: { text: "Population" },
-                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
-                    sort: function (d) { return round_z(getVal("population", d.value, d.key, "pop_val")); },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal0("population", d.value, d.key, "pop_val")))); } },
+                    sort: function (d) { return round_z(getVal0("population", d.value, d.key, "pop_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -470,9 +466,54 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")).toFixed(3))); } },
                     cell_options: { styles: { width: '5%' } }, // Set width for the first column cells
-                    sort: function (d) { return getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val"); },
+                    sort: function (d) { return getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': [0, 0.3, 1.5],
+                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                        }
+                    }
+                },
+                {
+                    header: { text: "Deaths" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal1("gbd", d.value, d.key, "deaths_val")))); } },
+                    sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal1("gbd", d.value, d.key, "yll_val")))); } },
+                    sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                },
+                {
+                    header: { text: "Population" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal1("population", d.value, d.key, "pop_val")))); } },
+                    sort: function (d) { return round_z(getVal1("population", d.value, d.key, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                    cell_options: { styles: { width: '5%' } }, // Set width for the first column cells
+                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -533,13 +574,13 @@
                     cell_options: {
                         styles: {
                             'text-align': 'right',
-                            "width": '20%',
+                            "width": '10%',
                         }
                     },
                     handlers: {
                         'select': function (selections) {
                             // Check if there are selections
-                            console.log(selections)
+                            // console.log(selections)
                             if (selections.length) {
                                 // Iterate over filter_dimensions and apply filter
                                 filter_dimensions.forEach(function (filter_dimension) {
@@ -571,13 +612,13 @@
             }
 
             createDataTable({
-                anchorId: '#gdb_year_table',
-                data: columnNameFill(aggDict["gbd"]["year"], "year"),
-                filter_dimensions: [CFDict['gbd']['d']['year'], CFDict['population']['d']['year']],
-                initialSortColumn: "Year",
+                anchorId: '#gdb_year0_table',
+                data: columnNameFill(aggDict0["gbd"]["year"], "year"),
+                filter_dimensions: [CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']],
+                initialSortColumn: "Year 0",
                 columns: [
                     {
-                        header: { text: "Year" },
+                        header: { text: "Year 0" },
                         cells: {
                             text: function (d) { return d.key; }
                         },
@@ -587,9 +628,26 @@
             });
 
             createDataTable({
+                anchorId: '#gdb_year1_table',
+                data: columnNameFill(aggDict1["gbd"]["year"], "year"),
+                filter_dimensions: [CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']],
+                initialSortColumn: "Year 1",
+                columns: [
+                    {
+                        header: { text: "Year 1" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+
+            createDataTable({
                 anchorId: '#gdb_location_name_table',
-                data: columnNameFill(aggDict["gbd"]["location_name"], "location_name"),
-                filter_dimensions: [CFDict['gbd']['d']['location_name'], CFDict['population']['d']['location_name']],
+                data: columnNameFill(aggDict0["gbd"]["location_name"], "location_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'],CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
                 initialSortColumn: "Population",
                 customOptions: {
                     "limit_rows": 10,
@@ -610,8 +668,8 @@
 
             createDataTable({
                 anchorId: '#gdb_sex_name_table',
-                data: columnNameFill(aggDict["gbd"]["sex_name"], "sex_name"),
-                filter_dimensions: [CFDict['gbd']['d']['sex_name'], CFDict['population']['d']['sex_name']],
+                data: columnNameFill(aggDict0["gbd"]["sex_name"], "sex_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'],CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
                 initialSortColumn: "Sex",
                 columns: [
                     {
@@ -626,8 +684,8 @@
 
             createDataTable({
                 anchorId: '#gdb_age_group_name_sorted_table',
-                data: columnNameFill(aggDict["gbd"]["age_group_name_sorted"], "age_group_name_sorted"),
-                filter_dimensions: [CFDict['gbd']['d']['age_group_name_sorted'], CFDict['population']['d']['age_group_name_sorted']],
+                data: columnNameFill(aggDict0["gbd"]["age_group_name_sorted"], "age_group_name_sorted"),
+                filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'],CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
                 initialSortColumn: "Age group",
                 columns: [
                     {
@@ -642,8 +700,8 @@
 
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                data: columnNameFill(aggDict["gbd"]["l1_cause_name"], "l1_cause_name"),
-                filter_dimensions: [CFDict['gbd']['d']['l1_cause_name']],
+                data: columnNameFill(aggDict0["gbd"]["l1_cause_name"], "l1_cause_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'],CFDDict1['gbd']['d']['l1_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
                     {
@@ -658,8 +716,8 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                data: columnNameFill(aggDict["gbd"]["l2_cause_name"], "l2_cause_name"),
-                filter_dimensions: [CFDict['gbd']['d']['l2_cause_name']],
+                data: columnNameFill(aggDict0["gbd"]["l2_cause_name"], "l2_cause_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'],CFDDict1['gbd']['d']['l2_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
                     {
