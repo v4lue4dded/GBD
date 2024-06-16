@@ -119,10 +119,6 @@
                 const jsonData = await response.json();
 
                 const { columns, data } = jsonData;
-                // console.log("columns")                
-                // console.log(columns)                
-                // console.log("data")                
-                // console.log(data)                
                 console.time("data_map")
                 result = data.map(row => {
                     const rowObj = {};
@@ -132,7 +128,6 @@
                     return rowObj;
                 });
                 console.timeEnd("data_map")
-                // updateLoadingMessage(`return json at: ${Math.round(performance.now())}ms`);
                 return result
             } catch (error) {
                 console.error("Error loading or parsing data:", error);
