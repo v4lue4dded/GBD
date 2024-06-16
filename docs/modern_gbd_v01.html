@@ -90,8 +90,8 @@
     <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
 
     <main style="display:none">
-        <div id="gdb_year0_table"></div>
-        <div id="gdb_year1_table"></div>
+        <div id="gdb_year_table"></div>
+        <div id="gdb_year_table2"></div>
         <div id="gdb_sex_name_table"></div>
         <div id="gdb_age_group_name_sorted_table"></div>
         <div id="gdb_location_name_table"></div>
@@ -107,7 +107,7 @@
         }
         async function loadDataAndReconstruct(url) {
             try {
-                updateLoadingMessage(`start json at: ${Math.round(performance.now())}ms`);
+                // updateLoadingMessage(`start json at: ${Math.round(performance.now())}ms`);
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`Network response was not ok for ${url}`);
@@ -119,6 +119,10 @@
                 const jsonData = await response.json();
 
                 const { columns, data } = jsonData;
+                // console.log("columns")                
+                // console.log(columns)                
+                // console.log("data")                
+                // console.log(data)                
                 console.time("data_map")
                 result = data.map(row => {
                     const rowObj = {};
@@ -128,12 +132,68 @@
                     return rowObj;
                 });
                 console.timeEnd("data_map")
+                // updateLoadingMessage(`return json at: ${Math.round(performance.now())}ms`);
                 return result
             } catch (error) {
                 console.error("Error loading or parsing data:", error);
                 return []; // Optionally return null or undefined, depending on how you want to handle this case.
             }
         }
+        // Example usage
+        // loadDataAndReconstruct("data_doc/df_measure_narrow_encoded_chunk_0.json").then(reconstructedData => {
+        //     console.log("reconstructedData JSNO");
+        //     console.log(reconstructedData);
+        //     // Do something with the reconstructed data
+        // });
+
+        // async function loadDataFromParquet(url) {
+        //     try {
+        //         updateLoadingMessage(`start parquet at: ${Math.round(performance.now())}ms`);
+        //         const { parquetRead, parquetMetadata } = await import("https://cdn.jsdelivr.net/npm/hyparquet@0.7.4/src/hyparquet.min.js");
+        //         updateLoadingMessage(`parquet function load at: ${Math.round(performance.now())}ms`);
+        //         const res = await fetch(url);
+        //         const arrayBuffer = await res.arrayBuffer();
+        //         let metadata = parquetMetadata(arrayBuffer);
+        //         updateLoadingMessage(`parquet fetch at: ${Math.round(performance.now())}ms`);
+        //         console.log("metadata.schema")
+        //         console.log(metadata.schema)
+
+        //         // Extracting column names from metadata
+        //         // Filter out the "schema" entry before creating the array of column names
+        //         const columnNames = metadata.schema.filter(column => column.name !== 'schema').map(column => column.name);
+        //         // console.log(columnNames);
+        //         let result = [];
+        //         await parquetRead({
+        //             file: arrayBuffer,
+        //             onComplete: data => {
+        //                 // Transform each row from an array to an object
+        //                 updateLoadingMessage(`read parquet at: ${Math.round(performance.now())}ms`);
+        //                 result = data.map(row => {
+        //                     let obj = {};
+        //                     row.forEach((value, index) => {
+        //                         // Assigning values to corresponding column names
+        //                         obj[columnNames[index]] = value;
+        //                     });
+        //                     // updateLoadingMessage(`transformed parquet at: ${Math.round(performance.now())}ms`);
+        //                     return obj;
+        //                 });
+        //             }
+        //         });
+        //         updateLoadingMessage(`return parquet at: ${Math.round(performance.now())}ms`);
+        //         return result;
+
+        //     } catch (error) {
+        //         console.error("Error loading or parsing Parquet data:", error);
+        //         return []; // Or handle the error as you see fit
+        //     }
+        // }
+
+        // // Example usage
+        // loadDataFromParquet("data_doc/df_measure_narrow_encoded_chunk_0.parquet").then(reconstructedData => {
+        //     console.log("reconstructedData Parquet");
+        //     console.log(reconstructedData);
+        //     // Do something with the reconstructed data
+        // });
 
         async function decodeData(combinedData, decodingDict) {
             try {
@@ -213,17 +273,16 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
-                        .then(decodedData => {
-                            console.log("Decoded Data:");
-                            console.log(decodedData);
-                            gbd_data = decodedData;
-                            resolve();
-                        })
-                        .catch(error => {
-                            console.error("Error processing data:", error);
-                        });
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    .then(decodedData => {
+                        console.log("Decoded Data:");
+                        console.log(decodedData);
+                        gbd_data = decodedData;
+                        resolve();
+                    })
+                    .catch(error => {
+                        console.error("Error processing data:", error);
+                    });
 
                 });
 
@@ -249,7 +308,7 @@
                 });
 
                 Promise.all([p1, p2]).then(() => {
-                    d3.selectAll('#waiting').remove();
+                    // d3.selectAll('#waiting').remove();
                     d3.selectAll('main').style('display', '');
                     resolve();
                 }).catch(error => {
@@ -257,121 +316,6 @@
                     reject(error);
                 });
             });
-        }
-
-
-        /**
-         * Create dimensions for multiple datasets from raw data.
-         * @param {Object} dataSourceDict - Dictionary of raw data arrays with their names as keys.
-         * @param {Array} dimensionNames - List of dimension names to create.
-         * @param {*} specialKey - A placeholder value to use for excluded dimensions.
-         * @returns {Object} - An object containing crossfilter instances and dimensions for each dataset.
-         */
-        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey) {
-            // Initialize an empty object to store crossfilters and dimensions
-            var result = {};
-
-            // Iterate over each dataset entry in the data dictionary
-            for (var dataType in dataSourceDict) {
-                if (dataSourceDict.hasOwnProperty(dataType)) {
-                    var rawData = dataSourceDict[dataType];
-                    // Create a Crossfilter instance from the raw data
-                    var crossfilterInstance = crossfilter(rawData);
-                    // Initialize a dictionary to store dimensions for the current crossfilter
-                    var dimensions = {};
-
-                    // Get the first record from the dataset to check available dimensions
-                    var firstRecord = rawData.length > 0 ? rawData[0] : null;
-
-                    // Iterate over each dimension name to create dimensions
-                    for (var i = 0; i < dimensionNames.length; i++) {
-                        var dimensionName = dimensionNames[i];
-
-                        if (firstRecord && firstRecord.hasOwnProperty(dimensionName)) {
-                            // If the dimension is available, create it normally
-                            dimensions[dimensionName] = crossfilterInstance.dimension(function (d) {
-                                return d[dimensionName];
-                            });
-                        } else {
-                            // If the dimension is not available, use the specialKey placeholder
-                            dimensions[dimensionName] = crossfilterInstance.dimension(function (d) {
-                                return specialKey;
-                            });
-                        }
-                    }
-
-                    // Store the crossfilter instance and its dimensions in the result
-                    result[dataType] = {
-                        cf: crossfilterInstance,
-                        d: dimensions
-                    };
-                }
-            }
-
-            return result;
-        }
-
-        /**
-         * Generates aggregation functions for the given columns.
-         * @param {Array} columns - List of columns to aggregate.
-         * @returns {Object} - An object containing add, remove, and initial functions for the specified columns.
-         */
-        function createAggFunctions(columns) {
-            return {
-                add: function (p, v) {
-                    columns.forEach(function (column) {
-                        p[column] += v[column];
-                    });
-                    return p;
-                },
-                remove: function (p, v) {
-                    columns.forEach(function (column) {
-                        p[column] -= v[column];
-                    });
-                    return p;
-                },
-                initial: function () {
-                    var initialObject = {};
-                    columns.forEach(function (column) {
-                        initialObject[column] = 0;
-                    });
-                    return initialObject;
-                }
-            };
-        }
-        function round_z(value) {
-            let rounded = Math.round(value);
-            if (Math.sign(rounded) === -1 && Math.abs(rounded) === 0) {
-                return 0;
-            }
-            return rounded;
-        }
-
-        function bigNStyle(value) {
-            return d3.format(',')(round_z(value));
-        }
-
-        function deepClone(item) {
-            if (Array.isArray(item)) {
-                // Handle array
-                return item.map(deepClone);
-            } else if (typeof item === 'object' && item !== null) {
-                // Handle object
-                if (typeof item.clone === 'function') {
-                    // If the object has a custom clone method, use it.
-                    return item.clone();
-                } else {
-                    // Else, create a shallow copy and deep clone any properties
-                    const clone = {};
-                    for (const [key, value] of Object.entries(item)) {
-                        clone[key] = deepClone(value);
-                    }
-                    return clone;
-                }
-            } else {
-                // Primitive types can be returned directly
-                return item;
-            }
         }
 
         // ###########################################################################
@@ -382,149 +326,29 @@
             // Output the data set to the console if you want to take a look.
             console.log(gbd_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
-
+            var gbdXf = crossfilter(gbd_data);
+            var populationXf = crossfilter(population_data);
             var specialKey = "specialKeyGKQ0W8G8OX"
 
-            // List of dimension names
-            // Dictionary of crossfilters
-            var dataSourceDict = {
-                gbd: gbd_data,
-                population: population_data
-            };
+            // Prepare the Crossfilter **dimensions** we can filter the data on.
+            // With this we can filter based on country, region, year
+            // Notice the _region_ dimension is added even though the dataset doesn't link directly to
+            // a region.
+            // gbd
+            var year_dimGbd = gbdXf.dimension(function (d) { return d.year; });
+            var location_name_dimGbd = gbdXf.dimension(function (d) { return d.location_name; });
+            var sex_name_dimGbd = gbdXf.dimension(function (d) { return d.sex_name; });
+            var age_group_name_sorted_dimGbd = gbdXf.dimension(function (d) { return d.age_group_name_sorted; });
+            var l1_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l1_cause_name; });
+            var l2_cause_name_dimGbd = gbdXf.dimension(function (d) { return d.l2_cause_name; });
 
-            // List of dimension names
-            var dimensionNames = [
-                'year',
-                'location_name',
-                'sex_name',
-                'age_group_name_sorted',
-                'l1_cause_name',
-                'l2_cause_name'
-            ];
-
-            aggColumns = {
-                'gbd': ['deaths_val', 'yll_val'],
-                'population': ['pop_val']
-            }
-
-            // Create aggFunctions based on aggColumns
-            var aggFunctions = {};
-            for (var dataSource in aggColumns) {
-                if (aggColumns.hasOwnProperty(dataSource)) {
-                    aggFunctions[dataSource] = createAggFunctions(aggColumns[dataSource]);
-                }
-            }
-
-            function generateAggregationDict(CrossFilterDimesonsDict, aggregationFunctions) {
-                // Initialize an empty object to store the aggregated data
-                var aggregationDict = {};
-                for (var dataSource in CrossFilterDimesonsDict) {
-                    aggregationDict[dataSource] = {}
-                    for (var dimension in CrossFilterDimesonsDict[dataSource]['d']) {
-                        aggregationDict[dataSource][dimension] = CrossFilterDimesonsDict[dataSource]['d'][dimension].group().reduce(aggregationFunctions[dataSource].add, aggFunctions[dataSource].remove, aggFunctions[dataSource].initial).all();
-                    }
-                }
-                return aggregationDict;
-            }
-
-            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
-            var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
-            const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
-            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
-            var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
-            const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
-
-
-            const common_columns = [
-                {
-                    header: { text: "Population" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("population", d.value, d.key, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.value, d.key, "pop_val"))); } },
-                    sort: function (d) { return round_z(getVal1("population", d.value, d.key, "pop_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightgreen'
-                        }
-                    }
-                }, {
-                    header: { text: "Population change" },
-                    cells: { html: function (d) { return d3.format('.2%')(getVal1("population", d.value, d.key, "pop_val")*1. / getVal0("population", d.value, d.key, "pop_val") - 1.); } },
-                    sort: function (d) { return getVal1("population", d.value, d.key, "pop_val")*1. / getVal0("population", d.value, d.key, "pop_val") - 1.; },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': [+1, 0, -0.5],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
-                        }
-                    }
-                }, {
-                    header: { text: "Deaths" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.value, d.key, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.value, d.key, "deaths_val"))); } },
-                    sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "deaths_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightsalmon',
-                            'text-align': 'right',
-                        }
-                    }
-                }, {
-                    header: { text: "Deaths change" },
-                    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "deaths_val")*1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.); } },
-                    sort: function (d) { return getVal1("gbd", d.value, d.key, "deaths_val")*1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.; },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': [-0.5, 0, +1],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.value, d.key, "yll_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.value, d.key, "yll_val"))); } },
-                    sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "yll_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightblue'
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost change" },
-                    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "yll_val")*1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.); } },
-                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val")*1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.; },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': [-0.5, 0, +1],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost per Person" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")).toFixed(3))) + ' → ' + (d3.format(',')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")).toFixed(3))); } },
-                    cell_options: { styles: { width: '5%' } }, // Set width for the first column cells
-                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightblue'
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost per Person change" },
-                    cells: { html: function (d) { return d3.format('.2%')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"))*1. / (getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")) - 1.); } },
-                    sort: function (d) { return (getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"))*1. / (getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")) - 1.; },
-                    vis: 'bar',
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': [-0.5, 0, +1],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
-                        }
-                    }
-                },
-            ]
+            // population
+            var year_dimPopulation = populationXf.dimension(function (d) { return d.year; });
+            var location_name_dimPopulation = populationXf.dimension(function (d) { return d.location_name; });
+            var age_group_name_sorted_dimPopulation = populationXf.dimension(function (d) { return d.age_group_name_sorted; });
+            var sex_name_dimPopulation = populationXf.dimension(function (d) { return d.sex_name; });
+            var l1_cause_name_dimPopulation = populationXf.dimension(function (d) { return specialKey; });
+            var l2_cause_name_dimPopulation = populationXf.dimension(function (d) { return specialKey; });
 
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
@@ -544,14 +368,168 @@
                 }
             }
 
+            function deepClone(item) {
+                if (Array.isArray(item)) {
+                    // Handle array
+                    return item.map(deepClone);
+                } else if (typeof item === 'object' && item !== null) {
+                    // Handle object
+                    if (typeof item.clone === 'function') {
+                        // If the object has a custom clone method, use it.
+                        return item.clone();
+                    } else {
+                        // Else, create a shallow copy and deep clone any properties
+                        const clone = {};
+                        for (const [key, value] of Object.entries(item)) {
+                            clone[key] = deepClone(value);
+                        }
+                        return clone;
+                    }
+                } else {
+                    // Primitive types can be returned directly
+                    return item;
+                }
+            }
+
+            // Use fancy aggregation logic in order to keep track of how frequently a particular category appears at each filter level and switch on or off the amount of population that needs to be added based on this.
+
+            const getValForSearchKey = (data, searchKey, colName) => data.find(item => item.key === searchKey)?.value[colName];
+
+            function reduceAddGbd(p, v) {
+                p.deaths_val += v.deaths_val
+                p.yll_val += v.yll_val
+                return p;
+            };
+
+            function reduceRemoveGbd(p, v) {
+                p.deaths_val -= v.deaths_val
+                p.yll_val -= v.yll_val
+                return p;
+            };
+
+            function reduceInitialGbd() {
+                return {
+                    deaths_val: 0,
+                    yll_val: 0,
+                };
+            };
+
+            function reduceAddPopulation(p, v) {
+                p.pop_val += v.pop_val
+                return p;
+            };
+
+            function reduceRemovePopulation(p, v) {
+                p.pop_val -= v.pop_val
+                return p;
+            };
+
+            function reduceInitialPopulation() {
+                return {
+                    pop_val: 0,
+                };
+            };
+
+            function round_z(value) {
+                let rounded = Math.round(value);
+                if (Math.sign(rounded) === -1 && Math.abs(rounded) === 0) {
+                    return 0;
+                }
+                return rounded;
+            }
+
+            var dataDict = {
+                "year": {
+                    "gbd": year_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": year_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "location_name": {
+                    "gbd": location_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": location_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "sex_name": {
+                    "gbd": sex_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": sex_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "age_group_name_sorted": {
+                    "gbd": age_group_name_sorted_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": age_group_name_sorted_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "l1_cause_name": {
+                    "gbd": l1_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": l1_cause_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+                "l2_cause_name": {
+                    "gbd": l2_cause_name_dimGbd.group().reduce(reduceAddGbd, reduceRemoveGbd, reduceInitialGbd).all(),
+                    "population": l2_cause_name_dimPopulation.group().reduce(reduceAddPopulation, reduceRemovePopulation, reduceInitialPopulation).all(),
+                },
+            };
+
+            const getVal = (dataName, filterCol, searchKey, valueCol) => dataDict[filterCol][dataName].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+
+            const common_columns = [
+                {
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "Deaths" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "deaths_val")))); } },
+                    sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("gbd", d.value, d.key, "yll_val")))); } },
+                    sort: function (d) { return round_z(getVal("gbd", d.value, d.key, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                },
+                {
+                    // These columns use custom formatters to set the html content of the cell
+                    // adding commas, units, rounding, etc.  You can add raw HTML if you like.
+                    // These column also use the `vis` visualization support to render a bar
+                    // graph based on the cell value.
+                    header: { text: "Population" },
+                    cells: { html: function (d) { return (d3.format(',')(round_z(getVal("population", d.value, d.key, "pop_val")))); } },
+                    sort: function (d) { return round_z(getVal("population", d.value, d.key, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                    cell_options: { styles: { width: '5%' } }, // Set width for the first column cells
+                    sort: function (d) { return getVal("gbd", d.value, d.key, "yll_val") / getVal("population", d.value, d.key, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': [0, 0.3, 1.5],
+                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                        }
+                    }
+                },
+            ]
+
             function createDataTable({
                 anchorId,
                 data,
                 filter_dimensions = [],
                 initialSortColumn,
                 columns,
-                customOptions = {},
-                selectable= 'multi',
+                customOptions = {}
             }) {
                 console.log(anchorId);
                 console.log(data);
@@ -563,7 +541,7 @@
                     width: '100%',
                     columns: columns,
                     sort_column: initialSortColumn,
-                    selectable: selectable,
+                    selectable: 'multi',
                     row_options: {
                         events: {
                             mouseenter: function () {
@@ -574,16 +552,16 @@
                             }
                         }
                     },
-                    // cell_options: {
-                    //     styles: {
-                    //         'text-align': 'right',
-                    //         "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
-                    //     }
-                    // },
+                    cell_options: {
+                        styles: {
+                            'text-align': 'right',
+                            "width": '20%',
+                        }
+                    },
                     handlers: {
                         'select': function (selections) {
                             // Check if there are selections
-                            // console.log(selections)
+                            console.log(selections)
                             if (selections.length) {
                                 // Iterate over filter_dimensions and apply filter
                                 filter_dimensions.forEach(function (filter_dimension) {
@@ -615,46 +593,25 @@
             }
 
             createDataTable({
-                anchorId: '#gdb_year0_table',
-                data: columnNameFill(aggDict0["gbd"]["year"], "year"),
-                filter_dimensions: [CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']],
-                initialSortColumn: "Year 0",
-                selectable: 'single',
+                anchorId: '#gdb_year_table',
+                data: columnNameFill(dataDict["year"]["gbd"], "year"),
+                filter_dimensions: [year_dimGbd, year_dimPopulation],
+                initialSortColumn: "Year",
                 columns: [
                     {
-                        header: { text: "Year 0" },
+                        header: { text: "Year" },
                         cells: {
                             text: function (d) { return d.key; }
                         },
-                        sort: function (d) { return d.key; },
-                        sort_ascending: true,
+                        sort: function (d) { return d.key; }
                     },
                 ].concat(deepClone(common_columns))
             });
-
-            createDataTable({
-                anchorId: '#gdb_year1_table',
-                data: columnNameFill(aggDict1["gbd"]["year"], "year"),
-                filter_dimensions: [CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']],
-                initialSortColumn: "Year 1",
-                selectable: 'single',
-                columns: [
-                    {
-                        header: { text: "Year 1" },
-                        cells: {
-                            text: function (d) { return d.key; }
-                        },
-                        sort: function (d) { return d.key; },
-                        sort_ascending: true,
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
 
             createDataTable({
                 anchorId: '#gdb_location_name_table',
-                data: columnNameFill(aggDict0["gbd"]["location_name"], "location_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
+                data: columnNameFill(dataDict["location_name"]["gbd"], "location_name"),
+                filter_dimensions: [location_name_dimGbd, location_name_dimPopulation],
                 initialSortColumn: "Population",
                 customOptions: {
                     "limit_rows": 10,
@@ -675,8 +632,8 @@
 
             createDataTable({
                 anchorId: '#gdb_sex_name_table',
-                data: columnNameFill(aggDict0["gbd"]["sex_name"], "sex_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
+                data: columnNameFill(dataDict["sex_name"]["gbd"], "sex_name"),
+                filter_dimensions: [sex_name_dimGbd, sex_name_dimPopulation],
                 initialSortColumn: "Sex",
                 columns: [
                     {
@@ -691,8 +648,8 @@
 
             createDataTable({
                 anchorId: '#gdb_age_group_name_sorted_table',
-                data: columnNameFill(aggDict0["gbd"]["age_group_name_sorted"], "age_group_name_sorted"),
-                filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
+                data: columnNameFill(dataDict["age_group_name_sorted"]["gbd"], "age_group_name_sorted"),
+                filter_dimensions: [age_group_name_sorted_dimGbd, age_group_name_sorted_dimPopulation],
                 initialSortColumn: "Age group",
                 columns: [
                     {
@@ -707,8 +664,8 @@
 
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                data: columnNameFill(aggDict0["gbd"]["l1_cause_name"], "l1_cause_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'], CFDDict1['gbd']['d']['l1_cause_name']],
+                data: columnNameFill(dataDict["l1_cause_name"]["gbd"], "l1_cause_name"),
+                filter_dimensions: [l1_cause_name_dimGbd],
                 initialSortColumn: "Years of live lost",
                 columns: [
                     {
@@ -718,13 +675,13 @@
                         },
                         sort: function (d) { return d.key; },
                     }
-                ].concat(deepClone(common_columns).slice(2))
+                ].concat(deepClone(common_columns))
             });
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                data: columnNameFill(aggDict0["gbd"]["l2_cause_name"], "l2_cause_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'], CFDDict1['gbd']['d']['l2_cause_name']],
+                data: columnNameFill(dataDict["l2_cause_name"]["gbd"], "l2_cause_name"),
+                filter_dimensions: [l2_cause_name_dimGbd],
                 initialSortColumn: "Years of live lost",
                 columns: [
                     {
@@ -734,7 +691,7 @@
                         },
                         sort: function (d) { return d.key; },
                     }
-                ].concat(deepClone(common_columns).slice(2)),
+                ].concat(deepClone(common_columns)),
                 customOptions: {
                     // Any region-specific options can go here
                 }

@@ -107,7 +107,7 @@
         }
         async function loadDataAndReconstruct(url) {
             try {
-                // updateLoadingMessage(`start json at: ${Math.round(performance.now())}ms`);
+                updateLoadingMessage(`start json at: ${Math.round(performance.now())}ms`);
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`Network response was not ok for ${url}`);
@@ -181,7 +181,7 @@
                     throw new Error("Failed to load import info.");
                 }
                 const { chunk_file_names: chunkFileNames, decoding_dict: decodingDict } = importInfo;
-                // updateLoadingMessage(`info read at: ${Math.round(performance.now())}ms`);
+                updateLoadingMessage(`info read at: ${Math.round(performance.now())}ms`);
 
                 // Initiate all load and decode operations in parallel
                 const decodePromises = chunkFileNames.map(fileName => {
@@ -192,14 +192,14 @@
                             return decodeData(chunkData, decodingDict);
                         });
                 });
-                // updateLoadingMessage(`requests sent read at: ${Math.round(performance.now())}ms`);
+                updateLoadingMessage(`requests sent read at: ${Math.round(performance.now())}ms`);
 
                 // Wait for all promises to resolve
                 const decodedChunks = await Promise.all(decodePromises);
 
-                // updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
+                updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
                 let combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
-                // updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
+                updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
                 console.log(combinedData)
                 return combinedData; // Return the combined decoded data
             } catch (error) {
@@ -210,7 +210,7 @@
 
 
         function download_data() {
-            // updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
+            updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
                     // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
@@ -249,7 +249,7 @@
                 });
 
                 Promise.all([p1, p2]).then(() => {
-                    // d3.selectAll('#waiting').remove();
+                    d3.selectAll('#waiting').remove();
                     d3.selectAll('main').style('display', '');
                     resolve();
                 }).catch(error => {
@@ -574,12 +574,12 @@
                             }
                         }
                     },
-                    cell_options: {
-                        styles: {
-                            'text-align': 'right',
-                            "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
-                        }
-                    },
+                    // cell_options: {
+                    //     styles: {
+                    //         'text-align': 'right',
+                    //         "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
+                    //     }
+                    // },
                     handlers: {
                         'select': function (selections) {
                             // Check if there are selections
@@ -718,7 +718,7 @@
                         },
                         sort: function (d) { return d.key; },
                     }
-                ].concat(deepClone(common_columns))
+                ].concat(deepClone(common_columns).slice(2))
             });
 
             createDataTable({
@@ -734,7 +734,7 @@
                         },
                         sort: function (d) { return d.key; },
                     }
-                ].concat(deepClone(common_columns)),
+                ].concat(deepClone(common_columns).slice(2)),
                 customOptions: {
                     // Any region-specific options can go here
                 }
