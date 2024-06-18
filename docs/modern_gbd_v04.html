@@ -1,0 +1,778 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Global Burden of Disease Crossfilter</title>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Dependencies -->
+    <script src="chartCollectionCode/lib/d3.js"></script>
+    <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
+    <script src="chartCollectionCode/lib/crossfilter.js"></script>
+    <script src="chartCollectionCode/lib/promise.js"></script>
+
+    <!-- C3 -->
+    <link rel="stylesheet" href="chartCollectionCode/css/c3.css" />
+    <script src="chartCollectionCode/js/c3.js"></script>
+    <script src="chartCollectionCode/js/c3-table.js"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <!-- Styles -->
+    <style>
+        body {
+            overflow-y: scroll;
+            font-family: sans-serif;
+        }
+
+        /* Table Styles */
+        table {
+            border-collapse: collapse;
+        }
+
+        .c3.table {
+            border: 1px solid black;
+            font-family: sans-serif;
+        }
+
+        .c3.table th {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            padding: 0.25em;
+            border: 1px solid black;
+            border-bottom: 2px solid black;
+            background-color: lightgray;
+        }
+
+        .c3.table caption {
+            border: 1px solid black;
+        }
+
+        .c3.table tr {
+            background-color: white;
+        }
+
+        .c3.table tr:nth-child(2n) {
+            background-color: whitesmoke;
+        }
+
+        .c3.table th.sorted {
+            background-color: steelblue;
+        }
+
+        .c3.table tr.selected {
+            background-image: linear-gradient(#ffeda0, #f9da4d);
+        }
+
+        .c3.table tr.deselected:not(:hover) {
+            opacity: 0.4;
+        }
+
+        .c3.table.selectable tr.hover {
+            background-color: wheat;
+        }
+
+        .c3.table td {
+            text-align: center;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            padding: 0.25em;
+        }
+
+        .c3.table td.sorted {
+            background-color: rgba(128, 128, 128, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
+
+    <main style="display:none">
+        <div id="gdb_year0_table"></div>
+        <div id="gdb_year1_table"></div>
+        <div id="gdb_sex_name_table"></div>
+        <div id="gdb_age_group_name_sorted_table"></div>
+        <div id="gdb_location_name_table"></div>
+        <div id="gdb_l1_cause_table"></div>
+        <div id="gdb_l2_cause_table"></div>
+    </main>
+    <script>
+        var gbd_data = [];
+        var population_data = [];
+        function updateLoadingMessage(message) {
+            var waitingDiv = document.getElementById('waiting');
+            waitingDiv.innerHTML += message + '<br><br>';
+        }
+        async function loadDataAndReconstruct(url) {
+            try {
+                updateLoadingMessage(`start json at: ${Math.round(performance.now())}ms`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok for ${url}`);
+                }
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new TypeError("The fetched document is not JSON");
+                }
+                const jsonData = await response.json();
+
+                const { columns, data } = jsonData;
+                console.time("data_map")
+                result = data.map(row => {
+                    const rowObj = {};
+                    row.forEach((value, index) => {
+                        rowObj[columns[index]] = value;
+                    });
+                    return rowObj;
+                });
+                console.timeEnd("data_map")
+                return result
+            } catch (error) {
+                console.error("Error loading or parsing data:", error);
+                return []; // Optionally return null or undefined, depending on how you want to handle this case.
+            }
+        }
+
+        async function decodeData(combinedData, decodingDict) {
+            try {
+                // Decode each row in the combined data
+                const decodedData = combinedData.map(row => {
+                    const decodedRow = {};
+                    Object.entries(row).forEach(([key, value]) => {
+                        // If the column is in the decoding dictionary, replace the code with its original value
+                        if (key in decodingDict) {
+                            decodedRow[key] = decodingDict[key][value];
+                        } else {
+                            // If the column is not in the dictionary, just copy the value
+                            decodedRow[key] = value;
+                        }
+                    });
+                    return decodedRow;
+                });
+
+                return decodedData;
+            } catch (error) {
+                console.error("Error loading or applying decoding dictionary:", error);
+                return [];
+            }
+        }
+
+        // Function to load import info (chunk file names and decoding dictionary)
+        async function loadImportInfo(basePath, importInfoFile) {
+            try {
+                const importInfoUrl = `${basePath}${importInfoFile}`;
+                const response = await fetch(importInfoUrl);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok for ${importInfoUrl}`);
+                }
+                return await response.json(); // Contains both chunkFileNames and decodingDict
+            } catch (error) {
+                console.error("Error loading import info:", error);
+                return null; // Return null to indicate failure
+            }
+        }
+
+        async function loadAndDecodeAllData(basePath, importInfoFile) {
+            try {
+                const importInfo = await loadImportInfo(basePath, importInfoFile);
+                if (!importInfo) {
+                    throw new Error("Failed to load import info.");
+                }
+                const { chunk_file_names: chunkFileNames, decoding_dict: decodingDict } = importInfo;
+                updateLoadingMessage(`info read at: ${Math.round(performance.now())}ms`);
+
+                // Initiate all load and decode operations in parallel
+                const decodePromises = chunkFileNames.map(fileName => {
+                    const chunkPath = `${basePath}${fileName}`;
+                    return loadDataAndReconstruct(chunkPath)
+                        .then(chunkData => {
+                            // return chunkData; // if decoding not wanted
+                            return decodeData(chunkData, decodingDict);
+                        });
+                });
+                updateLoadingMessage(`requests sent read at: ${Math.round(performance.now())}ms`);
+
+                // Wait for all promises to resolve
+                const decodedChunks = await Promise.all(decodePromises);
+
+                updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
+                let combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
+                updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
+                console.log(combinedData)
+                return combinedData; // Return the combined decoded data
+            } catch (error) {
+                console.error("Error in data loading and decoding workflow:", error);
+                return [];
+            }
+        }
+
+
+        function download_data() {
+            updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
+            return new Promise((resolve, reject) => {
+                let p1 = new Promise((resolve, reject) => {
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                        .then(decodedData => {
+                            console.log("Decoded Data:");
+                            console.log(decodedData);
+                            gbd_data = decodedData;
+                            resolve();
+                        })
+                        .catch(error => {
+                            console.error("Error processing data:", error);
+                        });
+
+                });
+
+                let p2 = new Promise((resolve, reject) => {
+                    d3.tsv('data_doc/df_population.csv', function (row) {
+                        return {
+                            year: +row["year"],
+                            location_name: row["location_name"],
+                            age_group_name_sorted: row["age_group_name_sorted"],
+                            sex_name: row["sex_name"],
+                            pop_val: +row["pop_val"],
+                            pop_upper: +row["pop_upper"],
+                            pop_lower: +row["pop_lower"],
+                            pop_present: +row["pop_present"],
+                        };
+                    }, function (error, data) {
+                        if (error) reject(error);
+                        else {
+                            population_data = data;
+                            resolve();
+                        }
+                    });
+                });
+
+                Promise.all([p1, p2]).then(() => {
+                    d3.selectAll('#waiting').remove();
+                    d3.selectAll('main').style('display', '');
+                    resolve();
+                }).catch(error => {
+                    console.error("Error loading data: ", error);
+                    reject(error);
+                });
+            });
+        }
+
+
+        /**
+         * Create dimensions for multiple datasets from raw data.
+         * @param {Object} dataSourceDict - Dictionary of raw data arrays with their names as keys.
+         * @param {Array} dimensionNames - List of dimension names to create.
+         * @param {*} specialKey - A placeholder value to use for excluded dimensions.
+         * @returns {Object} - An object containing crossfilter instances and dimensions for each dataset.
+         */
+        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey) {
+            // Initialize an empty object to store crossfilters and dimensions
+            var result = {};
+
+            // Iterate over each dataset entry in the data dictionary
+            for (var dataType in dataSourceDict) {
+                if (dataSourceDict.hasOwnProperty(dataType)) {
+                    var rawData = dataSourceDict[dataType];
+                    // Create a Crossfilter instance from the raw data
+                    var crossfilterInstance = crossfilter(rawData);
+                    // Initialize a dictionary to store dimensions for the current crossfilter
+                    var dimensions = {};
+
+                    // Get the first record from the dataset to check available dimensions
+                    var firstRecord = rawData.length > 0 ? rawData[0] : null;
+
+                    // Iterate over each dimension name to create dimensions
+                    for (var i = 0; i < dimensionNames.length; i++) {
+                        var dimensionName = dimensionNames[i];
+
+                        if (firstRecord && firstRecord.hasOwnProperty(dimensionName)) {
+                            // If the dimension is available, create it normally
+                            dimensions[dimensionName] = crossfilterInstance.dimension(function (d) {
+                                return d[dimensionName];
+                            });
+                        } else {
+                            // If the dimension is not available, use the specialKey placeholder
+                            dimensions[dimensionName] = crossfilterInstance.dimension(function (d) {
+                                return specialKey;
+                            });
+                        }
+                    }
+
+                    // Store the crossfilter instance and its dimensions in the result
+                    result[dataType] = {
+                        cf: crossfilterInstance,
+                        d: dimensions
+                    };
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * Generates aggregation functions for the given columns.
+         * @param {Array} columns - List of columns to aggregate.
+         * @returns {Object} - An object containing add, remove, and initial functions for the specified columns.
+         */
+        function createAggFunctions(columns) {
+            return {
+                add: function (p, v) {
+                    columns.forEach(function (column) {
+                        p[column] += v[column];
+                    });
+                    return p;
+                },
+                remove: function (p, v) {
+                    columns.forEach(function (column) {
+                        p[column] -= v[column];
+                    });
+                    return p;
+                },
+                initial: function () {
+                    var initialObject = {};
+                    columns.forEach(function (column) {
+                        initialObject[column] = 0;
+                    });
+                    return initialObject;
+                }
+            };
+        }
+        function round_z(value) {
+            let rounded = Math.round(value);
+            if (Math.sign(rounded) === -1 && Math.abs(rounded) === 0) {
+                return 0;
+            }
+            return rounded;
+        }
+
+        function bigNStyle(value) {
+            return d3.format(',')(round_z(value));
+        }
+
+        function deepClone(item) {
+            if (Array.isArray(item)) {
+                // Handle array
+                return item.map(deepClone);
+            } else if (typeof item === 'object' && item !== null) {
+                // Handle object
+                if (typeof item.clone === 'function') {
+                    // If the object has a custom clone method, use it.
+                    return item.clone();
+                } else {
+                    // Else, create a shallow copy and deep clone any properties
+                    const clone = {};
+                    for (const [key, value] of Object.entries(item)) {
+                        clone[key] = deepClone(value);
+                    }
+                    return clone;
+                }
+            } else {
+                // Primitive types can be returned directly
+                return item;
+            }
+        }
+
+        // ###########################################################################
+        // ## Create and Render the Charts
+        // This function will create the various charts and tables for this example.
+        function render() {
+            // ### Prepare the data
+            // Output the data set to the console if you want to take a look.
+            console.log(gbd_data);
+            // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
+
+            var specialKey = "specialKeyGKQ0W8G8OX"
+
+            // List of dimension names
+            // Dictionary of crossfilters
+            var dataSourceDict = {
+                gbd: gbd_data,
+                population: population_data
+            };
+
+            // List of dimension names
+            var dimensionNames = [
+                'year',
+                'location_name',
+                'sex_name',
+                'age_group_name_sorted',
+                'l1_cause_name',
+                'l2_cause_name'
+            ];
+
+            aggColumns = {
+                'gbd': ['deaths_val', 'yll_val'],
+                'population': ['pop_val']
+            }
+
+            // Create aggFunctions based on aggColumns
+            var aggFunctions = {};
+            for (var dataSource in aggColumns) {
+                if (aggColumns.hasOwnProperty(dataSource)) {
+                    aggFunctions[dataSource] = createAggFunctions(aggColumns[dataSource]);
+                }
+            }
+
+            function generateAggregationDict(CrossFilterDimesonsDict, aggregationFunctions) {
+                // Initialize an empty object to store the aggregated data
+                var aggregationDict = {};
+                for (var dataSource in CrossFilterDimesonsDict) {
+                    aggregationDict[dataSource] = {}
+                    for (var dimension in CrossFilterDimesonsDict[dataSource]['d']) {
+                        aggregationDict[dataSource][dimension] = CrossFilterDimesonsDict[dataSource]['d'][dimension].group().reduce(aggregationFunctions[dataSource].add, aggFunctions[dataSource].remove, aggFunctions[dataSource].initial).all();
+                    }
+                }
+                return aggregationDict;
+            }
+
+            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
+            const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
+            const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+
+
+            const common_columns = [
+                {
+                    header: { text: "Population" },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("population", d.value, d.key, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.value, d.key, "pop_val"))); } },
+                    sort: function (d) { return round_z(getVal1("population", d.value, d.key, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Population change" },
+                    cells: { html: function (d) { return d3.format('.2%')(getVal1("population", d.value, d.key, "pop_val")*1. / getVal0("population", d.value, d.key, "pop_val") - 1.); } },
+                    sort: function (d) { return getVal1("population", d.value, d.key, "pop_val")*1. / getVal0("population", d.value, d.key, "pop_val") - 1.; },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': [+1, 0, -0.5],
+                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                        }
+                    }
+                }, {
+                    header: { text: "Deaths" },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.value, d.key, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.value, d.key, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
+                        }
+                    }
+                }, {
+                    header: { text: "Deaths change" },
+                    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "deaths_val")*1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.); } },
+                    sort: function (d) { return getVal1("gbd", d.value, d.key, "deaths_val")*1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.; },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': [-0.5, 0, +1],
+                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost" },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.value, d.key, "yll_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.value, d.key, "yll_val"))); } },
+                    sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost change" },
+                    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "yll_val")*1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.); } },
+                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val")*1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.; },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': [-0.5, 0, +1],
+                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")).toFixed(3))) + ' → ' + (d3.format(',')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                    cell_options: { styles: { width: '5%' } }, // Set width for the first column cells
+                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person change" },
+                    cells: { html: function (d) { return d3.format('.2%')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"))*1. / (getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"))*1. / (getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")) - 1.; },
+                    vis: 'bar',
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': [-0.5, 0, +1],
+                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                        }
+                    }
+                },
+            ]
+
+            // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
+            // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
+            // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
+            // lets the user indicate when that needs to be done.
+            var charts = [];
+            function redraw() {
+                for (var _i = 0, charts_redraw = charts; _i < charts_redraw.length; _i++) {
+                    var chart = charts_redraw[_i];
+                    chart.redraw();
+                }
+            }
+            function restyle() {
+                for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
+                    var chart = charts_restyle[_i];
+                    chart.restyle();
+                }
+            }
+
+            function createDataTable({
+                anchorId,
+                data,
+                filter_dimensions = [],
+                initialSortColumn,
+                columns,
+                customOptions = {},
+                selectable= 'multi',
+            }) {
+                console.log(anchorId);
+                console.log(data);
+
+                var tableOptions = {
+                    anchor: anchorId,
+                    data: data,
+                    sortable: true,
+                    width: '100%',
+                    columns: columns,
+                    sort_column: initialSortColumn,
+                    selectable: selectable,
+                    row_options: {
+                        events: {
+                            mouseenter: function () {
+                                this.classList.add('hover');
+                            },
+                            mouseleave: function () {
+                                this.classList.remove('hover');
+                            }
+                        }
+                    },
+                    // cell_options: {
+                    //     styles: {
+                    //         'text-align': 'right',
+                    //         "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
+                    //     }
+                    // },
+                    handlers: {
+                        'select': function (selections) {
+                            // Check if there are selections
+                            // console.log(selections)
+                            if (selections.length) {
+                                // Iterate over filter_dimensions and apply filter
+                                filter_dimensions.forEach(function (filter_dimension) {
+                                    filter_dimension.filter(function (key) {
+                                        return selections.map(function (d) { return d.key; }).indexOf(key) >= 0;
+                                    });
+                                });
+                            } else {
+                                // No selections, apply filterAll to each dimension
+                                filter_dimensions.forEach(function (filter_dimension) {
+                                    filter_dimension.filterAll();
+                                });
+                            }
+                            redraw();
+                        }
+                    },
+                    ...customOptions
+                };
+
+                var newTable = new c3.Table(tableOptions);
+                charts.push(newTable);
+            }
+
+            function columnNameFill(inputArray, newValue) {
+                return inputArray.map(item => ({
+                    key: item.key,
+                    value: newValue // replace the original value object with a single string
+                }));
+            }
+
+            createDataTable({
+                anchorId: '#gdb_year0_table',
+                data: columnNameFill(aggDict0["gbd"]["year"], "year"),
+                filter_dimensions: [CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']],
+                initialSortColumn: "Year 0",
+                selectable: 'single',
+                columns: [
+                    {
+                        header: { text: "Year 0" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; },
+                        sort_ascending: true,
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_year1_table',
+                data: columnNameFill(aggDict1["gbd"]["year"], "year"),
+                filter_dimensions: [CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']],
+                initialSortColumn: "Year 1",
+                selectable: 'single',
+                columns: [
+                    {
+                        header: { text: "Year 1" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; },
+                        sort_ascending: true,
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+
+            createDataTable({
+                anchorId: '#gdb_location_name_table',
+                data: columnNameFill(aggDict0["gbd"]["location_name"], "location_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
+                initialSortColumn: "Population",
+                customOptions: {
+                    "limit_rows": 10,
+                    "pagination": true,
+                    "page": 1,
+                },
+                searchable: true,
+                columns: [
+                    {
+                        header: { text: "Country" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_sex_name_table',
+                data: columnNameFill(aggDict0["gbd"]["sex_name"], "sex_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
+                initialSortColumn: "Sex",
+                columns: [
+                    {
+                        header: { text: "Sex" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_age_group_name_sorted_table',
+                data: columnNameFill(aggDict0["gbd"]["age_group_name_sorted"], "age_group_name_sorted"),
+                filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
+                initialSortColumn: "Age group",
+                columns: [
+                    {
+                        header: { text: "Age group" },
+                        cells: {
+                            text: function (d) { return d.key; }
+                        },
+                        sort: function (d) { return d.key; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_l1_cause_table',
+                data: columnNameFill(aggDict0["gbd"]["l1_cause_name"], "l1_cause_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'], CFDDict1['gbd']['d']['l1_cause_name']],
+                initialSortColumn: "Years of live lost",
+                columns: [
+                    {
+                        header: { text: "L1 cause" },
+                        cells: {
+                            text: function (d) { return d.key; },
+                        },
+                        sort: function (d) { return d.key; },
+                    }
+                ].concat(deepClone(common_columns).slice(2))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_l2_cause_table',
+                data: columnNameFill(aggDict0["gbd"]["l2_cause_name"], "l2_cause_name"),
+                filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'], CFDDict1['gbd']['d']['l2_cause_name']],
+                initialSortColumn: "Years of live lost",
+                columns: [
+                    {
+                        header: { text: "L2 cause" },
+                        cells: {
+                            text: function (d) { return d.key; },
+                        },
+                        sort: function (d) { return d.key; },
+                    }
+                ].concat(deepClone(common_columns).slice(2)),
+                customOptions: {
+                    // Any region-specific options can go here
+                }
+            });
+
+            // #########################################################################################
+            // ### Initial Rendering
+            // Perform the initial `render()`
+            for (var _i = 0, charts_1 = charts; _i < charts_1.length; _i++) {
+                var chart = charts_1[_i];
+                chart.render();
+            }
+            // **Resize** charts if the window is resized.
+            window.onresize = function () {
+                for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
+                    var chart = charts_4[_i];
+                    chart.resize();
+                }
+            };
+        }
+        // #########################################################################################
+        // # Start Here
+        // The loading and rendering are initiated here..  It calls the `download_data()` function to
+        // download the data which returns a Promise.  We setup a _then_ callback function to be
+        // called when all of the data is loaded and promised.  This callback function calls which ends up
+        // calling the `render()` function.
+        download_data().then(function () { setTimeout(render, 0); });
+        // The reason to have setTimeout call the render function instead of calling it directly is
+        // just a trick to help with debugging in the browser when using promises.  The callback function
+        // for a promise is called, which catches all exceptions to be used to call an error callback.
+        // This is great except unhandled errors are then reported to the debugger later after we are already
+        // out of the context of the error.  So, you can't navigate the stack, view the contents of variables,
+        // etc.  By using setTimeout it will cause the callback to return immediatly and then the browser
+        // will call render itself.  Since this is done outside of the promise's scope, exceptions are not caught and
+        // passed to the promise error handler and instead can be caught and handeled as normal in a
+        // debugger.  In production code you could use this instead:
+        //     download_data().then(render)
+    </script>
+</body>
+
+</html>
