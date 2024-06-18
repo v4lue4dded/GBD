@@ -263,6 +263,18 @@
           switch (column.vis) {
             case 'bar':
               return d3.select(this).classed('bar', true).style('width', column.value(d) / column.value_total * 100 + '%');
+            case 'color':
+              // Retrieve domain and range from column.vis_options
+              var domain = column.vis_options.styles.domain;
+              var range = column.vis_options.styles.range;
+              
+              // Create color scale using the retrieved domain and range
+              var colorScale = d3.scale.linear()
+                                 .domain(domain)
+                                 .range(range);
+              
+              // Apply color based on data value
+              return d3.select(this).style('background-color', colorScale(column.value(d)));
             default:
               return d3.select(this).attr({
                 "class": 'vis',
