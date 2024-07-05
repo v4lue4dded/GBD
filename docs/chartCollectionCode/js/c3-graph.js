@@ -20,13 +20,13 @@
 
 // Graph
 // @abstract
-let Cls = (c3.Graph = class Graph extends c3.Chart {
+let Clsc3graph = (c3.Graph = class Graph extends c3.Chart {
     static initClass() {
         this.version = 0.1;
         this.prototype.type = 'graph';
     }
 });
-Cls.initClass();
+Clsc3graph.initClass();
 
 
 //##################################################################
@@ -55,8 +55,9 @@ Cls.initClass();
 // @todo Draggable nodes
 // @todo Zoom/Pan navigation
 // @todo Highlighted sub-path(s) through graph
-Cls = (c3.Sankey = class Sankey extends c3.Graph {
+Clsc3graph = (c3.Sankey = class Sankey extends c3.Graph {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._update_data = this._update_data.bind(this);
@@ -64,7 +65,6 @@ Cls = (c3.Sankey = class Sankey extends c3.Graph {
         this._layout = this._layout.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -807,7 +807,7 @@ Cls = (c3.Sankey = class Sankey extends c3.Graph {
         return this.paths.style(style_new);
     }
 });
-Cls.initClass();
+Clsc3graph.initClass();
         //@link_labels?.style style_new
 
 
@@ -828,14 +828,14 @@ Cls.initClass();
 // @todo Position nodes that are on both the right and left wings in the middle?
 // @todo If nodes are called by the focal node as well as other nodes, ensure
 //   that they are positioned in a column based on their depth from the focal.
-Cls = (c3.Sankey.Butterfly = class Butterfly extends c3.Sankey {
+Clsc3graph = (c3.Sankey.Butterfly = class Butterfly extends c3.Sankey {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
         this._butterfly_layout = this._butterfly_layout.bind(this);
         this._style = this._style.bind(this);
         this.focus = this.focus.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -921,6 +921,6 @@ Cls = (c3.Sankey.Butterfly = class Butterfly extends c3.Sankey {
         return this;
     }
 });
-Cls.initClass();
+Clsc3graph.initClass();
 
 c3.Butterfly = c3.Sankey.Butterfly;

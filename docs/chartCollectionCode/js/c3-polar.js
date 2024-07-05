@@ -22,15 +22,15 @@
 // The top is 0 degrees and the range is expressed in radians so a full circle is 0 to 2Pi.
 // A polar chart can contain multiple {c3.Polar.Layer layers}.
 // @author Douglas Armstrong
-let Cls = (c3.Polar = class Polar extends c3.Chart {
+let Clsc3polar = (c3.Polar = class Polar extends c3.Chart {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
         this.toPolar = this.toPolar.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -170,7 +170,7 @@ let Cls = (c3.Polar = class Polar extends c3.Chart {
         return [this.t.invert(theta), this.r.invert(radius)];
     }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 
 //##################################################################
@@ -180,7 +180,7 @@ Cls.initClass();
 // A layer for a {c3.Polar polar chart}.
 // @abstract
 // @author Douglas Armstrong
-Cls = (c3.Polar.Layer = class Layer {
+Clsc3polar = (c3.Polar.Layer = class Layer extends c3.Dispatch {
     static initClass() {
         this.version = 0.1;
         this.prototype.type = 'layer';
@@ -211,6 +211,7 @@ Cls = (c3.Polar.Layer = class Layer {
     }
 
     constructor(opt){
+        super();
         this.init = this.init.bind(this);
         this.size = this.size.bind(this);
         this.update = this.update.bind(this);
@@ -218,7 +219,6 @@ Cls = (c3.Polar.Layer = class Layer {
         this.style = this.style.bind(this);
         this.redraw = this.redraw.bind(this);
         this.toPolar = this.toPolar.bind(this);
-        c3.util.extend(this, new c3.Dispatch);
         c3.util.extend(this, opt);
         this.uid = c3.Polar.Layer._next_uid++;
     }
@@ -300,7 +300,7 @@ Cls = (c3.Polar.Layer = class Layer {
         return [this.t.invert(theta), this.r.invert(radius)];
     }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 
 //##################################################################
@@ -311,10 +311,10 @@ Cls.initClass();
 // @todo Add arrowheads or dots at vector ends if requested.
 // @todo Add text labels if requested.
 // @author Douglas Armstrong
-Cls = (c3.Polar.Layer.Radial = class Radial extends c3.Polar.Layer {
+Clsc3polar = (c3.Polar.Layer.Radial = class Radial extends c3.Polar.Layer {
     constructor(...args) {
-        this._draw = this._draw.bind(this);
         super(...args);
+        this._draw = this._draw.bind(this);
     }
 
     static initClass() {
@@ -414,7 +414,7 @@ Cls = (c3.Polar.Layer.Radial = class Radial extends c3.Polar.Layer {
         return this.lines.style(style_new);
     }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 
 //##################################################################
@@ -431,14 +431,14 @@ Cls.initClass();
 // @abstract
 // @todo Add text labels for arc segments if requested.
 // @author Douglas Armstrong
-Cls = (c3.Polar.Layer.Segment = class Segment extends c3.Polar.Layer {
+Clsc3polar = (c3.Polar.Layer.Segment = class Segment extends c3.Polar.Layer {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
         this.get_position_from_key = this.get_position_from_key.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -548,7 +548,7 @@ Cls = (c3.Polar.Layer.Segment = class Segment extends c3.Polar.Layer {
     // * **datum** - reference to the associated datum
     get_position_from_key(key){ return (this.nodes != null ? this.nodes[key] : undefined); }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 
 //##################################################################
@@ -557,10 +557,10 @@ Cls.initClass();
 
 // A general-purpose layer of arc segments
 // @author Douglas Armstrong
-Cls = (c3.Polar.Layer.Arc = class Arc extends c3.Polar.Layer.Segment {
+Clsc3polar = (c3.Polar.Layer.Arc = class Arc extends c3.Polar.Layer.Segment {
     constructor(...args) {
-        this._layout = this._layout.bind(this);
         super(...args);
+        this._layout = this._layout.bind(this);
     }
 
     static initClass() {
@@ -600,7 +600,7 @@ Cls = (c3.Polar.Layer.Arc = class Arc extends c3.Polar.Layer.Segment {
         return data;
     }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 
 //##################################################################
@@ -616,13 +616,13 @@ Cls.initClass();
 // * **other_arc** - for svg:path elements for the "other" arc segment.
 //
 // @author Douglas Armstrong
-Cls = (c3.Polar.Layer.Pie = class Pie extends c3.Polar.Layer.Segment {
+Clsc3polar = (c3.Polar.Layer.Pie = class Pie extends c3.Polar.Layer.Segment {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._layout = this._layout.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -707,7 +707,7 @@ Cls = (c3.Polar.Layer.Pie = class Pie extends c3.Polar.Layer.Segment {
         return (this.other_arc != null ? this.other_arc.style(style_new) : undefined);
     }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 
 //##################################################################
@@ -735,8 +735,9 @@ Cls.initClass();
 //   or with `null` if reverting to the top of the hierarchy.
 //
 // @author Douglas Armstrong
-Cls = (c3.Polar.Layer.Sunburst = class Sunburst extends c3.Polar.Layer.Segment {
+Clsc3polar = (c3.Polar.Layer.Sunburst = class Sunburst extends c3.Polar.Layer.Segment {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._layout = this._layout.bind(this);
         this.rebase = this.rebase.bind(this);
@@ -745,7 +746,6 @@ Cls = (c3.Polar.Layer.Sunburst = class Sunburst extends c3.Polar.Layer.Segment {
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
         this.get_leaf = this.get_leaf.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -879,7 +879,7 @@ Cls = (c3.Polar.Layer.Sunburst = class Sunburst extends c3.Polar.Layer.Segment {
         return get_leaf(this.tree.root_nodes);
     } }
 });
-Cls.initClass();
+Clsc3polar.initClass();
 
 function __guard__(value, transform) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;

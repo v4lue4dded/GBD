@@ -156,7 +156,7 @@ c3.http = class http {
 (function() {
     let escapes = undefined;
     let tokens = undefined;
-    const Cls = (c3.html = class html {
+    const Clsc3 = (c3.html = class html {
         static initClass() {
             escapes = {
                 '&': '&amp;',
@@ -180,8 +180,8 @@ c3.http = class http {
         // @return [String] Returns the escaped string
         static escape(string){ return String(string).replace(RegExp(tokens,'g'), d => escapes[d]); }
     });
-    Cls.initClass();
-    return Cls;
+    Clsc3.initClass();
+    return Clsc3;
 })();
 
 //    # The following will floor() any numerical values in an SVG path string
@@ -502,7 +502,7 @@ c3.Selection = class Selection {};
 // _The c3 selection options class is really just a convention which described the types of properties
 // users can set.  You don't actually need to instantiate this class prototype, just make sure
 // that the object you use has the same property names._
-let Cls = (c3.Selection.Options = class Options {
+let Clsc3 = (c3.Selection.Options = class Options {
     static initClass() {
         // [String, Function] A function or value to set the **CSS class** of the DOM nodes.
         // The function is called with the datum and index of the data elements as arguments.
@@ -570,7 +570,7 @@ let Cls = (c3.Selection.Options = class Options {
         this.prototype.animate_old = undefined;
     }
 });
-Cls.initClass();
+Clsc3.initClass();
 
 
 // The c3 selection object is used internally as an abstraction around D3 selections to provide
@@ -596,7 +596,7 @@ Cls.initClass();
 // @see c3.Selection.Options
 // @see ~c3.select
 // @see https://github.com/mbostock/d3/wiki/Selections
-Cls = (c3.Selection = class Selection {
+Clsc3 = (c3.Selection = class Selection {
     static initClass() {
         // These are documented above because codo doesn't detect variables set with a function.
         this.prototype.all = d3.select();
@@ -874,7 +874,7 @@ Cls = (c3.Selection = class Selection {
     // @return [HTMLElement] node
     node() { return this.all.node(); }
 });
-Cls.initClass();
+Clsc3.initClass();
 
 
 //########################
@@ -885,8 +885,10 @@ Cls.initClass();
 c3.Dispatch = class Dispatch {
     constructor() { 
         this.dispatcher = {};
+        this.on = this.on.bind(this);
         this.trigger = this.trigger.bind(this);
     }
+
     // Register an event handler to catch events fired by the visualization.
     // Multiple handlers can be set by specifying a namespace for the event name like `event.namespace`
     // Remove a handler by passing `null` for the handler
@@ -993,7 +995,7 @@ c3.Dispatch = class Dispatch {
 //       ]
 //   });
 //   my_table.on('redraw', function() { console.log("Table redraw was called; add customizations here."); });
-Cls = (c3.Base = class Base extends c3.Dispatch {
+Clsc3 = (c3.Base = class Base extends c3.Dispatch {
     static initClass() {
         this._next_uid = 0;
         // [String, DOM node] Optional selector string or DOM node to attach visualization to.
@@ -1153,7 +1155,7 @@ Cls = (c3.Base = class Base extends c3.Dispatch {
     style(style_new){ return this._style(style_new); }
     _style() {}
 });
-Cls.initClass();
+Clsc3.initClass();
 
 
 //##################################################################
@@ -1174,7 +1176,7 @@ Cls.initClass();
 // * **content** - A c3 selection of the chart content
 // @abstract
 // @author Douglas Armstrong
-Cls = (c3.Chart = class Chart extends c3.Base {
+Clsc3 = (c3.Chart = class Chart extends c3.Base {
     static initClass() {
         this.prototype.type = 'chart';
     
@@ -1219,7 +1221,7 @@ Cls = (c3.Chart = class Chart extends c3.Base {
         return super.style(...arguments);
     }
 });
-Cls.initClass();
+Clsc3.initClass();
 
 
 //##################################################################

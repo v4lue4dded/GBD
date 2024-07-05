@@ -32,8 +32,9 @@
 //
 // @author Douglas Armstrong
 // @todo Avoid negative plot height/width's when div is too small to fit margins and axes.
-let Cls = (c3.Plot = class Plot extends c3.Chart {
+let Clsc3plot = (c3.Plot = class Plot extends c3.Chart {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._update = this._update.bind(this);
@@ -45,7 +46,6 @@ let Cls = (c3.Plot = class Plot extends c3.Chart {
         this.max_x = this.max_x.bind(this);
         this.min_y = this.min_y.bind(this);
         this.max_y = this.max_y.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -298,7 +298,7 @@ let Cls = (c3.Plot = class Plot extends c3.Chart {
       })()) : this.layers), l => l.max_y());
   }
 });
-Cls.initClass();
+Clsc3plot.initClass();
 
 
 //##################################################################
@@ -315,12 +315,12 @@ Cls.initClass();
 // * **selectend** - Triggered when a selection is made.  Passed with the selected domain.
 // @author Douglas Armstrong
 // @todo Allow user to set events on their layers by moving brush to back?
-Cls = (c3.Plot.Selectable = class Selectable extends c3.Plot {
+Clsc3plot = (c3.Plot.Selectable = class Selectable extends c3.Plot {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this.select = this.select.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -448,7 +448,7 @@ Cls = (c3.Plot.Selectable = class Selectable extends c3.Plot {
         return delete this.prev_extent;
     }
 });
-Cls.initClass(); // If user adjusts selection then clear @prev_extent so we don't skip the next brush event
+Clsc3plot.initClass(); // If user adjusts selection then clear @prev_extent so we don't skip the next brush event
 
 
 //##################################################################
@@ -471,14 +471,14 @@ Cls.initClass(); // If user adjusts selection then clear @prev_extent so we don'
 // @author Douglas Armstrong
 // @todo Normalize zoom functionality better (horiz and vert) (for both plot and axis, maybe chart)
 // @todo Support zooming with layers or axes that don't share the chart's horizontal scale
-Cls = (c3.Plot.Zoomable = class Zoomable extends c3.Plot {
+Clsc3plot = (c3.Plot.Zoomable = class Zoomable extends c3.Plot {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this.focus = this.focus.bind(this);
         this.pan = this.pan.bind(this);
         this._draw = this._draw.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -656,7 +656,7 @@ Cls = (c3.Plot.Zoomable = class Zoomable extends c3.Plot {
         }
     }
 });
-Cls.initClass();
+Clsc3plot.initClass();
 
 
 //##################################################################
@@ -673,7 +673,7 @@ Cls.initClass();
 // @todo Normalize the zoom/pan implementation from {c3.Plot.Zoomable}
 // @todo Ability to specify tick counts for ordinal scales?
 // @todo Remove dependency on d3.axis for more flexibility, cleaner implementation, and performance?
-Cls = (c3.Axis = class Axis extends c3.Chart {
+Clsc3plot = (c3.Axis = class Axis extends c3.Chart {
     static initClass() {
         this.version = 0.1;
         this.prototype.type = 'axis';
@@ -707,9 +707,9 @@ Cls = (c3.Axis = class Axis extends c3.Chart {
     }
 
     constructor(opt){
+        super(...arguments);
         this._init = this._init.bind(this);
         this._draw = this._draw.bind(this);
-        super(...arguments);
     }
 
     _init() {
@@ -766,16 +766,16 @@ Cls = (c3.Axis = class Axis extends c3.Chart {
         }
     }
 });
-Cls.initClass();
+Clsc3plot.initClass();
 
 // Horizontal X-Axis
 // @see c3.Axis
-Cls = (c3.Axis.X = class X extends c3.Axis {
+Clsc3plot = (c3.Axis.X = class X extends c3.Axis {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._draw = this._draw.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -805,16 +805,16 @@ Cls = (c3.Axis.X = class X extends c3.Axis {
         }
     }
 });
-Cls.initClass();
+Clsc3plot.initClass();
 
 // Vertical Y-Axis
 // @see c3.Axis
-Cls = (c3.Axis.Y = class Y extends c3.Axis {
+Clsc3plot = (c3.Axis.Y = class Y extends c3.Axis {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._draw = this._draw.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -846,4 +846,4 @@ Cls = (c3.Axis.Y = class Y extends c3.Axis {
         }
     }
 });
-Cls.initClass();
+Clsc3plot.initClass();

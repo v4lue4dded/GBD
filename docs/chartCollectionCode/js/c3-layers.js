@@ -52,7 +52,7 @@
 // stroke widths, rounding errors, etc.
 // @abstract
 // @author Douglas Armstrong
-let Cls = (c3.Plot.Layer = class Layer {
+let Clsc3layers = (c3.Plot.Layer = class Layer extends c3.Dispatch {
     static initClass() {
         this.version = 0.2;
         c3.Layer = this; // Shortcut for accessing plot layers.
@@ -99,6 +99,7 @@ let Cls = (c3.Plot.Layer = class Layer {
     }
 
     constructor(opt){
+        super();
         this.init = this.init.bind(this);
         this.size = this.size.bind(this);
         this.update = this.update.bind(this);
@@ -112,7 +113,6 @@ let Cls = (c3.Plot.Layer = class Layer {
         this.max_x = this.max_x.bind(this);
         this.min_y = this.min_y.bind(this);
         this.max_y = this.max_y.bind(this);
-        c3.util.extend(this, new c3.Dispatch);
         c3.util.extend(this, opt);
         this.uid = c3.Plot.Layer._next_uid++;
     }
@@ -249,7 +249,7 @@ let Cls = (c3.Plot.Layer = class Layer {
     min_y() { if (this.y != null) { return d3.min(this.data, this.y); } }
     max_y() { if (this.y != null) { return d3.max(this.data, this.y); } }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -285,8 +285,9 @@ Cls.initClass();
 // @author Douglas Armstrong
 // @note If stacked, the input datasets may not have duplicate values in the same stack for the same X value.  There are other resitrictions if `safe` mode is not used.
 // @note If you do not provide data elements for all stacks at all x values, then be prepared for your accessor callbacks to be called with _null_ objects.
-Cls = (c3.Plot.Layer.Stackable = class Stackable extends c3.Plot.Layer {
+Clsc3layers = (c3.Plot.Layer.Stackable = class Stackable extends c3.Plot.Layer {
     constructor(...args) {
+        super(...args);
         this._stack = this._stack.bind(this);
         this._update = this._update.bind(this);
         this._style = this._style.bind(this);
@@ -294,7 +295,6 @@ Cls = (c3.Plot.Layer.Stackable = class Stackable extends c3.Plot.Layer {
         this.max_x = this.max_x.bind(this);
         this.min_y = this.min_y.bind(this);
         this.max_y = this.max_y.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -547,11 +547,11 @@ Cls = (c3.Plot.Layer.Stackable = class Stackable extends c3.Plot.Layer {
         return d3.max(this.stacks, stack => d3.max(stack.values, v => v.y0 + v.y));
     } }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 // A _struct-type_ convention class to describe a stack when manually specifying the set of stacks
 // to use for a stackable chart layer.
-Cls = (c3.Plot.Layer.Stackable.Stack = class Stack {
+Clsc3layers = (c3.Plot.Layer.Stackable.Stack = class Stack {
     static initClass() {
         this.version = 0.1;
     
@@ -570,7 +570,7 @@ Cls = (c3.Plot.Layer.Stackable.Stack = class Stack {
 
     constructor(opt){ c3.util.extend(this, opt); }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -593,15 +593,15 @@ Cls.initClass();
 //
 // @abstract
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Path = class Path extends c3.Plot.Layer.Stackable {
+Clsc3layers = (c3.Plot.Layer.Path = class Path extends c3.Plot.Layer.Stackable {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
         this.min_x = this.min_x.bind(this);
         this.max_x = this.max_x.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -717,25 +717,25 @@ Cls = (c3.Plot.Layer.Path = class Path extends c3.Plot.Layer.Stackable {
     min_x() { if ((this.stacks == null)) { if (this.data.length) { return this.x(this.data[0]); } } else { return __guard__(this.stacks[0] != null ? this.stacks[0].values[0] : undefined, x => x.x); } }
     max_x() { if ((this.stacks == null)) { if (this.data.length) { return this.x(this.data.slice(-1)[0]); } } else { return __guard__(this.stacks[0] != null ? this.stacks[0].values.slice(-1)[0] : undefined, x => x.x); } }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 // Line graph layer for the {c3.Plot XY Plot Chart}.  Please refer to {c3.Plot.Layer.Path} for documentation.
 // @see c3.Plot.Layer.Path
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Line = class Line extends c3.Plot.Layer.Path {
+Clsc3layers = (c3.Plot.Layer.Line = class Line extends c3.Plot.Layer.Path {
     static initClass() {
         this.prototype.type = 'line';
         this.prototype.path_generator_factory = d3.svg.line;
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 // Area graph layer for the {c3.Plot XY Plot Chart}.  Please refer to {c3.Plot.Layer.Path} for documentation.
 // @see c3.Plot.Layer.Path
 // @author Douglas Armstrong
 // @note The input data array should be sorted along the x axis.
-Cls = (c3.Plot.Layer.Area = class Area extends c3.Plot.Layer.Path {
+Clsc3layers = (c3.Plot.Layer.Area = class Area extends c3.Plot.Layer.Path {
     static initClass() {
         this.prototype.type = 'area';
         this.prototype.path_generator_factory = d3.svg.area;
@@ -744,7 +744,7 @@ Cls = (c3.Plot.Layer.Area = class Area extends c3.Plot.Layer.Path {
         this.prototype.baseline = undefined;
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -767,12 +767,12 @@ Cls.initClass();
 //
 // @todo Support negative y values for bar layers
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Bar = class Bar extends c3.Plot.Layer.Stackable {
+Clsc3layers = (c3.Plot.Layer.Bar = class Bar extends c3.Plot.Layer.Stackable {
     constructor(...args) {
+        super(...args);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -875,7 +875,7 @@ Cls = (c3.Plot.Layer.Bar = class Bar extends c3.Plot.Layer.Stackable {
         return this.rects.style(style_new);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -904,14 +904,14 @@ Cls.initClass();
 //
 // @abstract
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Line.Straight = class Straight extends c3.Plot.Layer {
+Clsc3layers = (c3.Plot.Layer.Line.Straight = class Straight extends c3.Plot.Layer {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1040,15 +1040,15 @@ Cls = (c3.Plot.Layer.Line.Straight = class Straight extends c3.Plot.Layer {
         return __guardMethod__(this.labels, 'style', o1 => o1.style(style_new));
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 // Horizontal line layer.  Please refer to {c3.Plot.Layer.Line.Straight} for documentation.
 // @see c3.Plot.Layer.Line.Straight
-Cls = (c3.Plot.Layer.Line.Horizontal = class Horizontal extends c3.Plot.Layer.Line.Straight {
+Clsc3layers = (c3.Plot.Layer.Line.Horizontal = class Horizontal extends c3.Plot.Layer.Line.Straight {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1068,15 +1068,15 @@ Cls = (c3.Plot.Layer.Line.Horizontal = class Horizontal extends c3.Plot.Layer.Li
         return super._size(...arguments);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 // Vertical line layer.  Please refer to {c3.Plot.Layer.Line.Straight} for documentation.
 // @see c3.Plot.Layer.Line.Straight
-Cls = (c3.Plot.Layer.Line.Vertical = class Vertical extends c3.Plot.Layer.Line.Straight {
+Clsc3layers = (c3.Plot.Layer.Line.Vertical = class Vertical extends c3.Plot.Layer.Line.Straight {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1098,7 +1098,7 @@ Cls = (c3.Plot.Layer.Line.Vertical = class Vertical extends c3.Plot.Layer.Line.S
         return super._size(...arguments);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -1128,14 +1128,14 @@ Cls.initClass();
 // * **dragend** - called with the new position and the data element.
 //
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Region = class Region extends c3.Plot.Layer {
+Clsc3layers = (c3.Plot.Layer.Region = class Region extends c3.Plot.Layer {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1390,7 +1390,7 @@ Cls = (c3.Plot.Layer.Region = class Region extends c3.Plot.Layer {
         return this.rects.style(style_new);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -1409,13 +1409,13 @@ Cls.initClass();
 // * **labels** - Representing svg:text labels for each datapoint
 // @author Douglas Armstrong
 // @todo Only render datapoints within the current zoomed domain.
-Cls = (c3.Plot.Layer.Scatter = class Scatter extends c3.Plot.Layer {
+Clsc3layers = (c3.Plot.Layer.Scatter = class Scatter extends c3.Plot.Layer {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1524,7 +1524,7 @@ Cls = (c3.Plot.Layer.Scatter = class Scatter extends c3.Plot.Layer {
         return (this.labels != null ? this.labels.style(style_new) : undefined);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -1542,14 +1542,14 @@ Cls.initClass();
 // * **tip** - HTML hover content
 // @abstract
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Swimlane = class Swimlane extends c3.Plot.Layer {
+Clsc3layers = (c3.Plot.Layer.Swimlane = class Swimlane extends c3.Plot.Layer {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this._update = this._update.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1662,7 +1662,7 @@ Cls = (c3.Plot.Layer.Swimlane = class Swimlane extends c3.Plot.Layer {
         return (this.lanes != null ? this.lanes.style() : undefined);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -1680,14 +1680,14 @@ Cls.initClass();
 // @author Douglas Armstrong
 (function() {
     let scaled = undefined;
-    Cls = (c3.Plot.Layer.Swimlane.Segment = class Segment extends c3.Plot.Layer.Swimlane {
+    Clsc3layers = (c3.Plot.Layer.Swimlane.Segment = class Segment extends c3.Plot.Layer.Swimlane {
         constructor(...args) {
+            super(...args);
             this._init = this._init.bind(this);
             this._hover_datum = this._hover_datum.bind(this);
             this._update = this._update.bind(this);
             this._draw = this._draw.bind(this);
             this._style = this._style.bind(this);
-            super(...args);
         }
 
         static initClass() {
@@ -1860,8 +1860,8 @@ Cls.initClass();
             return (this.labels != null ? this.labels.style(style_new) : undefined);
         }
     });
-    Cls.initClass();
-    return Cls;
+    Clsc3layers.initClass();
+    return Clsc3layers;
 })();
 
 
@@ -1884,11 +1884,11 @@ Cls.initClass();
 // You should not define `y`, but you must define a `x`, `dx`, and `dy`.
 //
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Swimlane.Flamechart = class Flamechart extends c3.Plot.Layer.Swimlane.Segment {
+Clsc3layers = (c3.Plot.Layer.Swimlane.Flamechart = class Flamechart extends c3.Plot.Layer.Swimlane.Segment {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -1939,7 +1939,7 @@ Cls = (c3.Plot.Layer.Swimlane.Flamechart = class Flamechart extends c3.Plot.Laye
         return c3.Plot.Layer.Swimlane.prototype._update.call(this, origin);
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -1975,8 +1975,9 @@ Cls.initClass();
 //   or with `null` if reverting to the top of the hierarchy.
 //
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Swimlane.Icicle = class Icicle extends c3.Plot.Layer.Swimlane {
+Clsc3layers = (c3.Plot.Layer.Swimlane.Icicle = class Icicle extends c3.Plot.Layer.Swimlane {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._hover_datum = this._hover_datum.bind(this);
         this._update = this._update.bind(this);
@@ -1984,7 +1985,6 @@ Cls = (c3.Plot.Layer.Swimlane.Icicle = class Icicle extends c3.Plot.Layer.Swimla
         this._style = this._style.bind(this);
         this.rebase = this.rebase.bind(this);
         this.rebase_key = this.rebase_key.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -2228,7 +2228,7 @@ Cls = (c3.Plot.Layer.Swimlane.Icicle = class Icicle extends c3.Plot.Layer.Swimla
     // Navigate to a new root node in the hierarchy represented by `key`
     rebase_key(root_key){ return this.rebase(this.nodes[root_key] != null ? this.nodes[root_key].datum : undefined); }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //##################################################################
@@ -2238,12 +2238,12 @@ Cls.initClass();
 // A {c3.Plot.Layer.Swimlane swimlane layer} that will sample for each pixel in each swimlane.
 // @abstract
 // @author Douglas Armstrong
-Cls = (c3.Plot.Layer.Swimlane.Sampled = class Sampled extends c3.Plot.Layer.Swimlane {
+Clsc3layers = (c3.Plot.Layer.Swimlane.Sampled = class Sampled extends c3.Plot.Layer.Swimlane {
     constructor(...args) {
+        super(...args);
         this._hover_datum = this._hover_datum.bind(this);
         this._update = this._update.bind(this);
         this._sample = this._sample.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -2336,7 +2336,7 @@ Cls = (c3.Plot.Layer.Swimlane.Sampled = class Sampled extends c3.Plot.Layer.Swim
         }
     }
 });
-Cls.initClass(); // avoid returning a comprehension
+Clsc3layers.initClass(); // avoid returning a comprehension
 
 
 // A {c3.Plot.Layer.Swimlane.Sampled sampled swimlane layer} implemented via SVG lines
@@ -2344,11 +2344,11 @@ Cls.initClass(); // avoid returning a comprehension
 // The following {c3.Selection} members are made available if appropriate:
 // * **lines** - svg:rect's for each swimlane
 // @todo Optimize by generating pixel data array once in _size() and reusing it in _draw()
-Cls = (c3.Plot.Layer.Swimlane.Sampled.SVG = class SVG extends c3.Plot.Layer.Swimlane.Sampled {
+Clsc3layers = (c3.Plot.Layer.Swimlane.Sampled.SVG = class SVG extends c3.Plot.Layer.Swimlane.Sampled {
     constructor(...args) {
+        super(...args);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -2384,20 +2384,20 @@ Cls = (c3.Plot.Layer.Swimlane.Sampled.SVG = class SVG extends c3.Plot.Layer.Swim
         return this.lines.style();
     }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 // A {c3.Plot.Layer.Swimlane.Sampled sampled swimlane layer} implemented via HTML5 Canvas
 // This layer supports `line_options.styles.stroke` and HTML `hover` "tooltips".
-Cls = (c3.Plot.Layer.Swimlane.Sampled.Canvas = class Canvas extends c3.Plot.Layer.Swimlane.Sampled {
+Clsc3layers = (c3.Plot.Layer.Swimlane.Sampled.Canvas = class Canvas extends c3.Plot.Layer.Swimlane.Sampled {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._size = this._size.bind(this);
         this.__draw = this.__draw.bind(this);
         this._draw = this._draw.bind(this);
         this._style = this._style.bind(this);
         this.zoom = this.zoom.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -2454,7 +2454,7 @@ Cls = (c3.Plot.Layer.Swimlane.Sampled.Canvas = class Canvas extends c3.Plot.Laye
     // For the sampled layer, draw and style are the same.  By default zoom does both, so just do one.
     zoom() { return this.__draw('zoom'); }
 });
-Cls.initClass();
+Clsc3layers.initClass();
 
 
 //###################################################################

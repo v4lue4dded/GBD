@@ -27,12 +27,12 @@
 // The `li` elements get the `parent` class if they have children.
 // `li` elements have spans with either the `content` or `bullet` class as appropriate.
 // @author Douglas Armstrong
-let Cls = (c3.Legend = class Legend extends c3.Base {
+let Clsc3legend = (c3.Legend = class Legend extends c3.Base {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -169,7 +169,7 @@ let Cls = (c3.Legend = class Legend extends c3.Base {
         return (this.nested_bullets != null ? this.nested_bullets.style(style_new) : undefined);
     }
 });
-Cls.initClass();
+Clsc3legend.initClass();
 
 
 //##################################################################
@@ -192,12 +192,12 @@ Cls.initClass();
 // @todo Create a Legend type for Pie charts
 // @todo Support for decimated layers
 // @author Douglas Armstrong
-Cls = (c3.Legend.PlotLegend = class PlotLegend extends c3.Legend {
+Clsc3legend = (c3.Legend.PlotLegend = class PlotLegend extends c3.Legend {
     constructor(...args) {
+        super(...args);
         this._init = this._init.bind(this);
         this._update = this._update.bind(this);
         this._style = this._style.bind(this);
-        super(...args);
     }
 
     static initClass() {
@@ -468,7 +468,7 @@ Cls = (c3.Legend.PlotLegend = class PlotLegend extends c3.Legend {
          });
     }
 });
-Cls.initClass();
+Clsc3legend.initClass();
 
 function __guardMethod__(obj, methodName, transform) {
   if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
