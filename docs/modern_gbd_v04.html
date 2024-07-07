@@ -237,8 +237,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -465,23 +465,18 @@
             function snapToValidYear(year) {
                 return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
             }
-            max_population = d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })
 
             var charts = [];
             var timeline;
-            charts.push(timeline = new c3.Plot.Zoomable({
+            charts.push(timeline = new c3.Plot({
                 anchor: '#gbd_timeline',
                 height: 800,
-                // Setup the **scales**. Time will go from the year 2000 to 2019 with specific categorical values.
-                h: d3.scale.linear().domain([2000, 2019]),
-                v: d3.scale.linear().domain([0, max_population]),
+                h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
+                v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
                 // The **x** function uses the key directly, which represents the year from the year dimension.
                 x: function (d) { return d.key; },
                 // The default **y** function generates its value based on the population value.
                 y: function (d) { return d.value.pop_val; },
-                // Set chart as **zoomable** and limit the maximum amount the user is allowed to zoom in.
-                zoomable: 'h',
-                zoom_extent: 16,
                 // Set margins on all sides of the chart to allow extra room for labels to fit.
                 margins: 100,
                 // Create **axes** for this plot.
