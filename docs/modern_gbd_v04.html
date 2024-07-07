@@ -237,8 +237,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -528,6 +528,7 @@
                                 year = snapToValidYear(year);
                                 this.data = [year];
                                 CFDDict0['gbd']['d']['year'].filter(year);
+                                CFDDict0['population']['d']['year'].filter(year);
                                 redraw();
                             },
                             // Filter the data based on the initial year selection
@@ -548,6 +549,7 @@
                                 year = snapToValidYear(year);
                                 this.data = [year];
                                 CFDDict1['gbd']['d']['year'].filter(year);
+                                CFDDict1['population']['d']['year'].filter(year);
                                 redraw();
                             },
                             // Filter the data based on the initial year selection
