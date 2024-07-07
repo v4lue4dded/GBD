@@ -95,6 +95,16 @@
             stroke: darkgreen;
             stroke-width: 10;
         }
+
+        .c3.plot .layer.from_year line {
+            stroke-width: 10px;
+            stroke: red;
+        }
+        .c3.plot .layer.until_year line {
+            stroke-width: 10px;
+            stroke: red;
+        }
+
     </style>
 </head>
 
@@ -448,13 +458,13 @@
             var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
 
-
-
-
-            console.log("testing:")
-            console.log(aggDict0['population']['year'])
-            console.log(d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; }))
-
+            var validYears = aggDict0['population']['year'].map(function (d) {
+                return d.key;
+            });
+            // Helper function to snap the year to the nearest valid year in the dataset
+            function snapToValidYear(year) {
+                return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
+            }
             max_population = d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })
 
             var charts = [];
@@ -462,15 +472,12 @@
             charts.push(timeline = new c3.Plot.Zoomable({
                 anchor: '#gbd_timeline',
                 height: 800,
-                // Setup the **scales**.  Time will go from the year 1970-2012.  The default chart vertical
-                // scale will go from 0-100 for percentages.
+                // Setup the **scales**. Time will go from the year 2000 to 2019 with specific categorical values.
                 h: d3.scale.linear().domain([2000, 2019]),
                 v: d3.scale.linear().domain([0, max_population]),
                 // The **x** function uses the key directly, which represents the year from the year dimension.
                 x: function (d) { return d.key; },
-                // The default **y** function generates its value as a percentage of the gdp for that year.
-                // There are better ways to do this, but I wanted to demonstrate the flexibility the callbacks
-                // provide for visualizing based on the data.
+                // The default **y** function generates its value based on the population value.
                 y: function (d) { return d.value.pop_val; },
                 // Set chart as **zoomable** and limit the maximum amount the user is allowed to zoom in.
                 zoomable: 'h',
@@ -508,6 +515,46 @@
                             "class": 'population_line_graph'
                         },
                         data: aggDict0['population']['year']
+                    }),
+                    new c3.Plot.Layer.Line.Vertical({
+                        data: [2000],
+                        draggable: true,
+                        options: {
+                            title: "from Year",
+                            "class": 'from_year'
+                        },
+                        handlers: {
+                            'drag': function (year) {
+                                year = snapToValidYear(year);
+                                this.data = [year];
+                                CFDDict0['gbd']['d']['year'].filter(year);
+                                redraw();
+                            },
+                            // Filter the data based on the initial year selection
+                            'render': function () {
+                                this.handlers['drag'](this.data[0]);
+                            }
+                        }
+                    }),
+                    new c3.Plot.Layer.Line.Vertical({
+                        data: [2019],
+                        draggable: true,
+                        options: {
+                            title: "until Year",
+                            "class": 'until_year'
+                        },
+                        handlers: {
+                            'drag': function (year) {
+                                year = snapToValidYear(year);
+                                this.data = [year];
+                                CFDDict1['gbd']['d']['year'].filter(year);
+                                redraw();
+                            },
+                            // Filter the data based on the initial year selection
+                            'render': function () {
+                                this.handlers['drag'](this.data[0]);
+                            }
+                        }
                     }),
                 ]
             }));
@@ -691,41 +738,41 @@
                 }));
             }
 
-            createDataTable({
-                anchorId: '#gdb_year0_table',
-                data: columnNameFill(aggDict0["gbd"]["year"], "year"),
-                filter_dimensions: [CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']],
-                initialSortColumn: "Year 0",
-                selectable: 'single',
-                columns: [
-                    {
-                        header: { text: "Year 0" },
-                        cells: {
-                            text: function (d) { return d.key; }
-                        },
-                        sort: function (d) { return d.key; },
-                        sort_ascending: true,
-                    },
-                ].concat(deepClone(common_columns))
-            });
+            // createDataTable({
+            //     anchorId: '#gdb_year0_table',
+            //     data: columnNameFill(aggDict0["gbd"]["year"], "year"),
+            //     filter_dimensions: [CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']],
+            //     initialSortColumn: "Year 0",
+            //     selectable: 'single',
+            //     columns: [
+            //         {
+            //             header: { text: "Year 0" },
+            //             cells: {
+            //                 text: function (d) { return d.key; }
+            //             },
+            //             sort: function (d) { return d.key; },
+            //             sort_ascending: true,
+            //         },
+            //     ].concat(deepClone(common_columns))
+            // });
 
-            createDataTable({
-                anchorId: '#gdb_year1_table',
-                data: columnNameFill(aggDict1["gbd"]["year"], "year"),
-                filter_dimensions: [CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']],
-                initialSortColumn: "Year 1",
-                selectable: 'single',
-                columns: [
-                    {
-                        header: { text: "Year 1" },
-                        cells: {
-                            text: function (d) { return d.key; }
-                        },
-                        sort: function (d) { return d.key; },
-                        sort_ascending: true,
-                    },
-                ].concat(deepClone(common_columns))
-            });
+            // createDataTable({
+            //     anchorId: '#gdb_year1_table',
+            //     data: columnNameFill(aggDict1["gbd"]["year"], "year"),
+            //     filter_dimensions: [CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']],
+            //     initialSortColumn: "Year 1",
+            //     selectable: 'single',
+            //     columns: [
+            //         {
+            //             header: { text: "Year 1" },
+            //             cells: {
+            //                 text: function (d) { return d.key; }
+            //             },
+            //             sort: function (d) { return d.key; },
+            //             sort_ascending: true,
+            //         },
+            //     ].concat(deepClone(common_columns))
+            // });
 
 
             createDataTable({
