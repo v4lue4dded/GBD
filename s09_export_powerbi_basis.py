@@ -102,7 +102,7 @@ with open(f"{export_dir}df_measure_narrow_import_dict.json", 'w') as json_file:
         "chunk_file_names": chunk_file_names,
         }, json_file)
 
-df_measure_narrow_small_encoded = df_measure_narrow_encoded.loc[:50000,]
+df_measure_narrow_small_encoded = df_measure_narrow_encoded.loc[lambda df: df.location_name.isin(range(1,5)),]
 chunk_file_names_small = save_df_in_chunks(df_measure_narrow_small_encoded, 20000, f"{export_dir}df_measure_narrow_small_encoded")
 with open(f"{export_dir}df_measure_narrow_small_import_dict.json", 'w') as json_file:
     json.dump({
