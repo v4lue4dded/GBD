@@ -7,18 +7,29 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- Dependencies -->
-    <script src="chartCollectionCode/lib/d3.js"></script>
-    <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
-    <script src="chartCollectionCode/lib/crossfilter.js"></script>
-    <script src="chartCollectionCode/lib/promise.js"></script>
+    <script src="lib/chartCollectionCode/lib/d3.js"></script>
+    <script src="lib/chartCollectionCode/lib/crossfilter.js"></script>
+    <script src="lib/chartCollectionCode/lib/promise.js"></script>
 
     <!-- C3 -->
-    <link rel="stylesheet" href="chartCollectionCode/css/c3.css" />
-    <script src="chartCollectionCode/js/c3.js"></script>
-    <script src="chartCollectionCode/js/c3-table.js"></script>
-    <script src="chartCollectionCode/js/c3-plot.js"></script>
-    <script src="chartCollectionCode/js/c3-layers.js"></script>
-    <!-- <script src="chartCollectionCode/js/used_unconverted/c3-layers.js"></script> -->
+    <link rel="stylesheet" href="lib/chartCollectionCode/css/c3.css" />
+
+    <script src="lib/chartCollectionCode/js/c3.js"></script>
+    <script src="lib/chartCollectionCode/js/c3-table.js"></script>
+    <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
+    <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
+
+
+    <!-- dc.leaflet.js -->
+    <link rel="stylesheet" href="lib/dc.leaflet.js/lib/dc.css" />
+    <link rel="stylesheet" href="lib/dc.leaflet.js/lib/leaflet.css" />
+    <link rel="stylesheet" href="lib/dc.leaflet.js/lib/leaflet.markercluster.css" />
+
+    <script src="lib/dc.leaflet.js/lib/dc.js"></script>
+    <script src="lib/dc.leaflet.js/lib/leaflet.js"></script>
+    <script src="lib/dc.leaflet.js/lib/leaflet.markercluster.js"></script>
+    <script src="lib/dc.leaflet.js/lib/dc.leaflet.js"></script>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
     <!-- Styles -->
@@ -100,11 +111,11 @@
             stroke-width: 10px;
             stroke: red;
         }
+
         .c3.plot .layer.until_year line {
             stroke-width: 10px;
             stroke: red;
         }
-
     </style>
 </head>
 
@@ -126,6 +137,8 @@
     <script>
         var gbd_data = [];
         var population_data = [];
+        var world_geojson = {};
+
         function updateLoadingMessage(message) {
             var waitingDiv = document.getElementById('waiting');
             waitingDiv.innerHTML += message + '<br><br>';
@@ -233,6 +246,17 @@
             }
         }
 
+        function fixMissingNameMatch(data, geojson) {
+            const locationNames = new Set(data.map(d => d.location_name));
+            const featureNames = new Set(geojson.features.map(f => f.properties.nameMapped));
+
+            const locationNamesNotInFeatures = new Set([...locationNames].filter(x => !featureNames.has(x)));
+            const featureNamesNotInLocations = new Set([...featureNames].filter(x => !locationNames.has(x)));
+            // create prompt for llm to gnereate match to update geojson_to_gbd_name_mapping.json
+            console.log("Please match featureNamesNotInLocations as key in json to locationNamesNotInFeatures as value in json (only if there is a match don't even add key for those without match):");
+            console.log("locationNamesNotInFeatures:", locationNamesNotInFeatures);
+            console.log("featureNamesNotInLocations:", featureNamesNotInLocations);
+        }
 
         function download_data() {
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
@@ -273,7 +297,23 @@
                     });
                 });
 
-                Promise.all([p1, p2]).then(() => {
+                let p3 = new Promise((resolve, reject) => {
+                    d3.json("lib/geoData/geojson_to_gbd_name_mapping.json", function (nameReplacementData) {
+                        console.log("nameReplacementData:", nameReplacementData);
+                        d3.json("lib/geoData/world.geojson", function (world_geojson_import) {
+                            console.log("world_geojson_import:", world_geojson_import);
+                            // Adjust the geojson features to include nameMapped
+                            world_geojson_import.features.forEach(function (feature) {
+                                var originalName = feature.properties.name;
+                                feature.properties.nameMapped = nameReplacementData[originalName] || originalName;
+                            });
+                            world_geojson = world_geojson_import
+                            resolve();
+                        });
+                    })
+                });
+
+                Promise.all([p1, p2, p3]).then(() => {
                     d3.selectAll('#waiting').remove();
                     d3.selectAll('main').style('display', '');
                     resolve();
@@ -557,6 +597,40 @@
                     }),
                 ]
             }));
+
+
+            var groupname = "Choropleth";
+            console.log("facilities:",  CFDDict0['population']['d']['location_name']);
+            console.log("facilitiesGroup:",  aggDict0['population']['location_name']);
+
+            var facilities = CFDDict0['population']['d']['location_name'];
+            var facilitiesGroup = facilities.group().reduceSum(function (d) { return d.pop_val; });
+
+            dc.leafletChoroplethChart("#gbd_map .map", groupname)
+                // .dimension(CFDDict0['population']['d']['location_name'])
+                // .group(aggDict0['population']['location_name'])
+                .dimension(facilities)
+                .group(facilitiesGroup)
+                .width(600)
+                .height(400)
+                .center([24, 26])
+                .zoom(1.47)
+                .geojson(world_geojson)
+                .colors(['#fff7f3', '#fde0dd', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#ae017e', '#7a0177', '#49006a'])
+                .colorDomain(function () {
+                    return [0,
+                    2000000000];
+                })
+                .colorAccessor(function (d, i) {
+                    return d.pop_val;
+                })
+                .featureKeyAccessor(function (feature) {
+                    return feature.properties.nameMapped;
+                })
+                .renderPopup(true)
+                .popup(function (d, feature) {
+                    return feature.properties.nameMapped + " : " + d.pop_val;
+                });
 
 
             const common_columns = [
