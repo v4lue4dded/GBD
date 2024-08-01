@@ -19,17 +19,10 @@
     <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
     <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
 
-
-    <!-- dc.leaflet.js -->
-    <link rel="stylesheet" href="lib/dc.leaflet.js/lib/dc.css" />
-    <link rel="stylesheet" href="lib/dc.leaflet.js/lib/leaflet.css" />
-    <link rel="stylesheet" href="lib/dc.leaflet.js/lib/leaflet.markercluster.css" />
-
-    <script src="lib/dc.leaflet.js/lib/dc.js"></script>
-    <script src="lib/dc.leaflet.js/lib/leaflet.js"></script>
-    <script src="lib/dc.leaflet.js/lib/leaflet.markercluster.js"></script>
-    <script src="lib/dc.leaflet.js/lib/dc.leaflet.js"></script>
-
+    <!-- DC -->
+    <script src="lib/dc/dc.js"></script>
+    <script src="lib/dc/dc.css"></script>
+    
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
     <!-- Styles -->
@@ -125,7 +118,7 @@
 
     <main style="display:none">
         <div id="gbd_timeline"></div>
-        <div id="gbd_map"></div>
+        <div id="gbd_map"></div>        
         <div id="gdb_year0_table"></div>
         <div id="gdb_year1_table"></div>
         <div id="gdb_sex_name_table"></div>
@@ -598,39 +591,31 @@
                 ]
             }));
 
+            var worldChart = dc.GeoChoroplethChart("#gbd_map");
+            var location_nameDim = CFDDict0['population']['d']['location_name'];
+            var location_nameDimAgg = location_nameDim.group().reduceSum(function (d) { return d.pop_val; });
 
-            var groupname = "Choropleth";
-            console.log("facilities:",  CFDDict0['population']['d']['location_name']);
-            console.log("facilitiesGroup:",  aggDict0['population']['location_name']);
 
-            var facilities = CFDDict0['population']['d']['location_name'];
-            var facilitiesGroup = facilities.group().reduceSum(function (d) { return d.pop_val; });
 
-            dc.leafletChoroplethChart("#gbd_map .map", groupname)
-                // .dimension(CFDDict0['population']['d']['location_name'])
-                // .group(aggDict0['population']['location_name'])
-                .dimension(facilities)
-                .group(facilitiesGroup)
-                .width(600)
-                .height(400)
-                .center([24, 26])
-                .zoom(1.47)
-                .geojson(world_geojson)
-                .colors(['#fff7f3', '#fde0dd', '#fcc5c0', '#fa9fb5', '#f768a1', '#dd3497', '#ae017e', '#7a0177', '#49006a'])
-                .colorDomain(function () {
-                    return [0,
-                    2000000000];
+            usChart.width(990)
+                    .height(500)
+                    .dimension(location_nameDim)
+                    .group(location_nameDimAgg)
+                    .colors(d3.scaleQuantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
+                    .colorDomain([0, 200])
+                    .colorCalculator(function (d) { return d ? usChart.colors()(d) : '#ccc'; })
+                    .overlayGeoJson(world_geojson.features, "state", function (d) {
+                        return d.properties.name;
+                    })
+                .projection(d3.geoAlbersUsa())
+                .valueAccessor(function(kv) {
+                    console.log(kv);
+                    return kv.pop_val;
                 })
-                .colorAccessor(function (d, i) {
-                    return d.pop_val;
-                })
-                .featureKeyAccessor(function (feature) {
-                    return feature.properties.nameMapped;
-                })
-                .renderPopup(true)
-                .popup(function (d, feature) {
-                    return feature.properties.nameMapped + " : " + d.pop_val;
-                });
+                    .title(function (d) {
+                        return "State: " + d.key + "\nTotal Amount Raised: " + numberFormat(d.pop_val ? d.pop_val : 0) + "M";
+                    });
+
 
 
             const common_columns = [

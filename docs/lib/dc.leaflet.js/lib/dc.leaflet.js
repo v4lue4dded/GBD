@@ -311,6 +311,7 @@ dc.leafletMarkerChart = function(parent, chartGroup) {
 
 
 dc.leafletChoroplethChart = function(parent, chartGroup) {
+  console.log('inside leafletChoroplethChart')
   var _chart = dc.colorChart(dc.leafletChart({}));
   
   var _geojsonLayer = false;
@@ -429,6 +430,9 @@ dc.leafletChoroplethChart = function(parent, chartGroup) {
       dc.redrawAll(_chart.chartGroup());
     });
   }
+
+  console.log('end of leafletChoroplethChart')
+  console.log(_chart)
 
   return _chart.anchor(parent, chartGroup);
 }
