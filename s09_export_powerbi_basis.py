@@ -58,7 +58,7 @@ con = engine.connect()
 
 export_dir = 'docs\\data_doc\\'
 
-df_basis = pd.read_sql('select * from gbd.db04_modelling.export_basis_population', con=engine)
+# df_basis = pd.read_sql('select * from gbd.db04_modelling.export_basis_population', con=engine)
 # df_basis.to_csv(f"{export_dir}df_basis.csv", index = False, sep = '\t', encoding='utf-8-sig')
 # print(config.power_bi_type_cast(df_basis), df_basis.shape)
 
@@ -66,12 +66,15 @@ df_population = pd.read_sql('select * from gbd.db04_modelling.export_population'
 df_population.to_csv(f"{export_dir}df_population.csv", index = False, sep = '\t', encoding='utf-8-sig')
 # print(config.power_bi_type_cast(df_population), df_population.shape)
 
-df_measure = pd.read_sql('select * from gbd.db04_modelling.export_measure', con=engine)
+df_measure = pd.read_sql('select * from gbd.db04_modelling.export_long', con=engine)
 # df_measure.to_csv(f"{export_dir}df_measure.csv", index = False, sep = '\t', encoding='utf-8-sig')
 df_measure_narrow = df_measure[[
 'year',
 'location_name',
+'region_name',
+'sub_region_name',
 'age_group_name_sorted',
+'age_cluster_name_sorted',
 'sex_name',
 'l1_cause_name',
 'l2_cause_name',
@@ -92,7 +95,7 @@ yll_lower = lambda x: round(x.yll_lower),
 yll_upper = lambda x: round(x.yll_upper), 
 )
 
-categorical_cols = ['year', 'location_name', 'age_group_name_sorted', 'sex_name', 'l1_cause_name', 'l2_cause_name']
+categorical_cols = ['year', 'location_name', 'region_name', 'sub_region_name', 'age_group_name_sorted', 'age_cluster_name_sorted', 'sex_name', 'l1_cause_name', 'l2_cause_name']
 df_measure_narrow_encoded, decoding_dict = encode_dataframe(df_measure_narrow, categorical_cols)
 
 chunk_file_names = save_df_in_chunks(df_measure_narrow_encoded, 400000, f"{export_dir}df_measure_narrow_encoded")

@@ -15,27 +15,27 @@ create table         gbd.db04_modelling.cb_age_group_export as
 select
 *
 from (
-         select  28 as age_group_id ,  '<1 year' as age_group_name ,'00 years' as age_group_name_sorted
-   union select   5 as age_group_id ,   '1 to 4' as age_group_name ,'01 to 04' as age_group_name_sorted
-   union select   6 as age_group_id ,   '5 to 9' as age_group_name ,'05 to 09' as age_group_name_sorted
-   union select   7 as age_group_id , '10 to 14' as age_group_name ,'10 to 14' as age_group_name_sorted
-   union select   8 as age_group_id , '15 to 19' as age_group_name ,'15 to 19' as age_group_name_sorted
-   union select   9 as age_group_id , '20 to 24' as age_group_name ,'20 to 24' as age_group_name_sorted
-   union select  10 as age_group_id , '25 to 29' as age_group_name ,'25 to 29' as age_group_name_sorted
-   union select  11 as age_group_id , '30 to 34' as age_group_name ,'30 to 34' as age_group_name_sorted
-   union select  12 as age_group_id , '35 to 39' as age_group_name ,'35 to 39' as age_group_name_sorted
-   union select  13 as age_group_id , '40 to 44' as age_group_name ,'40 to 44' as age_group_name_sorted
-   union select  14 as age_group_id , '45 to 49' as age_group_name ,'45 to 49' as age_group_name_sorted
-   union select  15 as age_group_id , '50 to 54' as age_group_name ,'50 to 54' as age_group_name_sorted
-   union select  16 as age_group_id , '55 to 59' as age_group_name ,'55 to 59' as age_group_name_sorted
-   union select  17 as age_group_id , '60 to 64' as age_group_name ,'60 to 64' as age_group_name_sorted
-   union select  18 as age_group_id , '65 to 69' as age_group_name ,'65 to 69' as age_group_name_sorted
-   union select  19 as age_group_id , '70 to 74' as age_group_name ,'70 to 74' as age_group_name_sorted
-   union select  20 as age_group_id , '75 to 79' as age_group_name ,'75 to 79' as age_group_name_sorted
-   union select  30 as age_group_id , '80 to 84' as age_group_name ,'80 to 84' as age_group_name_sorted
-   union select  31 as age_group_id , '85 to 89' as age_group_name ,'85 to 89' as age_group_name_sorted
-   union select  32 as age_group_id , '90 to 94' as age_group_name ,'90 to 94' as age_group_name_sorted
-   union select 235 as age_group_id ,  '95 plus' as age_group_name ,'95 plus'  as age_group_name_sorted
+         select  28 as age_group_id ,  '<1 year' as age_group_name ,'00 years' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
+   union select   5 as age_group_id ,   '1 to 4' as age_group_name ,'01 to 04' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
+   union select   6 as age_group_id ,   '5 to 9' as age_group_name ,'05 to 09' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
+   union select   7 as age_group_id , '10 to 14' as age_group_name ,'10 to 14' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
+   union select   8 as age_group_id , '15 to 19' as age_group_name ,'15 to 19' as age_group_name_sorted, '15 to 29' as age_cluster_name_sorted
+   union select   9 as age_group_id , '20 to 24' as age_group_name ,'20 to 24' as age_group_name_sorted, '15 to 29' as age_cluster_name_sorted
+   union select  10 as age_group_id , '25 to 29' as age_group_name ,'25 to 29' as age_group_name_sorted, '15 to 29' as age_cluster_name_sorted
+   union select  11 as age_group_id , '30 to 34' as age_group_name ,'30 to 34' as age_group_name_sorted, '30 to 44' as age_cluster_name_sorted
+   union select  12 as age_group_id , '35 to 39' as age_group_name ,'35 to 39' as age_group_name_sorted, '30 to 44' as age_cluster_name_sorted
+   union select  13 as age_group_id , '40 to 44' as age_group_name ,'40 to 44' as age_group_name_sorted, '30 to 44' as age_cluster_name_sorted
+   union select  14 as age_group_id , '45 to 49' as age_group_name ,'45 to 49' as age_group_name_sorted, '45 to 59' as age_cluster_name_sorted
+   union select  15 as age_group_id , '50 to 54' as age_group_name ,'50 to 54' as age_group_name_sorted, '45 to 59' as age_cluster_name_sorted
+   union select  16 as age_group_id , '55 to 59' as age_group_name ,'55 to 59' as age_group_name_sorted, '45 to 59' as age_cluster_name_sorted
+   union select  17 as age_group_id , '60 to 64' as age_group_name ,'60 to 64' as age_group_name_sorted, '60 to 74' as age_cluster_name_sorted
+   union select  18 as age_group_id , '65 to 69' as age_group_name ,'65 to 69' as age_group_name_sorted, '60 to 74' as age_cluster_name_sorted
+   union select  19 as age_group_id , '70 to 74' as age_group_name ,'70 to 74' as age_group_name_sorted, '60 to 74' as age_cluster_name_sorted
+   union select  20 as age_group_id , '75 to 79' as age_group_name ,'75 to 79' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
+   union select  30 as age_group_id , '80 to 84' as age_group_name ,'80 to 84' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
+   union select  31 as age_group_id , '85 to 89' as age_group_name ,'85 to 89' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
+   union select  32 as age_group_id , '90 to 94' as age_group_name ,'90 to 94' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
+   union select 235 as age_group_id ,  '95 plus' as age_group_name ,'95 plus'  as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
 ) x
 ;
 
@@ -74,6 +74,7 @@ select
 , lc.location_name
 , ag.age_group_id
 , ag.age_group_name_sorted
+, ag.age_cluster_name_sorted
 , se.sex_id
 , se.sex_name
 , concat(ye.year, '--', lc.location_id, '--', ag.age_group_id, '--', se.sex_id) population_id

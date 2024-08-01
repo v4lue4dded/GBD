@@ -6,18 +6,25 @@ select
 , eb.location_name
 , eb.age_group_id
 , eb.age_group_name_sorted
+, eb.age_cluster_name_sorted
 , eb.sex_id
 , eb.sex_name
 , concat(eb.year, '--', eb.location_id, '--', eb.age_group_id, '--', eb.sex_id) population_id
 , po.val     as pop_val
 , po.upper   as pop_upper
 , po.lower   as pop_lower
+, ci.region_code
+, ci.region_name
+, ci.sub_region_code
+, ci.sub_region_name
 , case when po.val is not null then 1 else 0 end as pop_present
 from      gbd.db04_modelling.export_basis_population eb
-left join gbd.db01_import.pop_age_year_groups         po on eb.year         = po.year_id
+left join gbd.db01_import.pop_age_year_groups        po on eb.year         = po.year_id
                                                         and eb.location_id  = po.location_id
                                                         and eb.age_group_id = po.age_group_id
                                                         and eb.sex_id       = po.sex_id
+left join  db03_clean_tables.un_country_info         ci on eb.location_id = ci.location_id
+
 ;
 
 

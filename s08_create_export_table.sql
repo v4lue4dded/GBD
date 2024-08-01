@@ -1,12 +1,13 @@
 
-drop table if exists gbd.db04_modelling.export_measure;
-create table         gbd.db04_modelling.export_measure as
+drop table if exists gbd.db04_modelling.full_measure_table;
+create table         gbd.db04_modelling.full_measure_table as
 select
   eb.year
 , eb.location_id
 , eb.location_name
 , eb.age_group_id
 , eb.age_group_name_sorted
+, eb.age_cluster_name_sorted
 , eb.sex_id
 , eb.sex_name
 , eb.population_id
@@ -22,24 +23,25 @@ select
 , coalesce(yl.upper    ,0) as yll_upper
 , case when de.val     is not null then 1 else 0 end as deaths_present
 , case when yl.val     is not null then 1 else 0 end as yll_present
-from gbd.db04_modelling.export_basis_measures       eb
-left join  gbd.db01_import.measure                   de on eb.year       = de.year
-                                                     and eb.location_id  = de.location
-                                                     and eb.age_group_id = de.age
-                                                     and eb.sex_id       = de.sex
-                                                     and eb.l2_cause_id  = de.cause
-                                                     and de.measure      = 1 -- 'Deaths'
-                                                     and de.metric       = 1 -- 'Number'
-left join  gbd.db01_import.measure                   yl on eb.year         = yl.year
-                                                     and eb.location_id  = yl.location
-                                                     and eb.age_group_id = yl.age
-                                                     and eb.sex_id       = yl.sex
-                                                     and eb.l2_cause_id  = yl.cause
-                                                     and yl.measure      = 4 -- 'YLLs (Years of Life Lost)'
-                                                     and yl.metric       = 1 -- 'Number'
+from gbd.db04_modelling.export_basis_measures eb
+left join  gbd.db01_import.measure            de on eb.year         = de.year
+                                                and eb.location_id  = de.location
+                                                and eb.age_group_id = de.age
+                                                and eb.sex_id       = de.sex
+                                                and eb.l2_cause_id  = de.cause
+                                                and de.measure      = 1 -- 'Deaths'
+                                                and de.metric       = 1 -- 'Number'
+left join  gbd.db01_import.measure            yl on eb.year         = yl.year
+                                                and eb.location_id  = yl.location
+                                                and eb.age_group_id = yl.age
+                                                and eb.sex_id       = yl.sex
+                                                and eb.l2_cause_id  = yl.cause
+                                                and yl.measure      = 4 -- 'YLLs (Years of Life Lost)'
+                                                and yl.metric       = 1 -- 'Number'
+left join  db03_clean_tables.un_country_info  ci on eb.location_id = ci.location_id
 ;
 
-alter table gbd.db04_modelling.export_measure
+alter table gbd.db04_modelling.full_measure_table
 add primary key (population_id, l2_cause_name)
 ;
 
@@ -61,3 +63,18 @@ end;
 $$
 ;
 
+drop table if exists gbd.db04_modelling.export_long;
+create table         gbd.db04_modelling.export_long as
+select
+  fm.* 
+, ci.region_code
+, ci.region_name
+, ci.sub_region_code
+, ci.sub_region_name
+from gbd.db04_modelling.full_measure_table   fm
+left join  db03_clean_tables.un_country_info ci on fm.location_id = ci.location_id
+
+
+alter table gbd.db04_modelling.export_long
+add primary key (population_id, l2_cause_name)
+;
