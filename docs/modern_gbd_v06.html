@@ -10,15 +10,17 @@
     <!-- crossfilter -->
     <script type="text/javascript" src="lib/crossfilter/crossfilter.js"></script>
 
-    <!-- D3 -->
+    <!-- d3 -->
     <script type="text/javascript" src="lib/d3/d3.js"></script>
 
-    <!-- DC -->
+    <!-- dc -->
     <link rel="stylesheet" href="lib/dc/dc.css" />
     <script type="text/javascript" src="lib/dc/dc.js"></script>
 
+    <!-- promise -->
+    <script src="lib/chartCollectionCode/lib/promise/promise.js"></script>
 
-    <!-- C3 -->
+    <!-- c3 -->
     <link rel="stylesheet" href="lib/chartCollectionCode/css/c3.css" />
 
     <script src="lib/chartCollectionCode/js/c3.js"></script>
@@ -254,8 +256,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
