@@ -256,8 +256,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -492,13 +492,22 @@
                 return aggregationDict;
             }
 
-            function onFiltered(event, chart) {
-                console.log("Filter event:", event);
-                dc.events.trigger(function () {
-                    redrawDcAndC3(); // Additional custom redraw for C3 charts
-                });
+            function filterDimensions(dimensions, selectedKeys) {
+                if (selectedKeys.length) {
+                    // Apply filters to each dimension based on selections
+                    dimensions.forEach(function(dimension) {
+                        dimension.filter(function(key) {
+                            return selectedKeys.includes(key);
+                        });
+                    });
+                } else {
+                    // Clear filters if no selections
+                    dimensions.forEach(function(dimension) {
+                        dimension.filterAll();
+                    });
+                }
+                redrawDcAndC3();
             }
-
 
             var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
             var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
@@ -574,7 +583,7 @@
                                 this.data = [year];
                                 CFDDict0['gbd']['d']['year'].filter(year);
                                 CFDDict0['population']['d']['year'].filter(year);
-                                redraw();
+                                redrawDcAndC3();
                             },
                             // Filter the data based on the initial year selection
                             'render': function () {
@@ -595,7 +604,7 @@
                                 this.data = [year];
                                 CFDDict1['gbd']['d']['year'].filter(year);
                                 CFDDict1['population']['d']['year'].filter(year);
-                                redraw();
+                                redrawDcAndC3();
                             },
                             // Filter the data based on the initial year selection
                             'render': function () {
@@ -633,10 +642,11 @@
                 })
                 .title(function (d) {
                     return "State: " + d.key + "\nTotal Population: " + bigNStyle(d.value);
+                })
+                .on('filtered', function(chart, filter) {
+                    var selectedKeys = worldChart.filters(); 
+                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
-            
-            worldChart.on('filtered', onFiltered);
-
 
             const common_columns = [
                 {
@@ -789,19 +799,7 @@
                         'select': function (selections) {
                             // Check if there are selections
                             // console.log(selections)
-                            if (selections.length) {
-                                // Iterate over filter_dimensions and apply filter
-                                filter_dimensions.forEach(function (filter_dimension) {
-                                    filter_dimension.filter(function (key) {
-                                        return selections.map(function (d) { return d.key; }).indexOf(key) >= 0;
-                                    });
-                                });
-                            } else {
-                                // No selections, apply filterAll to each dimension
-                                filter_dimensions.forEach(function (filter_dimension) {
-                                    filter_dimension.filterAll();
-                                });
-                            }
+                            filterDimensions(filter_dimensions, selections.map(function (d) { return d.key; }));
                             redrawDcAndC3();
                         }
                     },
@@ -959,11 +957,11 @@
             // #########################################################################################
             // ### Initial Rendering
             // Perform the initial `render()`
+            worldChart.render();
             for (var _i = 0, charts_1 = charts; _i < charts_1.length; _i++) {
                 var chart = charts_1[_i];
                 chart.render();
             }
-            worldChart.render();
             // **Resize** charts if the window is resized.
             window.onresize = function () {
                 for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
