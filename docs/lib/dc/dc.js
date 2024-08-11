@@ -1698,7 +1698,17 @@
     
             return result;
         };
-    
+
+        _chart.resize = function () {
+        // Define a resize function that calls render
+            _chart.render();
+        }
+
+        _chart.redraw = function () {
+            // Define a redraw function that calls render
+                _chart.render();
+        }
+
         _chart._activateRenderlets = function (event) {
             _listeners.pretransition(_chart);
             if (_chart.transitionDuration() > 0 && _svg) {
@@ -8145,6 +8155,8 @@
         }
     
         function renderRegionG (layerIndex) {
+            console.log('renderRegionG.layerIndex', layerIndex);
+            console.log('renderRegionG.layerName', geoJson(layerIndex));
             var regionG = _chart.svg()
                 .selectAll(layerSelector(layerIndex))
                 .classed('selected', function (d) {

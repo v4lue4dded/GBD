@@ -18,7 +18,7 @@
     <script type="text/javascript" src="lib/dc/dc.js"></script>
 
     <!-- promise -->
-    <script src="lib/chartCollectionCode/lib/promise/promise.js"></script>
+    <script src="lib/promise/promise.js"></script>
 
     <!-- c3 -->
     <link rel="stylesheet" href="lib/chartCollectionCode/css/c3.css" />
@@ -492,6 +492,14 @@
                 return aggregationDict;
             }
 
+            function onFiltered(event, chart) {
+                console.log("Filter event:", event);
+                dc.events.trigger(function () {
+                    redrawDcAndC3(); // Additional custom redraw for C3 charts
+                });
+            }
+
+
             var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
             var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
             const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
@@ -598,31 +606,36 @@
                 ]
             }));
 
-            // var worldChart = dc.geoChoroplethChart("#gbd_map");
-            // var location_nameDim = CFDDict0['population']['d']['location_name'];
-            // var location_nameDimAgg = location_nameDim.group().reduceSum(function (d) { return d.pop_val; });
+            var worldChart = dc.geoChoroplethChart("#gbd_map");
+            var location_nameDim = CFDDict0['population']['d']['location_name'];
+            var location_nameDimAgg = location_nameDim.group().reduceSum(function (d) { return d.pop_val; });
+            console.log("worldChart", worldChart);
+            console.log("world_geojson", world_geojson);
+            console.log("location_nameDim", location_nameDim);
+            console.log("location_nameDimAgg", location_nameDimAgg);
 
-            // worldChart.width(990)
-            //     .height(500)
-            //     .dimension(location_nameDim)
-            //     .group(location_nameDimAgg)
-            //     .colors(d3.scaleQuantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
-            //     .colorDomain([0, 200])
-            //     .colorCalculator(function (d) { return d ? worldChart.colors()(d) : '#ccc'; })
-            //     .overlayGeoJson(world_geojson.features, "state", function (d) {
-            //         return d.properties.nameMapped;
-            //     })
-            //     .projection(d3.geoAlbersUsa())
-            //     .valueAccessor(function (kv) {
-            //         console.log(kv);
-            //         return kv.value;
-            //     })
-            //     .title(function (d) {
-            //         return "State: " + d.key + "\nTotal Population: " + numberFormat(d.value ? d.value : 0);
-            //     });
-
-            // // Render the chart
-            // dc.renderAll();
+            worldChart.width(990)
+                .height(500)
+                .dimension(location_nameDim)
+                .group(location_nameDimAgg)
+                .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
+                .colorDomain([0, 2000000000])
+                .colorCalculator(function (d) { return d ? worldChart.colors()(d) : '#ccc'; })
+                .overlayGeoJson(world_geojson.features, "name", function (d) {
+                    return d.properties.nameMapped;
+                })
+                .projection(d3.geo.equirectangular()
+                    .center([0, 5])
+                    .scale(100)
+                )
+                .valueAccessor(function (kv) {
+                    return kv.value;
+                })
+                .title(function (d) {
+                    return "State: " + d.key + "\nTotal Population: " + bigNStyle(d.value);
+                });
+            
+            worldChart.on('filtered', onFiltered);
 
 
             const common_columns = [
@@ -715,7 +728,6 @@
                     }
                 },
             ]
-
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
             // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
@@ -725,6 +737,10 @@
                     var chart = charts_redraw[_i];
                     chart.redraw();
                 }
+            }
+            function redrawDcAndC3() {
+                dc.redrawAll();
+                redraw();
             }
             function restyle() {
                 for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
@@ -786,7 +802,7 @@
                                     filter_dimension.filterAll();
                                 });
                             }
-                            redraw();
+                            redrawDcAndC3();
                         }
                     },
                     ...customOptions
@@ -947,6 +963,7 @@
                 var chart = charts_1[_i];
                 chart.render();
             }
+            worldChart.render();
             // **Resize** charts if the window is resized.
             window.onresize = function () {
                 for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
