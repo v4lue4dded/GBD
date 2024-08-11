@@ -7,6 +7,9 @@
 
     <!-- Dependencies -->
 
+    <!-- crossfilter -->
+    <script type="text/javascript" src="lib/crossfilter/crossfilter.js"></script>
+
     <!-- D3 -->
     <script type="text/javascript" src="lib/d3/d3.js"></script>
 
@@ -14,8 +17,6 @@
     <link rel="stylesheet" href="lib/dc/dc.css" />
     <script type="text/javascript" src="lib/dc/dc.js"></script>
 
-    <!-- crossfilter -->
-    <script type="text/javascript" src="lib/crossfilter/crossfilter.js"></script>
 
     <!-- C3 -->
     <link rel="stylesheet" href="lib/chartCollectionCode/css/c3.css" />
@@ -253,8 +254,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -294,17 +295,16 @@
                 let p3 = new Promise((resolve, reject) => {
                     d3.json("lib/geoData/geojson_to_gbd_name_mapping.json", function (nameReplacementData) {
                         console.log("nameReplacementData:", nameReplacementData);
-                            console.log("world_geojson_import:", world_geojson_import);
+                        d3.json("lib/geoData/world.geojson", function (world_geojson_import) {
                             console.log("world_geojson_import:", world_geojson_import);
                             // Adjust the geojson features to include nameMapped
-                        console.log("world_geojson_import:", world_geojson_import);
-                            // Adjust the geojson features to include nameMapped
-                        world_geojson_import.features.forEach(function (feature) {
-                            var originalName = feature.properties.name;
-                            feature.properties.nameMapped = nameReplacementData[originalName] || originalName;
+                            world_geojson_import.features.forEach(function (feature) {
+                                var originalName = feature.properties.name;
+                                feature.properties.nameMapped = nameReplacementData[originalName] || originalName;
+                            });
+                            world_geojson = world_geojson_import
+                            resolve();
                         });
-                        world_geojson = world_geojson_import;
-                    });
                     })
                 });
 
@@ -511,8 +511,8 @@
                 anchor: '#gbd_timeline',
                 height: 600,
                 width: "100%",
-                h: d3.scaleLinear().domain(d3.extent(validYears)), // d3.extent returns the min and max of an array
-                v: d3.scaleLinear().domain([0, d3.max(aggDict0['population']['year'], d => d.value.pop_val)]),
+                h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
+                v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
                 // The **x** function uses the key directly, which represents the year from the year dimension.
                 x: function (d) { return d.key; },
                 // The default **y** function generates its value based on the population value.
@@ -540,7 +540,7 @@
                             "class": "population_area_graph"
                         },
                         data: aggDict0['population']['year'],
-                        v: d3.scaleLinear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
+                        v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
                         y: function (d) { return d.value.pop_val; },
                         interpolate: 'cardinal'
                     }),
@@ -596,7 +596,7 @@
                 ]
             }));
 
-            // var worldChart = new dc.geoChoroplethChart("#gbd_map");
+            // var worldChart = dc.geoChoroplethChart("#gbd_map");
             // var location_nameDim = CFDDict0['population']['d']['location_name'];
             // var location_nameDimAgg = location_nameDim.group().reduceSum(function (d) { return d.pop_val; });
 
