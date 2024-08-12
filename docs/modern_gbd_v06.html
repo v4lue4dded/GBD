@@ -615,21 +615,50 @@
                 ]
             }));
 
-            var worldChart = dc.geoChoroplethChart("#gbd_map");
-            var location_nameDim = CFDDict0['population']['d']['location_name'];
-            var location_nameDimAgg = location_nameDim.group().reduceSum(function (d) { return d.pop_val; });
-            console.log("worldChart", worldChart);
-            console.log("world_geojson", world_geojson);
-            console.log("location_nameDim", location_nameDim);
-            console.log("location_nameDimAgg", location_nameDimAgg);
 
-            worldChart.width(990)
+            function createCompositeGroup(popGroup, yllGroup) {
+                return {
+                    all: function() {
+                        var popData = popGroup.all(); // Data from population group
+                        var yllData = yllGroup.all(); // Data from YLL group
+                        var popMap = new Map(popData.map(d => [d.key, d.value])); // Create a map of location_name to pop_val
+
+                        var result = yllData.map(d => {
+                            var pop_val = popMap.get(d.key) || 0; // Retrieve population value for the key or default to 0
+                            return {
+                                key: d.key,
+                                value: pop_val > 0 ? d.value / pop_val : 0 // Calculate the ratio if population value is greater than 0
+                            };
+                        });
+                        return result;
+                    }
+                };
+            }
+
+
+
+            var location_nameDimPop = CFDDict0['population']['d']['location_name'];
+            var location_nameDimPopAgg = location_nameDimPop.group().reduceSum(function (d) { return d.pop_val; });
+            var location_nameDimGBD = CFDDict0['gbd']['d']['location_name'];
+            var location_nameDimGBDAgg = location_nameDimGBD.group().reduceSum(function (d) { return d.yll_val; });
+            var ratioGroup = createCompositeGroup(location_nameDimPopAgg, location_nameDimGBDAgg);
+
+            var worldChart = dc.geoChoroplethChart("#gbd_map");
+
+            // Adjust the color scale for appropriate visualization of the ratio
+            var logColorScale = d3.scale.log()
+                .domain([0.01, 1]) // Adjust the domain based on expected ratio values
+                .range(["#E2F2FF", "#5F3366"]);
+
+                worldChart
+                .width(990)
                 .height(500)
-                .dimension(location_nameDim)
-                .group(location_nameDimAgg)
-                .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
-                .colorDomain([0, 2000000000])
-                .colorCalculator(function (d) { return d ? worldChart.colors()(d) : '#ccc'; })
+                .dimension(location_nameDimPop) // Use any dimension; it’s required but not used for filtering here
+                .group(ratioGroup)
+                .colors(logColorScale)
+                .colorCalculator(function (d) {
+                    return d ? worldChart.colors()(Math.max(0.001, d)) : '#ccc'; // Ensure valid log input
+                })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
                 })
@@ -638,15 +667,16 @@
                     .scale(100)
                 )
                 .valueAccessor(function (kv) {
-                    return kv.value;
+                    return kv.value; // This will now reflect the ratio
                 })
                 .title(function (d) {
-                    return "State: " + d.key + "\nTotal Population: " + bigNStyle(d.value);
+                    return "Location: " + d.key + "\nRatio of YLL to Population: " + d.value;
                 })
                 .on('filtered', function(chart, filter) {
                     var selectedKeys = worldChart.filters(); 
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
+
 
             const common_columns = [
                 {
