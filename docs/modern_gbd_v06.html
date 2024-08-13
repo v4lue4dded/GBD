@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Global Burden of Disease Crossfilter</title>
     <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,7 +28,7 @@
     <script src="lib/chartCollectionCode/js/c3-table.js"></script>
     <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
     <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
-    
+
     <!-- Styles -->
     <style>
         body {
@@ -114,11 +115,13 @@
         }
     </style>
 </head>
+
 <body>
     <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
     <main style="display:none">
         <div id="gbd_timeline"></div>
-        <div id="gbd_map"></div>        
+        <div id="gbd_map0"></div>
+        <div id="gbd_map1"></div>
         <div id="gdb_region_name_table"></div>
         <div id="gdb_sub_region_name_table"></div>
         <div id="gdb_location_name_table"></div>
@@ -256,8 +259,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -495,14 +498,14 @@
             function filterDimensions(dimensions, selectedKeys) {
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
-                    dimensions.forEach(function(dimension) {
-                        dimension.filter(function(key) {
+                    dimensions.forEach(function (dimension) {
+                        dimension.filter(function (key) {
                             return selectedKeys.includes(key);
                         });
                     });
                 } else {
                     // Clear filters if no selections
-                    dimensions.forEach(function(dimension) {
+                    dimensions.forEach(function (dimension) {
                         dimension.filterAll();
                     });
                 }
@@ -618,7 +621,7 @@
 
             function createRatioGroup(nominatorGroup, denominatorGroup) {
                 return {
-                    all: function() {
+                    all: function () {
                         var nominatorData = nominatorGroup.all();
                         var denominatorData = denominatorGroup.all();
                         var nominatorMap = new Map(nominatorData.map(d => [d.key, d.value]));
@@ -637,28 +640,29 @@
                 };
             }
 
-            var location_nameDimPop = CFDDict0['population']['d']['location_name'];
-            var location_nameDimPopAgg = location_nameDimPop.group().reduceSum(function (d) { return d.pop_val; });
-            var location_nameDimGBD = CFDDict0['gbd']['d']['location_name'];
-            var location_nameDimGBDAgg = location_nameDimGBD.group().reduceSum(function (d) { return d.yll_val; });
-            var ratioGroup = createRatioGroup(location_nameDimGBDAgg, location_nameDimPopAgg);
+            var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+            var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+            var YLLPerPerson0 = createRatioGroup(locationNameDimGBDAgg0, locationNameDimPopAgg0);
 
-            var worldChart = dc.geoChoroplethChart("#gbd_map");
+            var locationNameDimPopAgg1 = CFDDict1['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+            var locationNameDimGBDAgg1 = CFDDict1['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+            var YLLPerPerson1 = createRatioGroup(locationNameDimGBDAgg1, locationNameDimPopAgg1);
 
-            // Adjust the color scale for appropriate visualization of the ratio
-            var logColorScale = d3.scale.log()
-                .domain([0.01, 1]) // Adjust the domain based on expected ratio values
-                .range(["#E2F2FF", "#5F3366"]);
+            console.log("YLLPerPerson0:", YLLPerPerson0.all());
+            console.log("YLLPerPerson1:", YLLPerPerson1.all());
 
-                worldChart
+            var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
+            var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
+
+
+            worldChart0
                 .width(990)
                 .height(500)
-                .dimension(location_nameDimPop) // Use any dimension; it’s required but not used for filtering here
-                .group(ratioGroup)
-                .colors(logColorScale)
-                .colorCalculator(function (d) {
-                    return d ? worldChart.colors()(Math.max(0.001, d)) : '#ccc'; // Ensure valid log input
-                })
+                .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .group(YLLPerPerson0)
+                .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
+                .colorDomain([0, 1])
+                .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
                 })
@@ -672,10 +676,38 @@
                 .title(function (d) {
                     return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
                 })
-                .on('filtered', function(chart, filter) {
-                    var selectedKeys = worldChart.filters(); 
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChart0.filters();
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
+
+
+            worldChart1
+                .width(990)
+                .height(500)
+                .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .group(YLLPerPerson1)
+                .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
+                .colorDomain([0, 1])
+                .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
+                .overlayGeoJson(world_geojson.features, "name", function (d) {
+                    return d.properties.nameMapped;
+                })
+                .projection(d3.geo.equirectangular()
+                    .center([0, 5])
+                    .scale(100)
+                )
+                .valueAccessor(function (kv) {
+                    return kv.value; // This will now reflect the ratio
+                })
+                .title(function (d) {
+                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                })
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChart1.filters();
+                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
+                });
+
 
 
             const common_columns = [
@@ -987,7 +1019,7 @@
             // #########################################################################################
             // ### Initial Rendering
             // Perform the initial `render()`
-            worldChart.render();
+            dc.renderAll();
             for (var _i = 0, charts_1 = charts; _i < charts_1.length; _i++) {
                 var chart = charts_1[_i];
                 chart.render();
@@ -1019,4 +1051,5 @@
         //     download_data().then(render)
     </script>
 </body>
+
 </html>

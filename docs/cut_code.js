@@ -138,3 +138,14 @@ console.log("YLLPerPerson0:", YLLPerPerson0.all());
 console.log("YLLPerPerson1:", YLLPerPerson1.all());
 
 YLLPerPersonChange = createRatioGroup(YLLPerPerson1, YLLPerPerson0);
+
+
+
+// Adjust the color scale for appropriate visualization of the ratio
+var logColorScale = d3.scale.log()
+    .domain([0.01, 1]) // Adjust the domain based on expected ratio values
+    .range(["#E2F2FF", "#5F3366"]);
+.colors(logColorScale)
+.colorCalculator(function (d) {
+    return d ? worldChart.colors()(Math.max(0.001, d)) : '#ccc'; // Ensure valid log input
+})
