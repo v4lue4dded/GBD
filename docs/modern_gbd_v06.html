@@ -256,8 +256,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -616,18 +616,20 @@
             }));
 
 
-            function createCompositeGroup(popGroup, yllGroup) {
+            function createRatioGroup(nominatorGroup, denominatorGroup) {
                 return {
                     all: function() {
-                        var popData = popGroup.all(); // Data from population group
-                        var yllData = yllGroup.all(); // Data from YLL group
-                        var popMap = new Map(popData.map(d => [d.key, d.value])); // Create a map of location_name to pop_val
-
-                        var result = yllData.map(d => {
-                            var pop_val = popMap.get(d.key) || 0; // Retrieve population value for the key or default to 0
+                        var nominatorData = nominatorGroup.all();
+                        var denominatorData = denominatorGroup.all();
+                        var nominatorMap = new Map(nominatorData.map(d => [d.key, d.value]));
+                        var denominatorMap = new Map(denominatorData.map(d => [d.key, d.value]));
+                        var keys = new Set([...nominatorMap.keys(), ...denominatorMap.keys()]);
+                        var result = Array.from(keys).map(key => {
+                            var nominator = nominatorMap.get(key) || 0;
+                            var denominator = denominatorMap.get(key) || 0;
                             return {
-                                key: d.key,
-                                value: pop_val > 0 ? d.value / pop_val : 0 // Calculate the ratio if population value is greater than 0
+                                key: key,
+                                value: denominator > 0 ? nominator / denominator : 0
                             };
                         });
                         return result;
@@ -635,13 +637,11 @@
                 };
             }
 
-
-
             var location_nameDimPop = CFDDict0['population']['d']['location_name'];
             var location_nameDimPopAgg = location_nameDimPop.group().reduceSum(function (d) { return d.pop_val; });
             var location_nameDimGBD = CFDDict0['gbd']['d']['location_name'];
             var location_nameDimGBDAgg = location_nameDimGBD.group().reduceSum(function (d) { return d.yll_val; });
-            var ratioGroup = createCompositeGroup(location_nameDimPopAgg, location_nameDimGBDAgg);
+            var ratioGroup = createRatioGroup(location_nameDimGBDAgg, location_nameDimPopAgg);
 
             var worldChart = dc.geoChoroplethChart("#gbd_map");
 
@@ -670,7 +670,7 @@
                     return kv.value; // This will now reflect the ratio
                 })
                 .title(function (d) {
-                    return "Location: " + d.key + "\nRatio of YLL to Population: " + d.value;
+                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
                 })
                 .on('filtered', function(chart, filter) {
                     var selectedKeys = worldChart.filters(); 

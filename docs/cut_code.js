@@ -72,3 +72,69 @@ world_map.render();
 
 
 
+var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+var YLLPerPerson0 = createRatioGroup(locationNameDimGBDAgg0, locationNameDimPopAgg0);
+
+
+
+function createRatioGroup(nominatorData, denominatorData, nominatorCol, denominatorCol) {
+    // console.log("nominatorData, denominatorData, nominatorCol, denominatorCol");
+    // console.log(nominatorData, denominatorData, nominatorCol, denominatorCol);
+    return {
+        all: function() {
+            var nominatorMap = new Map(nominatorData.map(d => [d.key, d.value[nominatorCol]]));
+            var denominatorMap = new Map(denominatorData.map(d => [d.key, d.value[denominatorCol]]));
+            var keys = new Set([...nominatorMap.keys(), ...denominatorMap.keys()]);
+            var result = Array.from(keys).map(key => {
+                console.log("key");
+                console.log(key);
+                var nominator = nominatorMap.get(key) || 0;
+                var denominator = denominatorMap.get(key) || 0;
+                console.log("nominator, denominator");
+                console.log(nominator, denominator);
+                return {
+                    key: key,
+                    value: denominator > 0 ? nominator / denominator : 0
+                };
+            });
+            return result;
+        }
+    };
+}
+
+
+
+function createRatioGroup(nominatorGroup, denominatorGroup) {
+    return {
+        all: function() {
+            var nominatorData = nominatorGroup.all();
+            var denominatorData = denominatorGroup.all();
+            var nominatorMap = new Map(nominatorData.map(d => [d.key, d.value]));
+            var denominatorMap = new Map(denominatorData.map(d => [d.key, d.value]));
+            var keys = new Set([...nominatorMap.keys(), ...denominatorMap.keys()]);
+            var result = Array.from(keys).map(key => {
+                var nominator = nominatorMap.get(key) || 0;
+                var denominator = denominatorMap.get(key) || 0;
+                return {
+                    key: key,
+                    value: denominator > 0 ? nominator / denominator : 0
+                };
+            });
+            return result;
+        }
+    };
+}
+
+var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+var YLLPerPerson0 = createRatioGroup(locationNameDimGBDAgg0, locationNameDimPopAgg0);
+
+var locationNameDimPopAgg1 = CFDDict1['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+var locationNameDimGBDAgg1 = CFDDict1['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+var YLLPerPerson1 = createRatioGroup(locationNameDimGBDAgg0, locationNameDimPopAgg0);
+
+console.log("YLLPerPerson0:", YLLPerPerson0.all());
+console.log("YLLPerPerson1:", YLLPerPerson1.all());
+
+YLLPerPersonChange = createRatioGroup(YLLPerPerson1, YLLPerPerson0);

@@ -8155,8 +8155,6 @@
         }
     
         function renderRegionG (layerIndex) {
-            console.log('renderRegionG.layerIndex', layerIndex);
-            console.log('renderRegionG.layerName', geoJson(layerIndex));
             var regionG = _chart.svg()
                 .selectAll(layerSelector(layerIndex))
                 .classed('selected', function (d) {
