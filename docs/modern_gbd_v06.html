@@ -664,8 +664,8 @@
             var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
 
             worldChart0
-                .width(990)
-                .height(500)
+                .width(1000)
+                .height(400)
                 .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPerson0)
                 .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
@@ -676,7 +676,7 @@
                 })
                 .projection(d3.geo.equirectangular()
                     .center([0, 5])
-                    .scale(100)
+                    .scale(140)
                 )
                 .valueAccessor(function (kv) {
                     return kv.value; // This will now reflect the ratio
@@ -691,8 +691,8 @@
 
 
             worldChart1
-                .width(990)
-                .height(500)
+                .width(1000)
+                .height(400)
                 .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPerson1)
                 .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
@@ -703,7 +703,7 @@
                 })
                 .projection(d3.geo.equirectangular()
                     .center([0, 5])
-                    .scale(100)
+                    .scale(140)
                 )
                 .valueAccessor(function (kv) {
                     return kv.value; // This will now reflect the ratio
@@ -718,8 +718,8 @@
 
 
             worldChartChange
-                .width(990)
-                .height(500)
+                .width(1000)
+                .height(400)
                 .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPersonChange)
                 .colors(d3.scale.linear().range(['#b3fcd9', '#FFF59D', '#E8A1A1']))
@@ -730,7 +730,7 @@
                 })
                 .projection(d3.geo.equirectangular()
                     .center([0, 5])
-                    .scale(100)
+                    .scale(140)
                 )
                 .valueAccessor(function (kv) {
                     return kv.value; // This will now reflect the ratio
