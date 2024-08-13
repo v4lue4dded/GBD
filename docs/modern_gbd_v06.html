@@ -122,6 +122,7 @@
         <div id="gbd_timeline"></div>
         <div id="gbd_map0"></div>
         <div id="gbd_map1"></div>
+        <div id="gbd_map_change"></div>
         <div id="gdb_region_name_table"></div>
         <div id="gdb_sub_region_name_table"></div>
         <div id="gdb_location_name_table"></div>
@@ -648,12 +649,19 @@
             var locationNameDimGBDAgg1 = CFDDict1['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
             var YLLPerPerson1 = createRatioGroup(locationNameDimGBDAgg1, locationNameDimPopAgg1);
 
+            var YLLPerPersonChange = createRatioGroup(YLLPerPerson1, YLLPerPerson0);
+
+            console.log("locationNameDimPopAgg0:", locationNameDimPopAgg0.all());
+            console.log("locationNameDimGBDAgg0:", locationNameDimGBDAgg0.all());
+            console.log("locationNameDimPopAgg1:", locationNameDimPopAgg1.all());
+            console.log("locationNameDimGBDAgg1:", locationNameDimGBDAgg1.all());
             console.log("YLLPerPerson0:", YLLPerPerson0.all());
             console.log("YLLPerPerson1:", YLLPerPerson1.all());
+            console.log("YLLPerPersonChange:", YLLPerPersonChange.all());
 
             var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
             var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
-
+            var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
 
             worldChart0
                 .width(990)
@@ -689,7 +697,7 @@
                 .group(YLLPerPerson1)
                 .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
                 .colorDomain([0, 1])
-                .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
+                .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
                 })
@@ -705,6 +713,33 @@
                 })
                 .on('filtered', function (chart, filter) {
                     var selectedKeys = worldChart1.filters();
+                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
+                });
+
+
+            worldChartChange
+                .width(990)
+                .height(500)
+                .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .group(YLLPerPersonChange)
+                .colors(d3.scale.linear().range(['#b3fcd9', '#FFF59D', '#E8A1A1']))
+                .colorDomain([0.5, 1, +1.5])
+                .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
+                .overlayGeoJson(world_geojson.features, "name", function (d) {
+                    return d.properties.nameMapped;
+                })
+                .projection(d3.geo.equirectangular()
+                    .center([0, 5])
+                    .scale(100)
+                )
+                .valueAccessor(function (kv) {
+                    return kv.value; // This will now reflect the ratio
+                })
+                .title(function (d) {
+                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                })
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChartChange.filters();
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
