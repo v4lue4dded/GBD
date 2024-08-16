@@ -113,6 +113,25 @@
             stroke-width: 10px;
             stroke: red;
         }
+
+        /* Ensure the chart container is positioned relatively */
+        #gbd_map0 {
+            position: relative;
+            width: 1000px;  /* or your specific width */
+            height: 400px;  /* or your specific height */
+        }
+
+        /* General styles for the legend */
+        .dc-legend {
+            position: absolute;
+            z-index: 10;
+            padding: 10px;
+            background-color: #fff; /* white background for the legend */
+            border: 1px solid #ccc; /* light grey border */
+            border-radius: 5px; /* optional: rounded corners */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* optional: slight shadow for depth */
+            overflow: hidden; /* keeps all content neatly contained */
+        }
     </style>
 </head>
 
@@ -702,21 +721,22 @@
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
-            // Create a custom legend
-            worldChart0.on('pretransition', function(chart) {
+                worldChart0.on('pretransition', function(chart) {
                 var legendWidth = 50;
                 var legendHeight = 200;
-                
+
                 // Remove any existing legend
                 d3.select('#gbd_map0 .dc-legend').remove();
-                
+
                 var legend = d3.select('#gbd_map0')
                     .append('div')
                     .attr('class', 'dc-legend')
-                    .style('top', '50px')
-                    .style('right', '10px')
+                    .style('position', 'absolute')
+                    .style('top', '10px')  // Adjust vertical position
+                    .style('right', '0')   // Position right next to the chart
                     .style('width', legendWidth + 'px')
-                    .style('height', legendHeight + 'px');
+                    .style('height', legendHeight + 'px')
+                    .style('background', '#fff'); // Optional: add background color to legend
 
                 var gradient = legend.append('svg')
                     .attr('width', legendWidth)
@@ -757,6 +777,7 @@
                     .attr('transform', 'translate(20,0)')
                     .call(legendAxis);
             });
+
 
             worldChart1
                 .width(1000)
