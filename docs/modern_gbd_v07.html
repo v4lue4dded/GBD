@@ -292,7 +292,7 @@
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
                     // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -704,15 +704,12 @@
             var minValue = minMaxValues[0];
             var maxValue = minMaxValues[1];
 
-            // Ensure the dimension is properly defined
-            var locationDimension = CFDDict0['population']['d']['location_name'];
-
             worldChart0
                 .width(1000)
                 .height(400)
-                .dimension(locationDimension)
+                .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPerson0)
-                .colors(d3.scale.linear().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
+                .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
                 .colorDomain([0, 1])
                 .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
@@ -757,7 +754,7 @@
             worldChartChange
                 .width(1000)
                 .height(400)
-                .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .dimension(CFDDict1['population']['d']['location_name'])
                 .group(YLLPerPersonChange)
                 .colors(d3.scale.linear().range(['#b3fcd9', '#FFF59D', '#E8A1A1']))
                 .colorDomain([0.5, 1, 1.5])
@@ -767,24 +764,19 @@
                 })
                 .projection(d3.geo.equirectangular()
                     .center([0, 5])
-                    .scale(140)
-                )
+                    .scale(140))
                 .valueAccessor(function (kv) {
-                    return kv.value; // This will now reflect the ratio
+                    return kv.value;
                 })
                 .title(function (d) {
                     return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
-                })
-                .on('filtered', function (chart, filter) {
-                    var selectedKeys = worldChartChange.filters();
-                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
             function addLegendToChart(chart, chartId) {
                 chart.on('pretransition', function (chart) {
                     var legendWidth = 50;
                     var legendHeight = 300; // Height of the gradient rectangle
-                    var totalSvgHeight = legendHeight + 10; // Added extra space for axis labels
+                    var totalSvgHeight = legendHeight + 10; // Extra space for axis labels
                     var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
 
                     // Remove any existing legend
@@ -793,7 +785,7 @@
                         .append('div')
                         .attr('class', 'dc-legend')
                         .style('position', 'absolute')
-                        .style('top', '20px')  // Increased top padding
+                        .style('top', '20px') // Increased top padding
                         .style('right', '0')
                         .style('width', legendWidth + 'px')
                         .style('height', totalSvgHeight + 'px');
@@ -823,8 +815,9 @@
                         .attr('y', 5) // Shift the rectangle down by 5px
                         .style('fill', 'url(#' + gradientId + ')');
 
+                    // Dynamic legend scale based on the chart's color domain
                     var legendScale = d3.scale.linear()
-                        .domain(chart.colorDomain())
+                        .domain([d3.min(chart.colorDomain()), d3.max(chart.colorDomain())])
                         .range([legendHeight, 0]);
 
                     var legendAxis = d3.svg.axis()
@@ -838,6 +831,7 @@
                         .call(legendAxis);
                 });
             }
+
 
 
 
