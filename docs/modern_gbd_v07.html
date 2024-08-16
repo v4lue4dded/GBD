@@ -113,6 +113,25 @@
             stroke-width: 10px;
             stroke: red;
         }
+
+        /* Ensure the chart container is positioned relatively */
+        #gbd_map0 {
+            position: relative;
+            width: 1000px;  /* or your specific width */
+            height: 400px;  /* or your specific height */
+        }
+
+        /* General styles for the legend */
+        .dc-legend {
+            position: absolute;
+            z-index: 10;
+            padding: 10px;
+            background-color: #fff; /* white background for the legend */
+            border: 1px solid #ccc; /* light grey border */
+            border-radius: 5px; /* optional: rounded corners */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* optional: slight shadow for depth */
+            overflow: hidden; /* keeps all content neatly contained */
+        }
     </style>
 </head>
 
@@ -120,6 +139,7 @@
     <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
     <main style="display:none">
         <div id="gbd_timeline"></div>
+        <br>
         <div id="gbd_map0"></div>
         <div id="gbd_map1"></div>
         <div id="gbd_map_change"></div>
@@ -260,8 +280,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -663,31 +683,100 @@
             var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
             var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
 
+            function getMinMax(group) {
+                var values = group.all().map(function(d) { return d.value; });
+                return [d3.min(values), d3.max(values)];
+            }
+
+            // Get min and max values
+            var minMaxValues = getMinMax(YLLPerPerson0);
+            var minValue = minMaxValues[0];
+            var maxValue = minMaxValues[1];
+
+            // Create a dynamic color scale
+            var colorScale = d3.scale.linear()
+                .domain([minValue, (minValue + maxValue) / 2, maxValue])
+                .range(["#E2F2FF", "#51AEFF", "#0061B5"]);
+
+            // Ensure the dimension is properly defined
+            var locationDimension = CFDDict0['population']['d']['location_name'];
+
             worldChart0
                 .width(1000)
                 .height(400)
-                .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .dimension(locationDimension)
                 .group(YLLPerPerson0)
-                .colors(d3.scale.quantize().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
-                .colorDomain([0, 1])
+                .colors(colorScale)
+                .colorAccessor(function(d) { return d ? d.value : 0; })
                 .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
-                .overlayGeoJson(world_geojson.features, "name", function (d) {
-                    return d.properties.nameMapped;
-                })
+                .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
                 .projection(d3.geo.equirectangular()
                     .center([0, 5])
                     .scale(140)
                 )
-                .valueAccessor(function (kv) {
-                    return kv.value; // This will now reflect the ratio
-                })
-                .title(function (d) {
-                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
-                })
+                .valueAccessor(function (kv) { return kv.value; })
+                .title(function (d) { return "Location: " + d.key + "\nYears of live lost per Person: " + d.value; })
                 .on('filtered', function (chart, filter) {
                     var selectedKeys = worldChart0.filters();
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
+
+                worldChart0.on('pretransition', function(chart) {
+                var legendWidth = 50;
+                var legendHeight = 200;
+
+                // Remove any existing legend
+                d3.select('#gbd_map0 .dc-legend').remove();
+
+                var legend = d3.select('#gbd_map0')
+                    .append('div')
+                    .attr('class', 'dc-legend')
+                    .style('position', 'absolute')
+                    .style('top', '10px')  // Adjust vertical position
+                    .style('right', '0')   // Position right next to the chart
+                    .style('width', legendWidth + 'px')
+                    .style('height', legendHeight + 'px')
+                    .style('background', '#fff'); // Optional: add background color to legend
+
+                var gradient = legend.append('svg')
+                    .attr('width', legendWidth)
+                    .attr('height', legendHeight)
+                    .append('defs')
+                    .append('linearGradient')
+                    .attr('id', 'gradient')
+                    .attr('x1', '0%')
+                    .attr('y1', '100%')
+                    .attr('x2', '0%')
+                    .attr('y2', '0%');
+
+                gradient.selectAll('stop')
+                    .data(colorScale.range())
+                    .enter()
+                    .append('stop')
+                    .attr('offset', function(d,i) { return i/(colorScale.range().length-1); })
+                    .attr('stop-color', function(d) { return d; });
+
+                legend.select('svg')
+                    .append('rect')
+                    .attr('width', 20)
+                    .attr('height', legendHeight)
+                    .style('fill', 'url(#gradient)');
+
+                var legendScale = d3.scale.linear()
+                    .domain([minValue, maxValue])
+                    .range([legendHeight, 0]);
+
+                var legendAxis = d3.svg.axis()
+                    .scale(legendScale)
+                    .orient('right')
+                    .ticks(5);
+
+                legend.select('svg')
+                    .append('g')
+                    .attr('class', 'legend-axis')
+                    .attr('transform', 'translate(20,0)')
+                    .call(legendAxis);
+            });
 
 
             worldChart1
