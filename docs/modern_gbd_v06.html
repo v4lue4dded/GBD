@@ -702,26 +702,26 @@
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
-            // Set margins individually
-            worldChart0.margins().top = 10;
-            worldChart0.margins().right = 100;
-            worldChart0.margins().bottom = 50;
-            worldChart0.margins().left = 50;
-
             // Create a custom legend
             worldChart0.on('pretransition', function(chart) {
-                var legendWidth = 60;
-                var legendHeight = chart.height() - chart.margins().top - chart.margins().bottom;
+                var legendWidth = 50;
+                var legendHeight = 200;
                 
                 // Remove any existing legend
                 d3.select('#gbd_map0 .dc-legend').remove();
                 
-                var legend = d3.select('#gbd_map0 svg')
-                    .append('g')
+                var legend = d3.select('#gbd_map0')
+                    .append('div')
                     .attr('class', 'dc-legend')
-                    .attr('transform', 'translate(' + (chart.width() - chart.margins().right + 10) + ',' + chart.margins().top + ')');
+                    .style('top', '50px')
+                    .style('right', '10px')
+                    .style('width', legendWidth + 'px')
+                    .style('height', legendHeight + 'px');
 
-                var gradient = legend.append('defs')
+                var gradient = legend.append('svg')
+                    .attr('width', legendWidth)
+                    .attr('height', legendHeight)
+                    .append('defs')
                     .append('linearGradient')
                     .attr('id', 'gradient')
                     .attr('x1', '0%')
@@ -736,7 +736,8 @@
                     .attr('offset', function(d,i) { return i/(colorScale.range().length-1); })
                     .attr('stop-color', function(d) { return d; });
 
-                legend.append('rect')
+                legend.select('svg')
+                    .append('rect')
                     .attr('width', 20)
                     .attr('height', legendHeight)
                     .style('fill', 'url(#gradient)');
@@ -750,7 +751,8 @@
                     .orient('right')
                     .ticks(5);
 
-                legend.append('g')
+                legend.select('svg')
+                    .append('g')
                     .attr('class', 'legend-axis')
                     .attr('transform', 'translate(20,0)')
                     .call(legendAxis);
