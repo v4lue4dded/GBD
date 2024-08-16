@@ -114,8 +114,7 @@
             stroke: red;
         }
 
-        /* Ensure the chart container is positioned relatively */
-        #gbd_map0 {
+        .map-container {
             position: relative;
             width: 1000px;  /* or your specific width */
             height: 400px;  /* or your specific height */
@@ -140,9 +139,9 @@
     <main style="display:none">
         <div id="gbd_timeline"></div>
         <br>
-        <div id="gbd_map0"></div>
-        <div id="gbd_map1"></div>
-        <div id="gbd_map_change"></div>
+        <div id="gbd_map0" class="map-container"></div>
+        <div id="gbd_map1" class="map-container"></div>
+        <div id="gbd_map_change" class="map-container"></div>
         <div id="gdb_region_name_table"></div>
         <div id="gdb_sub_region_name_table"></div>
         <div id="gdb_location_name_table"></div>
