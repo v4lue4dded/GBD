@@ -291,8 +291,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -783,9 +783,9 @@
                     return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
                 });
 
-            function addLegendToChart(chart, chartId) {
+                function addLegendToChart(chart, chartId, format = '') {
                 chart.on('pretransition', function (chart) {
-                    var legendWidth = 50;
+                    var legendWidth = 55;
                     var legendHeight = 300; // Height of the gradient rectangle
                     var totalSvgHeight = legendHeight + 10; // Extra space for axis labels
                     var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
@@ -831,10 +831,13 @@
                         .domain([d3.min(chart.colorDomain()), d3.max(chart.colorDomain())])
                         .range([legendHeight, 0]);
 
+                    var formatter = d3.format(format); // Create a formatter using the provided format string
+
                     var legendAxis = d3.svg.axis()
                         .scale(legendScale)
                         .orient('right')
-                        .ticks(5);
+                        .ticks(5)
+                        .tickFormat(formatter); // Apply the formatter to the axis
 
                     svg.append('g')
                         .attr('class', 'legend-axis')
@@ -843,16 +846,10 @@
                 });
             }
 
-
-
-
             // Apply the legend addition function to each chart
-            addLegendToChart(worldChart0, '#gbd_map0');
-            addLegendToChart(worldChart1, '#gbd_map1');
-            addLegendToChart(worldChartChange, '#gbd_map_change');
-
-
-
+            addLegendToChart(worldChart0, '#gbd_map0', '.2f');
+            addLegendToChart(worldChart1, '#gbd_map1', '.2f');
+            addLegendToChart(worldChartChange, '#gbd_map_change', '.0%');
 
             const common_columns = [
                 {
