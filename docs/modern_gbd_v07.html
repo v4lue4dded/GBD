@@ -291,8 +291,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                        // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                        loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             console.log("Decoded Data:");
                             console.log(decodedData);
@@ -712,8 +712,8 @@
                 .height(400)
                 .dimension(locationDimension)
                 .group(YLLPerPerson0)
-                .colors(d3.scale.linear().range(['#E2F2FF', '#0061B5']))
-                .colorAccessor(function (d) { return d ? d.value : 0; })
+                .colors(d3.scale.linear().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
+                .colorDomain([0, 1])
                 .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
                 .projection(d3.geo.equirectangular()
@@ -760,7 +760,7 @@
                 .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPersonChange)
                 .colors(d3.scale.linear().range(['#b3fcd9', '#FFF59D', '#E8A1A1']))
-                .colorDomain([0.5, 1.5])
+                .colorDomain([0.5, 1, 1.5])
                 .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
@@ -783,7 +783,8 @@
             function addLegendToChart(chart, chartId) {
                 chart.on('pretransition', function (chart) {
                     var legendWidth = 50;
-                    var legendHeight = 300; // Ensure this height matches the actual space available
+                    var legendHeight = 300; // Height of the gradient rectangle
+                    var totalSvgHeight = legendHeight + 10; // Added extra space for axis labels
                     var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
 
                     // Remove any existing legend
@@ -792,14 +793,14 @@
                         .append('div')
                         .attr('class', 'dc-legend')
                         .style('position', 'absolute')
-                        .style('top', '10px')
+                        .style('top', '20px')  // Increased top padding
                         .style('right', '0')
                         .style('width', legendWidth + 'px')
-                        .style('height', legendHeight + 'px');
+                        .style('height', totalSvgHeight + 'px');
 
                     var svg = legend.append('svg')
                         .attr('width', legendWidth)
-                        .attr('height', legendHeight + 30); // Added extra height for the axis labels
+                        .attr('height', totalSvgHeight);
 
                     var gradient = svg.append('defs')
                         .append('linearGradient')
@@ -818,7 +819,8 @@
 
                     svg.append('rect')
                         .attr('width', 20)
-                        .attr('height', legendHeight) // Original legend height for the gradient
+                        .attr('height', legendHeight)
+                        .attr('y', 5) // Shift the rectangle down by 5px
                         .style('fill', 'url(#' + gradientId + ')');
 
                     var legendScale = d3.scale.linear()
@@ -832,10 +834,12 @@
 
                     svg.append('g')
                         .attr('class', 'legend-axis')
-                        .attr('transform', 'translate(20, 0)') // Shift the axis right by the width of the rectangle
+                        .attr('transform', 'translate(20, 5)') // Small adjustment to lower the axis slightly
                         .call(legendAxis);
                 });
             }
+
+
 
             // Apply the legend addition function to each chart
             addLegendToChart(worldChart0, '#gbd_map0');
