@@ -760,7 +760,7 @@
                 .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPersonChange)
                 .colors(d3.scale.linear().range(['#b3fcd9', '#FFF59D', '#E8A1A1']))
-                .colorDomain([0.5, 1, +1.5])
+                .colorDomain([0.5, 1.5])
                 .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
@@ -781,9 +781,10 @@
                 });
 
             function addLegendToChart(chart, chartId) {
-                    chart.on('pretransition', function(chart) {
+                chart.on('pretransition', function (chart) {
                     var legendWidth = 50;
-                    var legendHeight = 300;
+                    var legendHeight = 300; // Ensure this height matches the actual space available
+                    var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
 
                     // Remove any existing legend
                     d3.select(chartId + ' .dc-legend').remove();
@@ -791,17 +792,18 @@
                         .append('div')
                         .attr('class', 'dc-legend')
                         .style('position', 'absolute')
-                        .style('top', '10px')  // Adjust vertical position
-                        .style('right', '0')   // Position right next to the chart
+                        .style('top', '10px')
+                        .style('right', '0')
                         .style('width', legendWidth + 'px')
                         .style('height', legendHeight + 'px');
 
-                    var gradient = legend.append('svg')
+                    var svg = legend.append('svg')
                         .attr('width', legendWidth)
-                        .attr('height', legendHeight)
-                        .append('defs')
+                        .attr('height', legendHeight + 30); // Added extra height for the axis labels
+
+                    var gradient = svg.append('defs')
                         .append('linearGradient')
-                        .attr('id', 'gradient')
+                        .attr('id', gradientId)
                         .attr('x1', '0%')
                         .attr('y1', '100%')
                         .attr('x2', '0%')
@@ -811,14 +813,13 @@
                         .data(chart.colors().range())
                         .enter()
                         .append('stop')
-                        .attr('offset', function(d, i) { return i / (chart.colors().range().length - 1); })
-                        .attr('stop-color', function(d) { return d; });
+                        .attr('offset', function (d, i) { return i / (chart.colors().range().length - 1); })
+                        .attr('stop-color', function (d) { return d; });
 
-                    legend.select('svg')
-                        .append('rect')
+                    svg.append('rect')
                         .attr('width', 20)
-                        .attr('height', legendHeight)
-                        .style('fill', 'url(#gradient)');
+                        .attr('height', legendHeight) // Original legend height for the gradient
+                        .style('fill', 'url(#' + gradientId + ')');
 
                     var legendScale = d3.scale.linear()
                         .domain(chart.colorDomain())
@@ -829,19 +830,18 @@
                         .orient('right')
                         .ticks(5);
 
-                    legend.select('svg')
-                        .append('g')
+                    svg.append('g')
                         .attr('class', 'legend-axis')
-                        .attr('transform', 'translate(20,0)')
+                        .attr('transform', 'translate(20, 0)') // Shift the axis right by the width of the rectangle
                         .call(legendAxis);
                 });
             }
-
 
             // Apply the legend addition function to each chart
             addLegendToChart(worldChart0, '#gbd_map0');
             addLegendToChart(worldChart1, '#gbd_map1');
             addLegendToChart(worldChartChange, '#gbd_map_change');
+
 
 
 
