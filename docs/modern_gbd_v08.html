@@ -868,7 +868,7 @@
             }, {
                     header: { text: "Years of live lost per Person 0" },
                     cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"); },
+                    sort: function (d) { return getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
