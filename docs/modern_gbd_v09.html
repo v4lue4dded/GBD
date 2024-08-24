@@ -289,8 +289,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             gbd_data = decodedData;
                             resolve();
