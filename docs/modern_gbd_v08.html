@@ -99,24 +99,23 @@
         }
 
         .c3.plot .layer.population_area_graph path {
-            fill: darkslategray;
-            opacity: 0.5;
+            opacity: 0;
         }
 
         .c3.plot .layer.population_line_graph path {
-            fill: darkgreen;
-            stroke: darkgreen;
+            fill: lightgreen;
+            stroke: lightgreen;
             stroke-width: 10;
         }
 
         .c3.plot .layer.from_year line {
-            stroke-width: 10px;
-            stroke: red;
+            stroke-width: 20px;
+            stroke: darkorchid;
         }
 
         .c3.plot .layer.until_year line {
-            stroke-width: 10px;
-            stroke: red;
+            stroke-width: 20px;
+            stroke: darkorchid;
         }
 
         .map-container {
@@ -267,7 +266,6 @@
                 updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
                 let combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
                 updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
-                console.log(combinedData)
                 return combinedData; // Return the combined decoded data
             } catch (error) {
                 console.error("Error in data loading and decoding workflow:", error);
@@ -294,8 +292,6 @@
                     // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
                     loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
-                            console.log("Decoded Data:");
-                            console.log(decodedData);
                             gbd_data = decodedData;
                             resolve();
                         })
@@ -331,9 +327,7 @@
 
                 let p3 = new Promise((resolve, reject) => {
                     d3.json("lib/geoData/geojson_to_gbd_name_mapping.json", function (nameReplacementData) {
-                        console.log("nameReplacementData:", nameReplacementData);
                         d3.json("lib/geoData/world.geojson", function (world_geojson_import) {
-                            console.log("world_geojson_import:", world_geojson_import);
                             // Adjust the geojson features to include nameMapped
                             world_geojson_import.features.forEach(function (feature) {
                                 var originalName = feature.properties.name;
@@ -477,7 +471,10 @@
         function render() {
             // ### Prepare the data
             // Output the data set to the console if you want to take a look.
+            console.log("gbd_data:");
             console.log(gbd_data);
+            console.log("population_data:");
+            console.log(population_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
 
             var specialKey = "specialKeyGKQ0W8G8OX"
@@ -620,7 +617,6 @@
                                 CFDDict0['population']['d']['year'].filter(year);
                                 redrawDcAndC3();
                             },
-                            // Filter the data based on the initial year selection
                             'render': function () {
                                 this.handlers['drag'](this.data[0]);
                             }
@@ -681,16 +677,6 @@
                 return y > 0 ? x / y - 1: 0;
             }
 
-            // Function to calculate the difference
-            function difference(x, y) {
-                return x - y;
-            }
-
-            // Function to calculate the sum
-            function sum(x, y) {
-                return x + y;
-            }
-
             // Usage examples
             var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
             var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
@@ -702,26 +688,21 @@
 
             var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
 
-
-            console.log("locationNameDimPopAgg0:", locationNameDimPopAgg0.all());
-            console.log("locationNameDimGBDAgg0:", locationNameDimGBDAgg0.all());
-            console.log("locationNameDimPopAgg1:", locationNameDimPopAgg1.all());
-            console.log("locationNameDimGBDAgg1:", locationNameDimGBDAgg1.all());
-            console.log("YLLPerPerson0:", YLLPerPerson0.all());
-            console.log("YLLPerPerson1:", YLLPerPerson1.all());
-            console.log("YLLPerPersonChange:", YLLPerPersonChange.all());
-
             var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
             var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
             var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
+            // let YLLPerPersonColorRange = ["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]
+            let YLLPerPersonColorRange = ["#e0eccc", "#c3e4ba", "#a8dbb0", "#95d3b8", "#7dd1cc", "#5facd3", "#5f7fd3", "#6d5fd3", "#9a5fd3", "#c75fd3", "#d35fb2"]
+            let YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
 
             worldChart0
                 .width(1000)
                 .height(400)
                 .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPerson0)
-                .colors(d3.scale.linear().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
-                .colorDomain([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+                .colors(d3.scale.linear().range(YLLPerPersonColorRange))
+                .colorDomain(YLLPerPersonColorDomain)
                 .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
                 .projection(d3.geo.equirectangular()
@@ -735,13 +716,14 @@
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
+
             worldChart1
                 .width(1000)
                 .height(400)
                 .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
                 .group(YLLPerPerson1)
-                .colors(d3.scale.linear().range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]))
-                .colorDomain([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
+                .colors(d3.scale.linear().range(YLLPerPersonColorRange))
+                .colorDomain(YLLPerPersonColorDomain)
                 .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
@@ -841,7 +823,7 @@
 
                     svg.append('g')
                         .attr('class', 'legend-axis')
-                        .attr('transform', 'translate(20, 5)') // Small adjustment to lower the axis slightly
+                        .attr('transform', 'translate(20, 5)')
                         .call(legendAxis);
                 });
             }
@@ -863,17 +845,6 @@
                         }
                     }
                 }, {
-                    header: { text: "Population change" },
-                    cells: { html: function (d) { return d3.format('.2%')(getVal1("population", d.value, d.key, "pop_val") * 1. / getVal0("population", d.value, d.key, "pop_val") - 1.); } },
-                    sort: function (d) { return getVal1("population", d.value, d.key, "pop_val") * 1. / getVal0("population", d.value, d.key, "pop_val") - 1.; },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': [+1, 0, -0.5],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
-                        }
-                    }
-                }, {
                     header: { text: "Deaths" },
                     cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.value, d.key, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.value, d.key, "deaths_val"))); } },
                     sort: function (d) { return round_z(getVal1("gbd", d.value, d.key, "deaths_val")); },
@@ -882,17 +853,6 @@
                         styles: {
                             'background-color': 'lightsalmon',
                             'text-align': 'right',
-                        }
-                    }
-                }, {
-                    header: { text: "Deaths change" },
-                    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "deaths_val") * 1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.); } },
-                    sort: function (d) { return getVal1("gbd", d.value, d.key, "deaths_val") * 1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.; },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': [-0.5, 0, +1],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
                         }
                     }
                 }, {
@@ -905,33 +865,32 @@
                             'background-color': 'lightblue'
                         }
                     }
-                }, {
-                    header: { text: "Years of live lost change" },
-                    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "yll_val") * 1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.); } },
-                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") * 1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.; },
+            }, {
+                    header: { text: "Years of live lost per Person 0" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
-                            'domain': [-0.5, 0, +1],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                            'range': YLLPerPersonColorRange,
+                            'domain':YLLPerPersonColorDomain,
                         }
                     }
                 }, {
-                    header: { text: "Years of live lost per Person" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")).toFixed(3))) + ' → ' + (d3.format(',')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")).toFixed(3))); } },
-                    cell_options: { styles: { width: '5%' } }, // Set width for the first column cells
+                    header: { text: "Years of live lost per Person 1" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")).toFixed(3))); } },
                     sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val"); },
-                    vis: 'bar',
+                    vis: 'color',
                     vis_options: {
                         styles: {
-                            'background-color': 'lightblue'
+                            'range': YLLPerPersonColorRange,
+                            'domain':YLLPerPersonColorDomain,
                         }
                     }
                 }, {
                     header: { text: "Years of live lost per Person change" },
                     cells: { html: function (d) { return d3.format('.2%')((getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")) * 1. / (getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")) - 1.); } },
                     sort: function (d) { return (getVal1("gbd", d.value, d.key, "yll_val") / getVal1("population", d.value, d.key, "pop_val")) * 1. / (getVal0("gbd", d.value, d.key, "yll_val") / getVal0("population", d.value, d.key, "pop_val")) - 1.; },
-                    vis: 'bar',
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -971,9 +930,6 @@
                 customOptions = {},
                 selectable = 'multi',
             }) {
-                console.log(anchorId);
-                console.log(data);
-
                 var tableOptions = {
                     anchor: anchorId,
                     data: data,
@@ -992,16 +948,14 @@
                             }
                         }
                     },
-                    // cell_options: {
-                    //     styles: {
-                    //         'text-align': 'right',
-                    //         "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
-                    //     }
-                    // },
+                    cell_options: {
+                        styles: {
+                            // 'text-align': 'right',
+                            "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
+                        }
+                    },
                     handlers: {
                         'select': function (selections) {
-                            // Check if there are selections
-                            // console.log(selections)
                             filterDimensions(filter_dimensions, selections.map(function (d) { return d.key; }));
                             redrawDcAndC3();
                         }

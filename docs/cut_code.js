@@ -149,3 +149,66 @@ var logColorScale = d3.scale.log()
 .colorCalculator(function (d) {
     return d ? worldChart.colors()(Math.max(0.001, d)) : '#ccc'; // Ensure valid log input
 })
+
+
+
+
+function redrawDcAndC3() {
+    console.log("redrawDcAndC3");
+
+    // Iterate through dictionary with a for loop
+    for (var key in CFDDict0['gbd']['d']) {
+        console.log(key);
+        var filter = CFDDict0['gbd']['d'][key].currentFilter();
+        // Check if the filter is a function and try to get more meaningful output
+        if (typeof filter === 'function') {
+            try {
+                // Log results of calling the function with likely values
+                console.log("Filter function returns:", filter('male'));
+            } catch (error) {
+                console.log("Error calling filter function:", error);
+            }
+        } else {
+            // Directly log the filter if it's not a function
+            console.log("Current filter:", filter);
+        }
+    }
+    dc.redrawAll();
+    redraw();
+}
+
+
+
+}, {
+    header: { text: "Population change" },
+    cells: { html: function (d) { return d3.format('.2%')(getVal1("population", d.value, d.key, "pop_val") * 1. / getVal0("population", d.value, d.key, "pop_val") - 1.); } },
+    sort: function (d) { return getVal1("population", d.value, d.key, "pop_val") * 1. / getVal0("population", d.value, d.key, "pop_val") - 1.; },
+    vis: 'color',
+    vis_options: {
+        styles: {
+            'domain': [+1, 0, -0.5],
+            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+        }
+    }
+}, {
+    header: { text: "Deaths change" },
+    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "deaths_val") * 1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.); } },
+    sort: function (d) { return getVal1("gbd", d.value, d.key, "deaths_val") * 1. / getVal0("gbd", d.value, d.key, "deaths_val") - 1.; },
+    vis: 'color',
+    vis_options: {
+        styles: {
+            'domain': [-0.5, 0, +1],
+            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+        }
+    }
+}, {
+    header: { text: "Years of live lost change" },
+    cells: { html: function (d) { return d3.format('.2%')(getVal1("gbd", d.value, d.key, "yll_val") * 1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.); } },
+    sort: function (d) { return getVal1("gbd", d.value, d.key, "yll_val") * 1. / getVal0("gbd", d.value, d.key, "yll_val") - 1.; },
+    vis: 'color',
+    vis_options: {
+        styles: {
+            'domain': [-0.5, 0, +1],
+            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+        }
+    }
