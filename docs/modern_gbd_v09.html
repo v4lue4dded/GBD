@@ -289,8 +289,8 @@
             updateLoadingMessage(`download_data started at: ${Math.round(performance.now())}ms`);
             return new Promise((resolve, reject) => {
                 let p1 = new Promise((resolve, reject) => {
-                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                    // loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+                    loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                         .then(decodedData => {
                             gbd_data = decodedData;
                             resolve();
@@ -691,11 +691,37 @@
             var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
             var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
             var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
-            // let YLLPerPersonColorRange = ["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]
-            let YLLPerPersonColorRange = ["#e0eccc", "#c3e4ba", "#a8dbb0", "#95d3b8", "#7dd1cc", "#5facd3", "#5f7fd3", "#6d5fd3", "#9a5fd3", "#c75fd3", "#d35fb2"]
-            let YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+            let YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            let YLLPerPersonChangeColorDomain = [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5]            ;
+
+            let YLLPerPersonColorRange = [
+                "#0089FF",
+                "#6BBAFF",
+                "#8CCED1",
+                "#ACEBA8",
+                "#D4E77E",
+                "#F4D58D",
+                "#F4B78E",
+                "#E9988D",
+                "#B8B8B8",
+                "#909090" 
+            ];
+
+            let YLLPerPersonChangeColorRange = [
+                "#0072E5",  
+                "#4A9EF5",  
+                "#47B4B8",  
+                "#76C76E",  
+                "#BBD957",  
+                "#E6B65C",  
+                "#E6917A",  
+                "#DD4C5A",  
+                "#9E9E9E",  
+                "#787878"   
+            ];
 
 
+            //#endregion
             worldChart0
                 .width(1000)
                 .height(400)
@@ -749,8 +775,8 @@
                 .height(400)
                 .dimension(CFDDict1['population']['d']['location_name'])
                 .group(YLLPerPersonChange)
-                .colors(d3.scale.linear().range(['#b3fcd9', '#FFF59D', '#E8A1A1']))
-                .colorDomain([-0.5, 0, 0.5])
+                .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
+                .colorDomain(YLLPerPersonChangeColorDomain)
                 .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
                 .overlayGeoJson(world_geojson.features, "name", function (d) {
                     return d.properties.nameMapped;
@@ -763,7 +789,13 @@
                 })
                 .title(function (d) {
                     return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                })
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChart1.filters();
+                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
+
+
 
                 function addLegendToChart(chart, chartId, format = '') {
                 chart.on('pretransition', function (chart) {
@@ -894,8 +926,8 @@
                     vis: 'color',
                     vis_options: {
                         styles: {
-                            'domain': [-0.5, 0, +1],
-                            'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
+                            'domain': YLLPerPersonChangeColorDomain,
+                            'range': YLLPerPersonChangeColorRange,
                         }
                     }
                 },

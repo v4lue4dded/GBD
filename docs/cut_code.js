@@ -212,3 +212,18 @@ function redrawDcAndC3() {
             'range': ['#b3fcd9', '#FFF59D', '#E8A1A1'],
         }
     }
+
+
+    
+            // let YLLPerPersonChangeColorRange = [
+            //     "#78bbff",  // Lighter Vivid Blue
+            //     "#95CBFF",  // Lighter Bright Sky Blue
+            //     "#B3E0E5",  // Lighter Pale Turquoise
+            //     "#CDECC1",  // Lighter Light Green
+            //     "#E9F4B0",  // Lighter Soft Yellow
+            //     "#FBE8B6",  // Lighter Light Peach
+            //     "#FBD6C6",  // Lighter Soft Salmon
+            //     "#F1B1B8",  // Lighter Muted Coral
+            //     "#D0D0D0",  // Lighter Light Gray
+            //     "#A8A8A8"   // Lighter Soft Gray
+            // ];
