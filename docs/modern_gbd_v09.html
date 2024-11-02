@@ -340,7 +340,7 @@
                 });
 
                 Promise.all([p1, p2, p3]).then(() => {
-                    d3.selectAll('#waiting').remove();
+                    // d3.selectAll('#waiting').remove();
                     d3.selectAll('main').style('display', '');
                     resolve();
                 }).catch(error => {
@@ -471,11 +471,13 @@
         function render() {
             // ### Prepare the data
             // Output the data set to the console if you want to take a look.
+            updateLoadingMessage(`start of render function at : ${Math.round(performance.now())}ms`);
             console.log("gbd_data:");
             console.log(gbd_data);
             console.log("population_data:");
             console.log(population_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
+            updateLoadingMessage(`logging done : ${Math.round(performance.now())}ms`);
 
             var specialKey = "specialKeyGKQ0W8G8OX"
 
@@ -540,13 +542,16 @@
                 }
                 redrawDcAndC3();
             }
-
+            updateLoadingMessage(`before setup dimensions : ${Math.round(performance.now())}ms`);
             var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
-            var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
-            const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            updateLoadingMessage(`after CFDDict : ${Math.round(performance.now())}ms`);
+            var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
             var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
+            updateLoadingMessage(`after aggDict : ${Math.round(performance.now())}ms`);
+            const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
 
             var validYears = aggDict0['population']['year'].map(function (d) {
                 return d.key;
@@ -784,7 +789,8 @@
                 })
                 .projection(d3.geo.equirectangular()
                     .center([0, 5])
-                    .scale(140))
+                    .scale(140)
+                )
                 .valueAccessor(function (kv) {
                     return kv.value;
                 })
@@ -792,7 +798,7 @@
                     return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
                 })
                 .on('filtered', function (chart, filter) {
-                    var selectedKeys = worldChart1.filters();
+                    var selectedKeys = worldChartChange.filters();
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
@@ -1144,6 +1150,7 @@
                 }
             });
 
+            updateLoadingMessage(`before actual rendering : ${Math.round(performance.now())}ms`);
             // #########################################################################################
             // ### Initial Rendering
             // Perform the initial `render()`
@@ -1159,6 +1166,7 @@
                     chart.resize();
                 }
             };
+            updateLoadingMessage(`end of render function at : ${Math.round(performance.now())}ms`);
         }
         // #########################################################################################
         // # Start Here
@@ -1177,7 +1185,7 @@
         // passed to the promise error handler and instead can be caught and handeled as normal in a
         // debugger.  In production code you could use this instead:
         //     download_data().then(render)
-    </script>
+</script>
 </body>
 
 </html>
