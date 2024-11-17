@@ -340,7 +340,6 @@
                 });
 
                 Promise.all([p1, p2, p3]).then(() => {
-                    // d3.selectAll('#waiting').remove();
                     d3.selectAll('main').style('display', '');
                     resolve();
                 }).catch(error => {
@@ -1167,6 +1166,7 @@
                 }
             };
             updateLoadingMessage(`end of render function at : ${Math.round(performance.now())}ms`);
+            d3.selectAll('#waiting').remove();
         }
         // #########################################################################################
         // # Start Here
