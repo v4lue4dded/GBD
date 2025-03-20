@@ -500,9 +500,9 @@
                 'l2_cause_name'
             ];
                         
+            // TODO: precalculate this
             // Object for collecting unique values
             const cat_vars_and_values = {};
-
             // Loop through the array of data
             for (let i = 0; i < gbd_data.length; i++) {
               const row = gbd_data[i];
@@ -1067,17 +1067,17 @@
             }
 
 
-            // continue here
-            function createInfosToLookUp(inputArray, categorical_variable_name) {
-                return inputArray.map(item => ({
-                    categorical_value: item.key,
+            function createInfosToLookUp(categorical_values, categorical_variable_name) {
+                cat_value_array = Array.from(categorical_values)
+                return cat_value_array.map(item => ({
+                    categorical_value: item,
                     categorical_variable: categorical_variable_name
                 }));
             }
 
             createDataTable({
                 anchorId: '#gdb_region_name_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["region_name"], "region_name"),
+                data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),
                 filter_dimensions: [CFDDict0['gbd']['d']['region_name'], CFDDict0['population']['d']['region_name'], CFDDict1['gbd']['d']['region_name'], CFDDict1['population']['d']['region_name']],
                 initialSortColumn: "Population",
                 columns: [
@@ -1093,7 +1093,7 @@
 
             createDataTable({
                 anchorId: '#gdb_sub_region_name_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["sub_region_name"], "sub_region_name"),
+                data: createInfosToLookUp(cat_vars_and_values["sub_region_name"], "sub_region_name"),
                 filter_dimensions: [CFDDict0['gbd']['d']['sub_region_name'], CFDDict0['population']['d']['sub_region_name'], CFDDict1['gbd']['d']['sub_region_name'], CFDDict1['population']['d']['sub_region_name']],
                 initialSortColumn: "Population",
                 columns: [
@@ -1109,10 +1109,10 @@
 
 
             // console.log("aggDict0['gbd']['location_name']:", aggDict0['gbd']['location_name'])
-            // console.log("createInfosToLookUp(aggDict0['gbd']['location_name'], 'location_name'):", createInfosToLookUp(aggDict0["gbd"]["location_name"], "location_name"))
+            // console.log("createInfosToLookUp(aggDict0['gbd']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
             createDataTable({
                 anchorId: '#gdb_location_name_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["location_name"], "location_name"),
+                data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
                 filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
                 initialSortColumn: "Population",
                 customOptions: {
@@ -1134,7 +1134,7 @@
 
             createDataTable({
                 anchorId: '#gdb_sex_name_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["sex_name"], "sex_name"),
+                data: createInfosToLookUp(cat_vars_and_values["sex_name"], "sex_name"),
                 filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
                 initialSortColumn: "Sex",
                 columns: [
@@ -1150,7 +1150,7 @@
 
             createDataTable({
                 anchorId: '#gdb_age_cluster_name_sorted_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["age_cluster_name_sorted"], "age_cluster_name_sorted"),
+                data: createInfosToLookUp(cat_vars_and_values["age_cluster_name_sorted"], "age_cluster_name_sorted"),
                 filter_dimensions: [CFDDict0['gbd']['d']['age_cluster_name_sorted'], CFDDict0['population']['d']['age_cluster_name_sorted'], CFDDict1['gbd']['d']['age_cluster_name_sorted'], CFDDict1['population']['d']['age_cluster_name_sorted']],
                 initialSortColumn: "Age cluster",
                 columns: [
@@ -1166,7 +1166,7 @@
 
             createDataTable({
                 anchorId: '#gdb_age_group_name_sorted_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["age_group_name_sorted"], "age_group_name_sorted"),
+                data: createInfosToLookUp(cat_vars_and_values["age_group_name_sorted"], "age_group_name_sorted"),
                 filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
                 initialSortColumn: "Age group",
                 columns: [
@@ -1182,7 +1182,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["l1_cause_name"], "l1_cause_name"),
+                data: createInfosToLookUp(cat_vars_and_values["l1_cause_name"], "l1_cause_name"),
                 filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'], CFDDict1['gbd']['d']['l1_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
@@ -1198,7 +1198,7 @@
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
-                data: createInfosToLookUp(aggDict0["gbd"]["l2_cause_name"], "l2_cause_name"),
+                data: createInfosToLookUp(cat_vars_and_values["l2_cause_name"], "l2_cause_name"),
                 filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'], CFDDict1['gbd']['d']['l2_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
