@@ -933,7 +933,11 @@
             const common_columns = [
                 {
                     header: { text: "Population" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"))); } },
+                    cells: { html: function (d) { 
+                        console.log("blub:")
+                        console.log(d.categorical_variable, d.categorical_value)
+                        console.log((bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))))
+                        return (bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"))); } },
                     sort: function (d) { return round_z(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
                     vis: 'bar',
                     vis_options: {
@@ -1053,6 +1057,7 @@
                     },
                     handlers: {
                         'select': function (selections) {
+                            console.log("data", anchorId, data)
                             filterDimensions(filter_dimensions, selections.map(function (d) { return d.key; }));
                             redrawDcAndC3();
                         }
