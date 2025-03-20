@@ -1058,7 +1058,7 @@
                     handlers: {
                         'select': function (selections) {
                             console.log("data", anchorId, data)
-                            filterDimensions(filter_dimensions, selections.map(function (d) { return d.key; }));
+                            filterDimensions(filter_dimensions, selections.map(function (d) { return d.categorical_value; }));
                             redrawDcAndC3();
                         }
                     },
