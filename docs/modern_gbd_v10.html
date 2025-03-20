@@ -703,29 +703,25 @@
             console.log("YLLPerPersonChange      ", YLLPerPersonChange      );
             console.log("YLLPerPersonChange.all()", YLLPerPersonChange.all());
 
-            const YLLPerPerson0Mock = {
+            const WrappedYLLPerPerson0 = {
               all: function() {
                 return YLLPerPerson0.all();
               }
             };
-            const YLLPerPerson1Mock = {
+            const WrappedYLLPerPerson1 = {
               all: function() {
                 return YLLPerPerson1.all();
               }
             };
-            const YLLPerPersonChangeMock = {
+            const WrappedYLLPerPersonChange = {
               all: function() {
                 return YLLPerPersonChange.all();
               }
             };
 
-
-            console.log("YLLPerPerson0Mock.all()", YLLPerPerson0Mock.all());
-            console.log("YLLPerPerson1Mock.all()", YLLPerPerson1Mock.all());
-            console.log("YLLPerPersonChangeMock.all()", YLLPerPersonChangeMock.all());
-
-
-
+            console.log("WrappedYLLPerPerson0.all()", WrappedYLLPerPerson0.all());
+            console.log("WrappedYLLPerPerson1.all()", WrappedYLLPerPerson1.all());
+            console.log("WrappedYLLPerPersonChange.all()", WrappedYLLPerPersonChange.all());
 
             var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
             var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
@@ -772,7 +768,7 @@
                 .width(1000)
                 .height(400)
                 .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
-                .group(YLLPerPerson0Mock)
+                .group(WrappedYLLPerPerson0)
                 .colors(d3.scale.linear().range(YLLPerPersonColorRange))
                 .colorDomain(YLLPerPersonColorDomain)
                 .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
@@ -793,7 +789,7 @@
                 .width(1000)
                 .height(400)
                 .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
-                .group(YLLPerPerson1)
+                .group(WrappedYLLPerPerson1)
                 .colors(d3.scale.linear().range(YLLPerPersonColorRange))
                 .colorDomain(YLLPerPersonColorDomain)
                 .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
@@ -820,7 +816,7 @@
                 .width(1000)
                 .height(400)
                 .dimension(CFDDict1['population']['d']['location_name'])
-                .group(YLLPerPersonChange)
+                .group(WrappedYLLPerPersonChange)
                 .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
                 .colorDomain(YLLPerPersonChangeColorDomain)
                 .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
