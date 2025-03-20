@@ -574,9 +574,7 @@
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
 
-            var validYears = aggDict0['population']['year'].map(function (d) {
-                return d.key;
-            });
+            var validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
             function snapToValidYear(year) {
                 return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
