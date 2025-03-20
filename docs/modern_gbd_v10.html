@@ -499,7 +499,29 @@
                 'l1_cause_name',
                 'l2_cause_name'
             ];
+                        
+            // Object for collecting unique values
+            const cat_vars_and_values = {};
 
+            // Loop through the array of data
+            for (let i = 0; i < gbd_data.length; i++) {
+              const row = gbd_data[i];
+              
+              // For each dimension in dimensionNames
+              for (const dimName of dimensionNames) {
+                // If we haven't seen this dimension yet, initialize it to a Set
+                if (!cat_vars_and_values[dimName]) {
+                  cat_vars_and_values[dimName] = new Set();
+                }
+                
+                // Add this row's value for the dimension to the dimension's Set
+                cat_vars_and_values[dimName].add(row[dimName]);
+              }
+            }
+
+
+            
+            console.log("cat_vars_and_values:", cat_vars_and_values)
             aggColumns = {
                 'gbd': ['deaths_val', 'yll_val'],
                 'population': ['pop_val']
@@ -781,6 +803,8 @@
                 .title(function (d) { return "Location: " + d.key + "\nYears of live lost per Person: " + d.value; })
                 .on('filtered', function (chart, filter) {
                     var selectedKeys = worldChart0.filters();
+                    console.log("aggDict0['gbd']['sub_region_name']", aggDict0['gbd']['sub_region_name'])
+                    console.log("aggDict0", aggDict0)
                     filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
                 });
 
