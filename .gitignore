@@ -6,3 +6,4 @@ private
 .idea
 *.pbix
 **/old/**
+*.pyc

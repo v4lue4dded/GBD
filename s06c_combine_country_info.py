@@ -8,12 +8,14 @@ import pandas as pd
 from sqlalchemy import create_engine
 from zipfile import ZipFile
 import urllib
+from os.path import join as opj
 
-engine = create_engine('postgresql://'+config.db_login["user"] +':'+ config.db_login["pw"]+'@localhost:5432/gbd')
+engine = config.engine
 con = engine.connect()
 
+
 df_country_gbd = pd.read_sql('select * from gbd.db03_clean_tables.cb_location_country', con=engine)
-df_country_un = pd.read_excel('UNSD_Methodology_saved_incl_Taiwan.xlsx')
+df_country_un = pd.read_excel(opj(config.REPO_DIRECTORY, 'UNSD_Methodology_saved_incl_Taiwan.xlsx'))
 
 df_country_un.columns = (
     df_country_un.columns

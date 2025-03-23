@@ -7,13 +7,14 @@ import json
 import pandas as pd
 from sqlalchemy import create_engine
 from zipfile import ZipFile
+from os.path import join as opj
 import urllib
 
-engine = create_engine('postgresql://'+config.db_login["user"] +':'+ config.db_login["pw"]+'@localhost:5432/gbd')
+engine = config.engine
 con = engine.connect()
 
-intermediate_dir = 'data\\intermediate\\'
-population_dir = 'data\\download\\population\\'
+intermediate_dir = opj('data','intermediate')
+population_dir = opj('data','download','population')
 listdir(population_dir)
 
 list_0_zip = [] # 5 year and custom age groups
@@ -37,7 +38,7 @@ for zip_type, list_zip in [
     list_of_dfs = []
     for i_zip in list_zip:
         print(i_zip)
-        zip_file = ZipFile(population_dir + i_zip)
+        zip_file = ZipFile(opj(population_dir, i_zip))
         for i_file in zip_file.filelist:
             print(i_file.filename)
             df_temp = pd.read_csv(zip_file.open(i_file.filename), sep=',')
@@ -48,8 +49,8 @@ for zip_type, list_zip in [
 # upload dict of dfs
 for table_name, df_full in dict_dfs.items():
     print(table_name)
-    df_full.to_csv(f"{intermediate_dir}{table_name}.csv", index = False, sep = '\t', encoding='utf-8-sig')
-    df_full = pd.read_csv(f"{intermediate_dir}{table_name}.csv", sep = '\t', encoding='utf-8-sig')
+    df_full.to_csv(f"{opj(intermediate_dir,table_name)}.csv", index = False, sep = '\t', encoding='utf-8-sig')
+    df_full = pd.read_csv(f"{opj(intermediate_dir,table_name)}.csv", sep = '\t', encoding='utf-8-sig')
     df_full.to_sql(name=table_name, con=engine, schema='db01_import', if_exists='replace', index=False, chunksize=10000)
 
 

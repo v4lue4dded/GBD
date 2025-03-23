@@ -2,8 +2,8 @@
 141	Egypt	Egypt	Egypt	EG	EGY	2.0	Africa	15.0	Northern Africa			0	0	0	Developing
 116	Saint Lucia	Saint Lucia	Saint Lucia	LC	LCA	19.0	Americas	419.0	Latin America and the Caribbean	29.0	Caribbean	0	0	1	Developing
 435	South Sudan	South Sudan	South Sudan	SS	SSD	2.0	Africa	202.0	Sub-Saharan Africa	14.0	Eastern Africa	1	1	0	Developing
-77	Cyprus	Cyprus	Cyprus	CY	CYP	142.0	Asia	145.0	Western Asia			0	0	0	Developed
 84	Ireland	Ireland	Ireland	IE	IRL	150.0	Europe	154.0	Northern Europe			0	0	0	Developed
+77	Cyprus	Cyprus	Cyprus	CY	CYP	142.0	Asia	145.0	Western Asia			0	0	0	Developed
 214	Nigeria	Nigeria	Nigeria	NG	NGA	2.0	Africa	202.0	Sub-Saharan Africa	11.0	Western Africa	0	0	0	Developing
 376	Northern Mariana Islands	Northern Mariana Islands	Northern Mariana Islands	MP	MNP	9.0	Oceania	57.0	Micronesia			0	0	1	Developing
 26	Papua New Guinea	Papua New Guinea	Papua New Guinea	PG	PNG	9.0	Oceania	54.0	Melanesia			0	0	1	Developing
@@ -38,10 +38,10 @@
 50	Montenegro	Montenegro	Montenegro	ME	MNE	150.0	Europe	39.0	Southern Europe			0	0	0	Developed
 161	Bangladesh	Bangladesh	Bangladesh	BD	BGD	142.0	Asia	34.0	Southern Asia			1	0	0	Developing
 11	Indonesia	Indonesia	Indonesia	ID	IDN	142.0	Asia	35.0	South-eastern Asia			0	0	0	Developing
-27	Samoa	Samoa	Samoa	WS	WSM	9.0	Oceania	61.0	Polynesia			0	0	1	Developing
 18	Thailand	Thailand	Thailand	TH	THA	142.0	Asia	35.0	South-eastern Asia			0	0	0	Developing
-298	American Samoa	American Samoa	American Samoa	AS	ASM	9.0	Oceania	61.0	Polynesia			0	0	1	Developing
 29	Tonga	Tonga	Tonga	TO	TON	9.0	Oceania	61.0	Polynesia			0	0	1	Developing
+27	Samoa	Samoa	Samoa	WS	WSM	9.0	Oceania	61.0	Polynesia			0	0	1	Developing
+298	American Samoa	American Samoa	American Samoa	AS	ASM	9.0	Oceania	61.0	Polynesia			0	0	1	Developing
 195	Namibia	Namibia	Namibia		NAM	2.0	Africa	202.0	Sub-Saharan Africa	18.0	Southern Africa	0	0	0	Developing
 86	Italy	Italy	Italy	IT	ITA	150.0	Europe	39.0	Southern Europe			0	0	0	Developed
 53	Serbia	Serbia	Serbia	RS	SRB	150.0	Europe	39.0	Southern Europe			0	0	0	Developed
@@ -97,7 +97,6 @@
 54	Slovakia	Slovakia	Slovakia	SK	SVK	150.0	Europe	151.0	Eastern Europe			0	0	0	Developed
 107	Barbados	Barbados	Barbados	BB	BRB	19.0	Americas	419.0	Latin America and the Caribbean	29.0	Caribbean	0	0	1	Developing
 62	Russian Federation	Russian Federation	Russian Federation	RU	RUS	150.0	Europe	151.0	Eastern Europe			0	0	0	Developed
-213	Niger	Niger	Niger	NE	NER	2.0	Africa	202.0	Sub-Saharan Africa	11.0	Western Africa	1	1	0	Developing
 205	Côte d'Ivoire	Côte d’Ivoire	Côte d’Ivoire	CI	CIV	2.0	Africa	202.0	Sub-Saharan Africa	11.0	Western Africa	0	0	0	Developing
 218	Togo	Togo	Togo	TG	TGO	2.0	Africa	202.0	Sub-Saharan Africa	11.0	Western Africa	1	0	0	Developing
 369	Nauru	Nauru	Nauru	NR	NRU	9.0	Oceania	57.0	Micronesia			0	0	1	Developing
@@ -146,6 +145,7 @@
 171	Democratic Republic of the Congo	Democratic Republic of the Congo	Democratic Republic of the Congo	CD	COD	2.0	Africa	202.0	Sub-Saharan Africa	17.0	Middle Africa	1	0	0	Developing
 380	Palau	Palau	Palau	PW	PLW	9.0	Oceania	57.0	Micronesia			0	0	1	Developing
 81	Germany	Germany	Germany	DE	DEU	150.0	Europe	155.0	Western Europe			0	0	0	Developed
+213	Niger	Niger	Niger	NE	NER	2.0	Africa	202.0	Sub-Saharan Africa	11.0	Western Africa	1	1	0	Developing
 305	Bermuda	Bermuda	Bermuda	BM	BMU	19.0	Americas	21.0	Northern America			0	0	0	Developed
 177	Djibouti	Djibouti	Djibouti	DJ	DJI	2.0	Africa	202.0	Sub-Saharan Africa	14.0	Eastern Africa	1	0	0	Developing
 176	Comoros	Comoros	Comoros	KM	COM	2.0	Africa	202.0	Sub-Saharan Africa	14.0	Eastern Africa	1	0	1	Developing
@@ -183,8 +183,8 @@
 184	Mozambique	Mozambique	Mozambique	MZ	MOZ	2.0	Africa	202.0	Sub-Saharan Africa	14.0	Eastern Africa	1	0	0	Developing
 143	Iraq	Iraq	Iraq	IQ	IRQ	142.0	Asia	145.0	Western Asia			0	0	0	Developing
 12	Lao People's Democratic Republic	Lao People's Democratic Republic	Lao People's Democratic Republic	LA	LAO	142.0	Asia	35.0	South-eastern Asia			1	1	0	Developing
-34	Azerbaijan	Azerbaijan	Azerbaijan	AZ	AZE	142.0	Asia	145.0	Western Asia			0	1	0	Developing
 49	North Macedonia	North Macedonia	North Macedonia	MK	MKD	150.0	Europe	39.0	Southern Europe			0	1	0	Developed
+34	Azerbaijan	Azerbaijan	Azerbaijan	AZ	AZE	142.0	Asia	145.0	Western Asia			0	1	0	Developing
 58	Estonia	Estonia	Estonia	EE	EST	150.0	Europe	154.0	Northern Europe			0	0	0	Developed
 187	Somalia	Somalia	Somalia	SO	SOM	2.0	Africa	202.0	Sub-Saharan Africa	14.0	Eastern Africa	1	0	0	Developing
 47	Czechia	Czechia	Czechia	CZ	CZE	150.0	Europe	151.0	Eastern Europe			0	0	0	Developed

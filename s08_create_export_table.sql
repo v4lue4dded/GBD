@@ -50,7 +50,7 @@ do $$
 begin
 assert 0 = (select
  count(*)
-from gbd.db04_modelling.export_measure
+from gbd.db04_modelling.full_measure_table
 where
    deaths_val       <  0 or deaths_val       is null
 or deaths_lower     <  0 or deaths_lower     is null

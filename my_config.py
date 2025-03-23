@@ -4,14 +4,19 @@ import pandas as pd
 import numpy as np
 import sqlalchemy as sa
 from pprint import pprint
+import os
 import random
 import re
 import datetime
 import json
+from sqlalchemy import create_engine
 
 pd.set_option('display.max_rows', 2000)
 pd.set_option('display.max_columns', 100)
 np.set_printoptions(threshold=1000)
+
+
+REPO_DIRECTORY = os.path.dirname(__file__)
 
 
 try:
@@ -19,6 +24,8 @@ try:
         db_login = json.load(json_file)
 except Exception as e:
     print(e)    
+
+engine = create_engine('postgresql://' + db_login["user"] + ':' + db_login["pw"] + '@host.docker.internal:5432/gbd')
 
 ###############################################################################################################################
 ## defining functions ###########################################################################################################
