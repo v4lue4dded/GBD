@@ -48,7 +48,7 @@ aggregated_columns_dict = {
     ],
 }
 
-for table_type in ["population", "long"]:
+for table_type in ["long"]:
     index_cols = index_cols_dict[table_type]
     aggregated_columns = aggregated_columns_dict[table_type]
     # Set export directory
