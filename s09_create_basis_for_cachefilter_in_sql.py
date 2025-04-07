@@ -1,57 +1,58 @@
-# Source table name:
-source_table = "gbd.db04_modelling.export_long_rollup"
+import my_config as config
+from sqlalchemy import text
 
-# Dimensions we might pivot on (each dimension will become the "indexing_column"):
-dimensions = [
-    "year",
-    "region_name",
-    "sub_region_name",
-    "location_name",
-    "age_group_name_sorted",
-    "age_cluster_name_sorted",
-    "sex_name",
-    "l1_cause_name",
-    "l2_cause_name",
-]
+# Database connection
+engine = config.engine
+con = engine.connect()
 
-# Columns we want to aggregate into JSON for each dimension value:
-aggregations = [
-    "yll_val",
-    "yll_upper",
-    "yll_lower",
-    "deaths_val",
-    "deaths_upper",
-    "deaths_lower",
-]
+table_types = ['population', 'long']
 
-# Destination table where we'll store the union of all queries:
-target_table = "gbd.db04_modelling.long_cachefilter_prep"
+dimension_cols_dict = {
+    "population": [
+        "year",
+        "region_name",
+        "sub_region_name",
+        "location_name",
+        "age_group_name_sorted",
+        "age_cluster_name_sorted",
+        "sex_name",
+    ],
+    "long": [
+        "year",
+        "region_name",
+        "sub_region_name",
+        "location_name",
+        "age_group_name_sorted",
+        "age_cluster_name_sorted",
+        "sex_name",
+        "l1_cause_name",
+        "l2_cause_name",
+    ],
+}
 
-# -------------------------------------------------------------------
-# 2) Build the SQL
-# -------------------------------------------------------------------
-
+aggregated_columns_dict = {
+    "population": [
+        "pop_val",
+        "pop_upper",
+        "pop_lower",
+    ],
+    "long": [
+        "yll_val",
+        "yll_upper",
+        "yll_lower",
+        "deaths_val",
+        "deaths_upper",
+        "deaths_lower",
+    ],
+}
 
 def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
-    # 1) Dimensions other than the pivot
     other_dims = [d for d in all_dimensions if d != pivot_col]
-
-    # 2) Build a JSON object for the grouping combo:
-    #    json_build_object('col1', col1::varchar, 'col2', col2::varchar, ...)
-    combo_pairs = []
-    for od in other_dims:
-        combo_pairs.append(f"'{od}', {od}::varchar")
+    combo_pairs = [f"'{od}', {od}::varchar" for od in other_dims]
     generating_combination_expr = "json_build_object(" + ", ".join(combo_pairs) + ")::varchar"
-
-    # 3) Build the aggregator object for each pivot value:
-    #    json_build_object('pop_val', pop_val, 'pop_upper', pop_upper, ...)
-    agg_pairs = []
-    for agg in agg_cols:
-        agg_pairs.append(f"'{agg}', {agg}")
+    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
     aggregator_expr = "json_build_object(" + ", ".join(agg_pairs) + ")"
 
-    # 4) Put it together in a query, using a WITH clause for clarity:
-    #    pivot_col is used inside json_object_agg(...) as the key, aggregator_expr as the value
     query = f"""
         WITH combo AS (
             SELECT
@@ -78,24 +79,38 @@ def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
     """
     return query
 
+# -------------------------------------------------------------------
+# Loop over each table_type, build the UNION ALL query, and create the table
+# -------------------------------------------------------------------
+for table_type in table_types:
+    source_table = f"gbd.db04_modelling.export_{table_type}_rollup"
+    target_table = f"gbd.db04_modelling.export_{table_type}_cachefilter_prep"
 
-# Build the individual pivot queries and then UNION ALL
-individual_queries = []
-for dim in dimensions:
-    sql_for_dim = build_query_for_dimension(source_table, dim, dimensions, aggregations)
-    # We'll wrap in parentheses so we can safely do "UNION ALL" among them:
-    individual_queries.append(f"({sql_for_dim})")
+    dimensions = dimension_cols_dict[table_type]
+    aggregations = aggregated_columns_dict[table_type]
 
-# Single SQL statement that union all of them
-union_sql = " UNION ALL ".join(individual_queries)
+    # Build the individual pivot queries and then UNION ALL
+    individual_queries = []
+    for dim in dimensions:
+        sql_for_dim = build_query_for_dimension(source_table, dim, dimensions, aggregations)
+        # Wrap in parentheses so we can safely do "UNION ALL" among them
+        individual_queries.append(f"({sql_for_dim})")
 
-# Finally, create a table with these results (dropping the old one if it exists)
-create_table_sql = f"""
-DROP TABLE IF EXISTS {target_table} CASCADE;
-CREATE TABLE {target_table} AS
-{union_sql}
-;
-"""
+    union_sql = " UNION ALL ".join(individual_queries)
 
+    # Create the table with these results (dropping the old one if it exists)
+    create_table_sql = f"""
+        DROP TABLE IF EXISTS {target_table} CASCADE;
+        CREATE TABLE {target_table} AS
+        {union_sql}
+        ;
+    """
 
-print(create_table_sql)
+    print(f"Creating table: {target_table}")
+    print(create_table_sql)
+
+    # Execute the SQL
+    con.execute(text(create_table_sql))
+
+con.close()
+print("All tables created successfully.")
