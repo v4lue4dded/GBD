@@ -5,7 +5,7 @@ from sqlalchemy import text
 engine = config.engine
 con = engine.connect()
 
-table_types = ['population', 'long']
+table_types = ['population']
 
 dimension_cols_dict = {
     "population": [
@@ -65,14 +65,14 @@ def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
             generating_combination,
             md5(generating_combination) AS generating_combination_hash,
             (
-                json_build_object(
+                jsonb_build_object(
                     'generating_combination', generating_combination
                 )
                 ||
-                json_object_agg(
+                jsonb_object_agg(
                     {pivot_col}::varchar,
                     {aggregator_expr}
-                )::varchar
+                )
             ) AS json_column
         FROM combo
         GROUP BY generating_combination
