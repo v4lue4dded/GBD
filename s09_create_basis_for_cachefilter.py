@@ -26,7 +26,9 @@ index_cols_dict = {
         "location_name",
         "age_group_name_sorted",
         "age_cluster_name_sorted",
-        "sex_name" "l1_cause_name" "l2_cause_name",
+        "sex_name",
+        "l1_cause_name",
+        "l2_cause_name",
     ],
 }
 
