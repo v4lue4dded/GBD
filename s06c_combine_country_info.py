@@ -1,7 +1,5 @@
 from os import listdir
 import os
-path = os.getcwd()
-os.chdir(path.split('GBD', 1)[0] + 'GBD')
 import my_config as config
 import json
 import pandas as pd
