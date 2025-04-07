@@ -129,3 +129,16 @@ GROUP BY
     ROLLUP(sex_name),
     ROLLUP(l1_cause_name, l2_cause_name)
 ;
+
+select count(*) from gbd.db04_modelling.export_population_rollup
+where anz > 400
+
+
+select
+  anz
+, count(*) as freq
+from gbd.db04_modelling.export_population_rollup as x
+group by
+  anz
+order by freq desc
+;
