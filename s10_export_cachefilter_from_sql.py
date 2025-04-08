@@ -9,7 +9,7 @@ from sqlalchemy import text
 engine = config.engine
 con = engine.connect()
 
-table_types = ["population"]
+table_types = ["population", "long"]
 
 for table_type in table_types:
     # We'll read from the newly created cachefilter tables:

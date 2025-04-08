@@ -5,7 +5,7 @@ from sqlalchemy import text
 engine = config.engine
 con = engine.connect()
 
-table_types = ['population']
+table_types = ['population', 'long']
 
 dimension_cols_dict = {
     "population": [
