@@ -2,335 +2,663 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Extended Generating Combination Hash Lookup</title>
+    <title>Generating Combination & Hash Lookup with Dropdowns</title>
     <script>
-    /**
-     * Minimal JavaScript MD5 implementation (c) 2020 @dainst
-     * Adapted from various public domain/MIT-licensed code.
-     * This is for demonstration; for production, consider a robust library.
-     */
-    function md5(str) {
-        // Helper functions
-        function rotateLeft(lValue, iShiftBits) {
-            return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
-        }
-        function addUnsigned(lX, lY) {
-            const lX4 = (lX & 0x40000000);
-            const lY4 = (lY & 0x40000000);
-            const lX8 = (lX & 0x80000000);
-            const lY8 = (lY & 0x80000000);
-            let lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
-            if (lX4 & lY4) {
-                return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-            }
-            if (lX4 | lY4) {
-                if (lResult & 0x40000000) {
-                    return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-                } else {
-                    return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-                }
-            } else {
-                return (lResult ^ lX8 ^ lY8);
-            }
-        }
-        function F(x, y, z) { return (x & y) | ((~x) & z); }
-        function G(x, y, z) { return (x & z) | (y & (~z)); }
-        function H(x, y, z) { return (x ^ y ^ z); }
-        function I(x, y, z) { return (y ^ (x | (~z))); }
-        function FF(a, b, c, d, x, s, ac) {
-            a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac));
-            return addUnsigned(rotateLeft(a, s), b);
-        }
-        function GG(a, b, c, d, x, s, ac) {
-            a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac));
-            return addUnsigned(rotateLeft(a, s), b);
-        }
-        function HH(a, b, c, d, x, s, ac) {
-            a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac));
-            return addUnsigned(rotateLeft(a, s), b);
-        }
-        function II(a, b, c, d, x, s, ac) {
-            a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac));
-            return addUnsigned(rotateLeft(a, s), b);
-        }
-        function convertToWordArray(str) {
-            let lWordCount;
-            const lMessageLength = str.length;
-            const lNumberOfWordsTemp1 = lMessageLength + 8;
-            const lNumberOfWordsTemp2 = (lNumberOfWordsTemp1 - (lNumberOfWordsTemp1 % 64)) / 64;
-            const lNumberOfWords = (lNumberOfWordsTemp2 + 1) * 16;
-            const lWordArray = new Array(lNumberOfWords - 1);
-            let lBytePosition = 0;
-            let lByteCount = 0;
-            while (lByteCount < lMessageLength) {
-                lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-                lBytePosition = (lByteCount % 4) * 8;
-                lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition));
-                lByteCount++;
-            }
-            lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-            lBytePosition = (lByteCount % 4) * 8;
-            lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
-            lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
-            return lWordArray;
-        }
-        function wordToHex(lValue) {
-            let wordToHexValue = '', wordToHexValueTemp = '', lByte, lCount;
-            for (lCount = 0; lCount <= 3; lCount++) {
-                lByte = (lValue >>> (lCount * 8)) & 255;
-                wordToHexValueTemp = '0' + lByte.toString(16);
-                wordToHexValue += wordToHexValueTemp.substr(wordToHexValueTemp.length - 2, 2);
-            }
-            return wordToHexValue;
-        }
-        // Main MD5 algorithm
-        let x = [];
-        let k, AA, BB, CC, DD, a, b, c, d;
-        const S11 = 7, S12 = 12, S13 = 17, S14 = 22;
-        const S21 = 5, S22 = 9, S23 = 14, S24 = 20;
-        const S31 = 4, S32 = 11, S33 = 16, S34 = 23;
-        const S41 = 6, S42 = 10, S43 = 15, S44 = 21;
-        x = convertToWordArray(str);
-        a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
-        for (k = 0; k < x.length; k += 16) {
-            AA = a; BB = b; CC = c; DD = d;
-            a = FF(a, b, c, d, x[k + 0], S11, 0xD76AA478);
-            d = FF(d, a, b, c, x[k + 1], S12, 0xE8C7B756);
-            c = FF(c, d, a, b, x[k + 2], S13, 0x242070DB);
-            b = FF(b, c, d, a, x[k + 3], S14, 0xC1BDCEEE);
-            a = FF(a, b, c, d, x[k + 4], S11, 0xF57C0FAF);
-            d = FF(d, a, b, c, x[k + 5], S12, 0x4787C62A);
-            c = FF(c, d, a, b, x[k + 6], S13, 0xA8304613);
-            b = FF(b, c, d, a, x[k + 7], S14, 0xFD469501);
-            a = FF(a, b, c, d, x[k + 8], S11, 0x698098D8);
-            d = FF(d, a, b, c, x[k + 9], S12, 0x8B44F7AF);
-            c = FF(c, d, a, b, x[k + 10], S13, 0xFFFF5BB1);
-            b = FF(b, c, d, a, x[k + 11], S14, 0x895CD7BE);
-            a = FF(a, b, c, d, x[k + 12], S11, 0x6B901122);
-            d = FF(d, a, b, c, x[k + 13], S12, 0xFD987193);
-            c = FF(c, d, a, b, x[k + 14], S13, 0xA679438E);
-            b = FF(b, c, d, a, x[k + 15], S14, 0x49B40821);
-            a = GG(a, b, c, d, x[k + 1], S21, 0xF61E2562);
-            d = GG(d, a, b, c, x[k + 6], S22, 0xC040B340);
-            c = GG(c, d, a, b, x[k + 11], S23, 0x265E5A51);
-            b = GG(b, c, d, a, x[k + 0], S24, 0xE9B6C7AA);
-            a = GG(a, b, c, d, x[k + 5], S21, 0xD62F105D);
-            d = GG(d, a, b, c, x[k + 10], S22, 0x02441453);
-            c = GG(c, d, a, b, x[k + 15], S23, 0xD8A1E681);
-            b = GG(b, c, d, a, x[k + 4], S24, 0xE7D3FBC8);
-            a = GG(a, b, c, d, x[k + 9], S21, 0x21E1CDE6);
-            d = GG(d, a, b, c, x[k + 14], S22, 0xC33707D6);
-            c = GG(c, d, a, b, x[k + 3], S23, 0xF4D50D87);
-            b = GG(b, c, d, a, x[k + 8], S24, 0x455A14ED);
-            a = GG(a, b, c, d, x[k + 13], S21, 0xA9E3E905);
-            d = GG(d, a, b, c, x[k + 2], S22, 0xFCEFA3F8);
-            c = GG(c, d, a, b, x[k + 7], S23, 0x676F02D9);
-            b = GG(b, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
-            a = HH(a, b, c, d, x[k + 5], S31, 0xFFFA3942);
-            d = HH(d, a, b, c, x[k + 8], S32, 0x8771F681);
-            c = HH(c, d, a, b, x[k + 11], S33, 0x6D9D6122);
-            b = HH(b, c, d, a, x[k + 14], S34, 0xFDE5380C);
-            a = HH(a, b, c, d, x[k + 1], S31, 0xA4BEEA44);
-            d = HH(d, a, b, c, x[k + 4], S32, 0x4BDECFA9);
-            c = HH(c, d, a, b, x[k + 7], S33, 0xF6BB4B60);
-            b = HH(b, c, d, a, x[k + 10], S34, 0xBEBFBC70);
-            a = HH(a, b, c, d, x[k + 13], S31, 0x289B7EC6);
-            d = HH(d, a, b, c, x[k + 0], S32, 0xEAA127FA);
-            c = HH(c, d, a, b, x[k + 3], S33, 0xD4EF3085);
-            b = HH(b, c, d, a, x[k + 6], S34, 0x04881D05);
-            a = HH(a, b, c, d, x[k + 9], S31, 0xD9D4D039);
-            d = HH(d, a, b, c, x[k + 12], S32, 0xE6DB99E5);
-            c = HH(c, d, a, b, x[k + 15], S33, 0x1FA27CF8);
-            b = HH(b, c, d, a, x[k + 2], S34, 0xC4AC5665);
-            a = II(a, b, c, d, x[k + 0], S41, 0xF4292244);
-            d = II(d, a, b, c, x[k + 7], S42, 0x432AFF97);
-            c = II(c, d, a, b, x[k + 14], S43, 0xAB9423A7);
-            b = II(b, c, d, a, x[k + 5], S44, 0xFC93A039);
-            a = II(a, b, c, d, x[k + 12], S41, 0x655B59C3);
-            d = II(d, a, b, c, x[k + 3], S42, 0x8F0CCC92);
-            c = II(c, d, a, b, x[k + 10], S43, 0xFFEFF47D);
-            b = II(b, c, d, a, x[k + 1], S44, 0x85845DD1);
-            a = II(a, b, c, d, x[k + 8], S41, 0x6FA87E4F);
-            d = II(d, a, b, c, x[k + 15], S42, 0xFE2CE6E0);
-            c = II(c, d, a, b, x[k + 6], S43, 0xA3014314);
-            b = II(b, c, d, a, x[k + 13], S44, 0x4E0811A1);
-            a = II(a, b, c, d, x[k + 4], S41, 0xF7537E82);
-            d = II(d, a, b, c, x[k + 11], S42, 0xBD3AF235);
-            c = II(c, d, a, b, x[k + 2], S43, 0x2AD7D2BB);
-            b = II(b, c, d, a, x[k + 9], S44, 0xEB86D391);
-            a = addUnsigned(a, AA);
-            b = addUnsigned(b, BB);
-            c = addUnsigned(c, CC);
-            d = addUnsigned(d, DD);
-        }
-        return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
+// ------------------------------------------------------------------
+// 1) The decoding_dict from your question as a JavaScript object.
+//    We'll use this to populate our dropdowns.
+// ------------------------------------------------------------------
+const decodingDict = {
+  "year": {
+    "0": 2000,
+    "1": 2005,
+    "2": 2010,
+    "3": 2015,
+    "4": 2019
+  },
+  "location_name": {
+    "0": "China",
+    "1": "Democratic People's Republic of Korea",
+    "2": "Taiwan (Province of China)",
+    "3": "Cambodia",
+    "4": "Indonesia",
+    "5": "Lao People's Democratic Republic",
+    "6": "Malaysia",
+    "7": "Maldives",
+    "8": "Myanmar",
+    "9": "Philippines",
+    "10": "Sri Lanka",
+    "11": "Thailand",
+    "12": "Timor-Leste",
+    "13": "Viet Nam",
+    "14": "Fiji",
+    "15": "Kiribati",
+    "16": "Marshall Islands",
+    "17": "Micronesia (Federated States of)",
+    "18": "Papua New Guinea",
+    "19": "Samoa",
+    "20": "Solomon Islands",
+    "21": "Tonga",
+    "22": "Vanuatu",
+    "23": "Armenia",
+    "24": "Azerbaijan",
+    "25": "Georgia",
+    "26": "Kazakhstan",
+    "27": "Kyrgyzstan",
+    "28": "Mongolia",
+    "29": "Tajikistan",
+    "30": "Turkmenistan",
+    "31": "Uzbekistan",
+    "32": "Albania",
+    "33": "Bosnia and Herzegovina",
+    "34": "Bulgaria",
+    "35": "Croatia",
+    "36": "Czechia",
+    "37": "Hungary",
+    "38": "North Macedonia",
+    "39": "Montenegro",
+    "40": "Poland",
+    "41": "Romania",
+    "42": "Serbia",
+    "43": "Slovakia",
+    "44": "Slovenia",
+    "45": "Belarus",
+    "46": "Estonia",
+    "47": "Latvia",
+    "48": "Lithuania",
+    "49": "Republic of Moldova",
+    "50": "Russian Federation",
+    "51": "Ukraine",
+    "52": "Brunei Darussalam",
+    "53": "Japan",
+    "54": "Republic of Korea",
+    "55": "Singapore",
+    "56": "Australia",
+    "57": "New Zealand",
+    "58": "Andorra",
+    "59": "Austria",
+    "60": "Belgium",
+    "61": "Cyprus",
+    "62": "Denmark",
+    "63": "Finland",
+    "64": "France",
+    "65": "Germany",
+    "66": "Greece",
+    "67": "Iceland",
+    "68": "Ireland",
+    "69": "Israel",
+    "70": "Italy",
+    "71": "Luxembourg",
+    "72": "Malta",
+    "73": "Netherlands",
+    "74": "Norway",
+    "75": "Portugal",
+    "76": "Spain",
+    "77": "Sweden",
+    "78": "Switzerland",
+    "79": "United Kingdom",
+    "80": "Argentina",
+    "81": "Chile",
+    "82": "Uruguay",
+    "83": "Canada",
+    "84": "United States of America",
+    "85": "Antigua and Barbuda",
+    "86": "Bahamas",
+    "87": "Barbados",
+    "88": "Belize",
+    "89": "Cuba",
+    "90": "Dominica",
+    "91": "Dominican Republic",
+    "92": "Grenada",
+    "93": "Guyana",
+    "94": "Haiti",
+    "95": "Jamaica",
+    "96": "Saint Lucia",
+    "97": "Saint Vincent and the Grenadines",
+    "98": "Suriname",
+    "99": "Trinidad and Tobago",
+    "100": "Bolivia (Plurinational State of)",
+    "101": "Ecuador",
+    "102": "Peru",
+    "103": "Colombia",
+    "104": "Costa Rica",
+    "105": "El Salvador",
+    "106": "Guatemala",
+    "107": "Honduras",
+    "108": "Mexico",
+    "109": "Nicaragua",
+    "110": "Panama",
+    "111": "Venezuela (Bolivarian Republic of)",
+    "112": "Brazil",
+    "113": "Paraguay",
+    "114": "Algeria",
+    "115": "Bahrain",
+    "116": "Egypt",
+    "117": "Iran (Islamic Republic of)",
+    "118": "Iraq",
+    "119": "Jordan",
+    "120": "Kuwait",
+    "121": "Lebanon",
+    "122": "Libya",
+    "123": "Morocco",
+    "124": "Palestine",
+    "125": "Oman",
+    "126": "Qatar",
+    "127": "Saudi Arabia",
+    "128": "Syrian Arab Republic",
+    "129": "Tunisia",
+    "130": "Turkey",
+    "131": "United Arab Emirates",
+    "132": "Yemen",
+    "133": "Afghanistan",
+    "134": "Bangladesh",
+    "135": "Bhutan",
+    "136": "India",
+    "137": "Nepal",
+    "138": "Pakistan",
+    "139": "Angola",
+    "140": "Central African Republic",
+    "141": "Congo",
+    "142": "Democratic Republic of the Congo",
+    "143": "Equatorial Guinea",
+    "144": "Gabon",
+    "145": "Burundi",
+    "146": "Comoros",
+    "147": "Djibouti",
+    "148": "Eritrea",
+    "149": "Ethiopia",
+    "150": "Kenya",
+    "151": "Madagascar",
+    "152": "Malawi",
+    "153": "Mauritius",
+    "154": "Mozambique",
+    "155": "Rwanda",
+    "156": "Seychelles",
+    "157": "Somalia",
+    "158": "United Republic of Tanzania",
+    "159": "Uganda",
+    "160": "Zambia",
+    "161": "Botswana",
+    "162": "Lesotho",
+    "163": "Namibia",
+    "164": "South Africa",
+    "165": "Eswatini",
+    "166": "Zimbabwe",
+    "167": "Benin",
+    "168": "Burkina Faso",
+    "169": "Cameroon",
+    "170": "Cabo Verde",
+    "171": "Chad",
+    "172": "C\u00f4te d'Ivoire",
+    "173": "Gambia",
+    "174": "Ghana",
+    "175": "Guinea",
+    "176": "Guinea-Bissau",
+    "177": "Liberia",
+    "178": "Mali",
+    "179": "Mauritania",
+    "180": "Niger",
+    "181": "Nigeria",
+    "182": "Sao Tome and Principe",
+    "183": "Senegal",
+    "184": "Sierra Leone",
+    "185": "Togo",
+    "186": "American Samoa",
+    "187": "Bermuda",
+    "188": "Cook Islands",
+    "189": "Greenland",
+    "190": "Guam",
+    "191": "Monaco",
+    "192": "Nauru",
+    "193": "Niue",
+    "194": "Northern Mariana Islands",
+    "195": "Palau",
+    "196": "Puerto Rico",
+    "197": "Saint Kitts and Nevis",
+    "198": "San Marino",
+    "199": "Tokelau",
+    "200": "Tuvalu",
+    "201": "United States Virgin Islands",
+    "202": "South Sudan",
+    "203": "Sudan"
+  },
+  "region_name": {
+    "0": "Asia",
+    "1": "Oceania",
+    "2": "Europe",
+    "3": "Americas",
+    "4": "Africa"
+  },
+  "sub_region_name": {
+    "0": "Eastern Asia",
+    "1": "South-eastern Asia",
+    "2": "Southern Asia",
+    "3": "Melanesia",
+    "4": "Micronesia",
+    "5": "Polynesia",
+    "6": "Western Asia",
+    "7": "Central Asia",
+    "8": "Southern Europe",
+    "9": "Eastern Europe",
+    "10": "Northern Europe",
+    "11": "Australia and New Zealand",
+    "12": "Western Europe",
+    "13": "Latin America and the Caribbean",
+    "14": "Northern America",
+    "15": "Northern Africa",
+    "16": "Sub-Saharan Africa"
+  },
+  "age_group_name_sorted": {
+    "0": "01 to 04",
+    "1": "05 to 09",
+    "2": "10 to 14",
+    "3": "15 to 19",
+    "4": "20 to 24",
+    "5": "25 to 29",
+    "6": "30 to 34",
+    "7": "35 to 39",
+    "8": "40 to 44",
+    "9": "45 to 49",
+    "10": "50 to 54",
+    "11": "55 to 59",
+    "12": "60 to 64",
+    "13": "65 to 69",
+    "14": "70 to 74",
+    "15": "75 to 79",
+    "16": "00 years",
+    "17": "80 to 84",
+    "18": "85 to 89",
+    "19": "90 to 94",
+    "20": "95 plus"
+  },
+  "age_cluster_name_sorted": {
+    "0": "00 to 14",
+    "1": "15 to 29",
+    "2": "30 to 44",
+    "3": "45 to 59",
+    "4": "60 to 74",
+    "5": "75 plus"
+  },
+  "sex_name": {
+    "0": "male",
+    "1": "female"
+  },
+  "l1_cause_name": {
+    "0": "Communicable, maternal, neonatal, and nutritional diseases",
+    "1": "Non-communicable diseases",
+    "2": "Injuries"
+  },
+  "l2_cause_name": {
+    "0": "Neglected tropical diseases and malaria",
+    "1": "Nutritional deficiencies",
+    "2": "Neoplasms",
+    "3": "Cardiovascular diseases",
+    "4": "Chronic respiratory diseases",
+    "5": "Digestive diseases",
+    "6": "Neurological disorders",
+    "7": "Mental disorders",
+    "8": "Musculoskeletal disorders",
+    "9": "Other non-communicable diseases",
+    "10": "Skin and subcutaneous diseases",
+    "11": "Sense organ diseases",
+    "12": "Transport injuries",
+    "13": "Unintentional injuries",
+    "14": "Self-harm and interpersonal violence",
+    "15": "HIV/AIDS and sexually transmitted infections",
+    "16": "Respiratory infections and tuberculosis",
+    "17": "Enteric infections",
+    "18": "Other infectious diseases",
+    "19": "Maternal and neonatal disorders",
+    "20": "Substance use disorders",
+    "21": "Diabetes and kidney diseases"
+  }
+};
+
+// ------------------------------------------------------------------
+// 2) Minimal MD5 Implementation (same as before)
+// ------------------------------------------------------------------
+function md5(str) {
+  function rotateLeft(lValue, iShiftBits) {
+    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+  }
+  function addUnsigned(lX, lY) {
+    const lX4 = (lX & 0x40000000);
+    const lY4 = (lY & 0x40000000);
+    const lX8 = (lX & 0x80000000);
+    const lY8 = (lY & 0x80000000);
+    let lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
+    if (lX4 & lY4) { return (lResult ^ 0x80000000 ^ lX8 ^ lY8); }
+    if (lX4 | lY4) {
+      if (lResult & 0x40000000) {
+        return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+      } else {
+        return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
+      }
+    } else {
+      return (lResult ^ lX8 ^ lY8);
     }
-
-    /**
-     * Reusable function that:
-     * 1) Builds the generating_combination object (omitting the pivot column).
-     * 2) MD5-hashes it to get the full hash.
-     * 3) Fetches the partial-hash JSON and returns the sub-object for the hash.
-     *
-     * @param {Object} inputFields - Key/value pairs for region_name, sub_region_name, location_name, etc.
-     * @param {string} pivotCol - The key to omit from the generating_combination.
-     * @param {string} tableType - "population" or "long" (or your custom table types).
-     * @returns {Promise<object>} Promise that resolves to the sub-object from the partial-hash JSON file.
-     */
-    function generateAndFetch(inputFields, pivotCol, tableType) {
-        return new Promise((resolve, reject) => {
-            // 1) Build the combination object
-            const comboObj = {...inputFields}; // shallow copy
-
-            // Omit pivot column
-            delete comboObj[pivotCol];
-
-            // Convert to JSON string
-            const comboStr = JSON.stringify(comboObj);
-
-            // 2) Compute the MD5 of that string to get the full hash
-            const fullHash = md5(comboStr);
-            const partialHash = fullHash.slice(0, 3);
-
-            // 3) Construct the URL: data_doc/cachefilter_<tableType>/<pivotCol>/<partialHash>.json
-            const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
-
-            fetch(fetchUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch JSON from ${fetchUrl}: ` +
-                                        `${response.status} ${response.statusText}`);
-                    }
-                    return response.text();
-                })
-                .then(text => {
-                    let parsed;
-                    try {
-                        parsed = JSON.parse(text);
-                    } catch (err) {
-                        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
-                    }
-
-                    const subObject = parsed[fullHash];
-                    if (!subObject) {
-                        throw new Error(`No entry for hash ${fullHash} in file ${partialHash}.json.`);
-                    }
-
-                    resolve({
-                        fullHash,
-                        pivotCol,
-                        subObject
-                    });
-                })
-                .catch(error => {
-                    reject(error);
-                });
-        });
+  }
+  function F(x, y, z) { return (x & y) | ((~x) & z); }
+  function G(x, y, z) { return (x & z) | (y & (~z)); }
+  function H(x, y, z) { return (x ^ y ^ z); }
+  function I(x, y, z) { return (y ^ (x | (~z))); }
+  function FF(a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  }
+  function GG(a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  }
+  function HH(a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  }
+  function II(a, b, c, d, x, s, ac) {
+    a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac));
+    return addUnsigned(rotateLeft(a, s), b);
+  }
+  function convertToWordArray(str) {
+    let lWordCount;
+    const lMessageLength = str.length;
+    const lNumberOfWordsTemp1 = lMessageLength + 8;
+    const lNumberOfWordsTemp2 = (lNumberOfWordsTemp1 - (lNumberOfWordsTemp1 % 64)) / 64;
+    const lNumberOfWords = (lNumberOfWordsTemp2 + 1) * 16;
+    const lWordArray = new Array(lNumberOfWords - 1);
+    let lBytePosition = 0;
+    let lByteCount = 0;
+    while (lByteCount < lMessageLength) {
+      lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+      lBytePosition = (lByteCount % 4) * 8;
+      lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition));
+      lByteCount++;
     }
-
-    function onLookup() {
-        // Grab user input from the form
-        const tableType = document.getElementById("tableType").value.trim();
-        const pivotCol = document.getElementById("pivotCol").value.trim();
-
-        // All the input fields that might appear in generating_combination
-        const inputFields = {
-            region_name:           document.getElementById("region_name").value.trim(),
-            sub_region_name:       document.getElementById("sub_region_name").value.trim(),
-            location_name:         document.getElementById("location_name").value.trim(),
-            age_group_name_sorted: document.getElementById("age_group_name_sorted").value.trim(),
-            age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
-            sex_name:              document.getElementById("sex_name").value.trim(),
-            year:                  document.getElementById("year").value.trim()
-        };
-
-        // Basic form validation
-        if (!tableType || !pivotCol) {
-            document.getElementById("result").textContent =
-                "Please provide both a Table Type and a pivot column.";
-            return;
-        }
-
-        // Attempt the fetch
-        generateAndFetch(inputFields, pivotCol, tableType)
-            .then(resultObj => {
-                // We get {fullHash, pivotCol, subObject}
-                const {fullHash, subObject} = resultObj;
-                // Display the sub-object in a pretty JSON format
-                const displayText = `Full Hash: ${fullHash}\n\n` +
-                                    `Sub-Object:\n` +
-                                    JSON.stringify(subObject, null, 2);
-                document.getElementById("result").textContent = displayText;
-            })
-            .catch(err => {
-                document.getElementById("result").textContent =
-                    "Error:\n" + err.message;
-            });
+    lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+    lBytePosition = (lByteCount % 4) * 8;
+    lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
+    lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
+    return lWordArray;
+  }
+  function wordToHex(lValue) {
+    let wordToHexValue = "";
+    for (let lCount = 0; lCount <= 3; lCount++) {
+      const lByte = (lValue >>> (lCount * 8)) & 255;
+      const wordToHexValueTemp = "0" + lByte.toString(16);
+      wordToHexValue += wordToHexValueTemp.substr(wordToHexValueTemp.length - 2, 2);
     }
+    return wordToHexValue;
+  }
+  let x = [];
+  let k, AA, BB, CC, DD, a, b, c, d;
+  const S11 = 7, S12 = 12, S13 = 17, S14 = 22;
+  const S21 = 5, S22 = 9, S23 = 14, S24 = 20;
+  const S31 = 4, S32 = 11, S33 = 16, S34 = 23;
+  const S41 = 6, S42 = 10, S43 = 15, S44 = 21;
+  x = convertToWordArray(str);
+  a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
+  for (k = 0; k < x.length; k += 16) {
+    AA = a; BB = b; CC = c; DD = d;
+    a = FF(a, b, c, d, x[k + 0], S11, 0xD76AA478);
+    d = FF(d, a, b, c, x[k + 1], S12, 0xE8C7B756);
+    c = FF(c, d, a, b, x[k + 2], S13, 0x242070DB);
+    b = FF(b, c, d, a, x[k + 3], S14, 0xC1BDCEEE);
+    a = FF(a, b, c, d, x[k + 4], S11, 0xF57C0FAF);
+    d = FF(d, a, b, c, x[k + 5], S12, 0x4787C62A);
+    c = FF(c, d, a, b, x[k + 6], S13, 0xA8304613);
+    b = FF(b, c, d, a, x[k + 7], S14, 0xFD469501);
+    a = FF(a, b, c, d, x[k + 8], S11, 0x698098D8);
+    d = FF(d, a, b, c, x[k + 9], S12, 0x8B44F7AF);
+    c = FF(c, d, a, b, x[k + 10], S13, 0xFFFF5BB1);
+    b = FF(b, c, d, a, x[k + 11], S14, 0x895CD7BE);
+    a = FF(a, b, c, d, x[k + 12], S11, 0x6B901122);
+    d = FF(d, a, b, c, x[k + 13], S12, 0xFD987193);
+    c = FF(c, d, a, b, x[k + 14], S13, 0xA679438E);
+    b = FF(b, c, d, a, x[k + 15], S14, 0x49B40821);
+    a = GG(a, b, c, d, x[k + 1], S21, 0xF61E2562);
+    d = GG(d, a, b, c, x[k + 6], S22, 0xC040B340);
+    c = GG(c, d, a, b, x[k + 11], S23, 0x265E5A51);
+    b = GG(b, c, d, a, x[k + 0], S24, 0xE9B6C7AA);
+    a = GG(a, b, c, d, x[k + 5], S21, 0xD62F105D);
+    d = GG(d, a, b, c, x[k + 10], S22, 0x02441453);
+    c = GG(c, d, a, b, x[k + 15], S23, 0xD8A1E681);
+    b = GG(b, c, d, a, x[k + 4], S24, 0xE7D3FBC8);
+    a = GG(a, b, c, d, x[k + 9], S21, 0x21E1CDE6);
+    d = GG(d, a, b, c, x[k + 14], S22, 0xC33707D6);
+    c = GG(c, d, a, b, x[k + 3], S23, 0xF4D50D87);
+    b = GG(b, c, d, a, x[k + 8], S24, 0x455A14ED);
+    a = GG(a, b, c, d, x[k + 13], S21, 0xA9E3E905);
+    d = GG(d, a, b, c, x[k + 2], S22, 0xFCEFA3F8);
+    c = GG(c, d, a, b, x[k + 7], S23, 0x676F02D9);
+    b = GG(b, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
+    a = HH(a, b, c, d, x[k + 5], S31, 0xFFFA3942);
+    d = HH(d, a, b, c, x[k + 8], S32, 0x8771F681);
+    c = HH(c, d, a, b, x[k + 11], S33, 0x6D9D6122);
+    b = HH(b, c, d, a, x[k + 14], S34, 0xFDE5380C);
+    a = HH(a, b, c, d, x[k + 1], S31, 0xA4BEEA44);
+    d = HH(d, a, b, c, x[k + 4], S32, 0x4BDECFA9);
+    c = HH(c, d, a, b, x[k + 7], S33, 0xF6BB4B60);
+    b = HH(b, c, d, a, x[k + 10], S34, 0xBEBFBC70);
+    a = HH(a, b, c, d, x[k + 13], S31, 0x289B7EC6);
+    d = HH(d, a, b, c, x[k + 0], S32, 0xEAA127FA);
+    c = HH(c, d, a, b, x[k + 3], S33, 0xD4EF3085);
+    b = HH(b, c, d, a, x[k + 6], S34, 0x04881D05);
+    a = HH(a, b, c, d, x[k + 9], S31, 0xD9D4D039);
+    d = HH(d, a, b, c, x[k + 12], S32, 0xE6DB99E5);
+    c = HH(c, d, a, b, x[k + 15], S33, 0x1FA27CF8);
+    b = HH(b, c, d, a, x[k + 2], S34, 0xC4AC5665);
+    a = II(a, b, c, d, x[k + 0], S41, 0xF4292244);
+    d = II(d, a, b, c, x[k + 7], S42, 0x432AFF97);
+    c = II(c, d, a, b, x[k + 14], S43, 0xAB9423A7);
+    b = II(b, c, d, a, x[k + 5], S44, 0xFC93A039);
+    a = II(a, b, c, d, x[k + 12], S41, 0x655B59C3);
+    d = II(d, a, b, c, x[k + 3], S42, 0x8F0CCC92);
+    c = II(c, d, a, b, x[k + 10], S43, 0xFFEFF47D);
+    b = II(b, c, d, a, x[k + 1], S44, 0x85845DD1);
+    a = II(a, b, c, d, x[k + 8], S41, 0x6FA87E4F);
+    d = II(d, a, b, c, x[k + 15], S42, 0xFE2CE6E0);
+    c = II(c, d, a, b, x[k + 6], S43, 0xA3014314);
+    b = II(b, c, d, a, x[k + 13], S44, 0x4E0811A1);
+    a = II(a, b, c, d, x[k + 4], S41, 0xF7537E82);
+    d = II(d, a, b, c, x[k + 11], S42, 0xBD3AF235);
+    c = II(c, d, a, b, x[k + 2], S43, 0x2AD7D2BB);
+    b = II(b, c, d, a, x[k + 9], S44, 0xEB86D391);
+    a = addUnsigned(a, AA);
+    b = addUnsigned(b, BB);
+    c = addUnsigned(c, CC);
+    d = addUnsigned(d, DD);
+  }
+  return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
+}
+
+// ------------------------------------------------------------------
+// 3) Build the form on page load from decodingDict
+// ------------------------------------------------------------------
+window.onload = function() {
+  // The columns we want to handle
+  const columns = [
+    "year", "region_name", "sub_region_name", "location_name",
+    "age_group_name_sorted", "age_cluster_name_sorted",
+    "sex_name", "l1_cause_name", "l2_cause_name"
+  ];
+
+  columns.forEach(col => {
+    // Build a dropdown for each column
+    const select = document.getElementById(col);
+    const dictForCol = decodingDict[col];
+
+    if (dictForCol) {
+      // Create an empty/placeholder option
+      const blankOpt = document.createElement("option");
+      blankOpt.value = "";
+      blankOpt.textContent = "-- no selection --";
+      select.appendChild(blankOpt);
+
+      // For each entry in decodingDict[col], create an option
+      for (const key in dictForCol) {
+        const opt = document.createElement("option");
+        opt.value = dictForCol[key]; // e.g., "China" or "2000"
+        opt.textContent = dictForCol[key];
+        select.appendChild(opt);
+      }
+    }
+  });
+
+  // Also build pivotCol dropdown with the same columns
+  const pivotColSelect = document.getElementById("pivotCol");
+  const blankPivotOpt = document.createElement("option");
+  blankPivotOpt.value = "";
+  blankPivotOpt.textContent = "-- select pivot column --";
+  pivotColSelect.appendChild(blankPivotOpt);
+
+  columns.forEach(col => {
+    const opt = document.createElement("option");
+    opt.value = col;
+    opt.textContent = col;
+    pivotColSelect.appendChild(opt);
+  });
+};
+
+// ------------------------------------------------------------------
+// 4) The main function to build combination, show the JSON string,
+//    compute MD5, and fetch the sub-object from partial-hash JSON.
+// ------------------------------------------------------------------
+function onLookup() {
+  // Gather user selections
+  const tableType = document.getElementById("tableType").value.trim();
+  const pivotCol = document.getElementById("pivotCol").value.trim();
+
+  if (!tableType || !pivotCol) {
+    document.getElementById("result").textContent =
+      "Please pick a Table Type and a Pivot Column.";
+    return;
+  }
+
+  // Build the inputFields object from each column's dropdown
+  const inputFields = {
+    year: document.getElementById("year").value.trim(),
+    region_name: document.getElementById("region_name").value.trim(),
+    sub_region_name: document.getElementById("sub_region_name").value.trim(),
+    location_name: document.getElementById("location_name").value.trim(),
+    age_group_name_sorted: document.getElementById("age_group_name_sorted").value.trim(),
+    age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
+    sex_name: document.getElementById("sex_name").value.trim(),
+    l1_cause_name: document.getElementById("l1_cause_name").value.trim(),
+    l2_cause_name: document.getElementById("l2_cause_name").value.trim()
+  };
+
+  // Omit pivot column
+  const comboObj = {...inputFields};
+  delete comboObj[pivotCol];
+
+  // Convert to JSON string
+  const comboStr = JSON.stringify(comboObj);
+  document.getElementById("jsonString").textContent = comboStr;
+
+  // Compute the MD5
+  const fullHash = md5(comboStr);
+  const partialHash = fullHash.slice(0, 3);
+
+  // Show the computed hash to help debug
+  document.getElementById("hashInfo").textContent =
+    `Full Hash: ${fullHash}\nPartial Hash: ${partialHash}`;
+
+  // Construct fetch URL
+  const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
+
+  fetch(fetchUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Fetch error: ${response.status} ${response.statusText}\nURL: ${fetchUrl}`);
+      }
+      return response.text();
+    })
+    .then(text => {
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (err) {
+        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
+      }
+      const subObject = parsed[fullHash];
+      if (!subObject) {
+        throw new Error(`No entry for hash ${fullHash} in partial hash file ${partialHash}.json`);
+      }
+      document.getElementById("result").textContent = JSON.stringify(subObject, null, 2);
+    })
+    .catch(err => {
+      document.getElementById("result").textContent = "Error:\n" + err.message;
+    });
+}
     </script>
 </head>
 <body>
-    <h1>Generating Combination & Hash Lookup</h1>
+    <h1>Generating Combination &amp; Hash Lookup (Dropdowns)</h1>
+
     <p>
-        1) Enter values for each of the potential columns below.<br/>
-        2) Choose which one is the <strong>pivot column</strong> (it will be omitted from the JSON).<br/>
-        3) Choose your <strong>table type</strong>.<br/>
-        4) Click <em>"Generate Hash & Lookup"</em> to find the sub-object data.
+      1) Select desired values in each dropdown below.<br/>
+      2) Choose which column is the <strong>pivot column</strong> (omitted from the final JSON).<br/>
+      3) Select the <strong>table type</strong>.<br/>
+      4) Click <em>“Generate Hash &amp; Lookup”</em>.<br/>
     </p>
 
-    <fieldset style="width: 500px;">
-        <legend>Inputs for generating_combination</legend>
+    <!-- Table Type -->
+    <label>Table Type:</label><br/>
+    <select id="tableType">
+      <option value="">-- choose a table type --</option>
+      <option value="population">population</option>
+      <option value="long">long</option>
+      <!-- add more as needed -->
+    </select>
+    <br/><br/>
 
-        <label>region_name:</label><br/>
-        <input type="text" id="region_name" placeholder="e.g. Africa"/><br/><br/>
+    <!-- Pivot Column -->
+    <label>Pivot Column:</label><br/>
+    <select id="pivotCol"></select>
+    <br/><br/>
 
-        <label>sub_region_name:</label><br/>
-        <input type="text" id="sub_region_name" placeholder="e.g. Sub-Saharan Africa"/><br/><br/>
+    <!-- All columns (populated on window.onload from decodingDict) -->
+    <fieldset style="width: 600px;">
+      <legend>Select Values</legend>
 
-        <label>location_name:</label><br/>
-        <input type="text" id="location_name" placeholder="e.g. United Republic of Tanzania"/><br/><br/>
+      <label for="year">year:</label><br/>
+      <select id="year"></select><br/><br/>
 
-        <label>age_group_name_sorted:</label><br/>
-        <input type="text" id="age_group_name_sorted" placeholder="e.g. 35 to 39"/><br/><br/>
+      <label for="region_name">region_name:</label><br/>
+      <select id="region_name"></select><br/><br/>
 
-        <label>age_cluster_name_sorted:</label><br/>
-        <input type="text" id="age_cluster_name_sorted" placeholder="e.g. 30 to 44"/><br/><br/>
+      <label for="sub_region_name">sub_region_name:</label><br/>
+      <select id="sub_region_name"></select><br/><br/>
 
-        <label>sex_name:</label><br/>
-        <input type="text" id="sex_name" placeholder="e.g. female"/><br/><br/>
+      <label for="location_name">location_name:</label><br/>
+      <select id="location_name"></select><br/><br/>
 
-        <label>year:</label><br/>
-        <input type="text" id="year" placeholder="e.g. 2010"/><br/><br/>
+      <label for="age_group_name_sorted">age_group_name_sorted:</label><br/>
+      <select id="age_group_name_sorted"></select><br/><br/>
+
+      <label for="age_cluster_name_sorted">age_cluster_name_sorted:</label><br/>
+      <select id="age_cluster_name_sorted"></select><br/><br/>
+
+      <label for="sex_name">sex_name:</label><br/>
+      <select id="sex_name"></select><br/><br/>
+
+      <label for="l1_cause_name">l1_cause_name:</label><br/>
+      <select id="l1_cause_name"></select><br/><br/>
+
+      <label for="l2_cause_name">l2_cause_name:</label><br/>
+      <select id="l2_cause_name"></select><br/><br/>
     </fieldset>
 
     <br/>
-
-    <label>Pivot Column (will be omitted):</label><br/>
-    <select id="pivotCol">
-        <!-- List all possible keys above -->
-        <option value="">-- select pivot column --</option>
-        <option value="region_name">region_name</option>
-        <option value="sub_region_name">sub_region_name</option>
-        <option value="location_name">location_name</option>
-        <option value="age_group_name_sorted">age_group_name_sorted</option>
-        <option value="age_cluster_name_sorted">age_cluster_name_sorted</option>
-        <option value="sex_name">sex_name</option>
-        <option value="year">year</option>
-    </select>
-
-    <br/><br/>
-    <label>Table Type:</label><br/>
-    <select id="tableType">
-        <option value="">-- select table type --</option>
-        <option value="population">population</option>
-        <option value="long">long</option>
-        <!-- Add more if needed -->
-    </select>
-
-    <br/><br/>
     <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
 
-    <h2>Result</h2>
-    <pre id="result" style="border: 1px solid #ccc; padding: 10px; white-space: pre-wrap;"></pre>
+    <h2>Debug Info</h2>
+    <p><strong>Exact JSON String that is hashed</strong> (pivot column omitted):</p>
+    <pre id="jsonString" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
+
+    <p><strong>Computed Hash Info</strong>:</p>
+    <pre id="hashInfo" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
+
+    <h2>Lookup Result</h2>
+    <pre id="result" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
 </body>
 </html>
