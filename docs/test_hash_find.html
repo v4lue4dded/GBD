@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Test Hash Find</title>
+    <script>
+        function getData() {
+            // 1) Grab user inputs.
+            const tableType  = document.getElementById("tableType").value.trim();
+            const pivotCol   = document.getElementById("pivotCol").value.trim();
+            const fullHash   = document.getElementById("fullHash").value.trim();
+
+            if (!tableType || !pivotCol || !fullHash) {
+                document.getElementById("result").textContent =
+                    "Please fill out all fields: Table Type, Pivot Column, and Full Hash.";
+                return;
+            }
+
+            // 2) Compute the partial hash (first 3 letters of the full hash).
+            const partialHash = fullHash.slice(0, 3);
+
+            // 3) Construct the URL for the JSON file.
+            //    If this HTML is served from the same parent folder 
+            //    that has "cachefilter_population" and "cachefilter_long" directories:
+            const fetchUrl = "data_doc/cachefilter_" + tableType + "/" + pivotCol + "/" + partialHash + ".json";
+
+            // 4) Fetch the JSON file and extract only the sub-object for the fullHash.
+            fetch(fetchUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch JSON: ${response.status} ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(text);
+                    } catch (e) {
+                        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
+                    }
+
+                    const targetData = parsed[fullHash];
+                    if (targetData) {
+                        // Found the object for the given full hash. Display it.
+                        document.getElementById("result").textContent =
+                            JSON.stringify(targetData, null, 2);
+                    } else {
+                        // If the partial-hash file doesn't contain an entry for this full hash,
+                        // notify the user.
+                        document.getElementById("result").textContent =
+                            "No entry found for full hash " + fullHash +
+                            " in " + partialHash + ".json";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("result").textContent = 
+                        "Error fetching or parsing the JSON:\n" + error;
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>Test Hash Find</h1>
+    <p>
+        Enter the <strong>table type</strong> (e.g., population or long), 
+        <strong>pivot column</strong> (e.g., age_cluster_name_sorted), 
+        and the <strong>full hash</strong> (e.g., fa6a7e67833806738913d21164273f40).
+    </p>
+    <label>Table Type: 
+        <input type="text" id="tableType" placeholder="e.g. population"/>
+    </label><br/><br/>
+
+    <label>Pivot Column: 
+        <input type="text" id="pivotCol" placeholder="e.g. age_cluster_name_sorted"/>
+    </label><br/><br/>
+
+    <label>Full Hash: 
+        <input type="text" id="fullHash" placeholder="e.g. fa6a7e67833806738913d21164273f40"/>
+    </label><br/><br/>
+
+    <button onclick="getData()">Fetch JSON Sub-Object</button>
+
+    <h2>Result:</h2>
+    <pre id="result" style="border: 1px solid #ccc; padding: 10px; white-space: pre-wrap;"></pre>
+</body>
+</html>
