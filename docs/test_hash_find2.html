@@ -2,12 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Generating Combination & Hash Lookup with Dropdowns</title>
+    <title>Generating Combination & Hash Lookup (PostgreSQL Spacing)</title>
     <script>
-// ------------------------------------------------------------------
-// 1) The decoding_dict from your question as a JavaScript object.
-//    We'll use this to populate our dropdowns.
-// ------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// 1) The decoding_dict from your question, used to populate dropdowns.
+////////////////////////////////////////////////////////////////////////////////
 const decodingDict = {
   "year": {
     "0": 2000,
@@ -15,6 +14,32 @@ const decodingDict = {
     "2": 2010,
     "3": 2015,
     "4": 2019
+  },
+  "region_name": {
+    "0": "Asia",
+    "1": "Oceania",
+    "2": "Europe",
+    "3": "Americas",
+    "4": "Africa"
+  },
+  "sub_region_name": {
+    "0": "Eastern Asia",
+    "1": "South-eastern Asia",
+    "2": "Southern Asia",
+    "3": "Melanesia",
+    "4": "Micronesia",
+    "5": "Polynesia",
+    "6": "Western Asia",
+    "7": "Central Asia",
+    "8": "Southern Europe",
+    "9": "Eastern Europe",
+    "10": "Northern Europe",
+    "11": "Australia and New Zealand",
+    "12": "Western Europe",
+    "13": "Latin America and the Caribbean",
+    "14": "Northern America",
+    "15": "Northern Africa",
+    "16": "Sub-Saharan Africa"
   },
   "location_name": {
     "0": "China",
@@ -222,32 +247,6 @@ const decodingDict = {
     "202": "South Sudan",
     "203": "Sudan"
   },
-  "region_name": {
-    "0": "Asia",
-    "1": "Oceania",
-    "2": "Europe",
-    "3": "Americas",
-    "4": "Africa"
-  },
-  "sub_region_name": {
-    "0": "Eastern Asia",
-    "1": "South-eastern Asia",
-    "2": "Southern Asia",
-    "3": "Melanesia",
-    "4": "Micronesia",
-    "5": "Polynesia",
-    "6": "Western Asia",
-    "7": "Central Asia",
-    "8": "Southern Europe",
-    "9": "Eastern Europe",
-    "10": "Northern Europe",
-    "11": "Australia and New Zealand",
-    "12": "Western Europe",
-    "13": "Latin America and the Caribbean",
-    "14": "Northern America",
-    "15": "Northern Africa",
-    "16": "Sub-Saharan Africa"
-  },
   "age_group_name_sorted": {
     "0": "01 to 04",
     "1": "05 to 09",
@@ -314,18 +313,29 @@ const decodingDict = {
   }
 };
 
-// ------------------------------------------------------------------
-// 2) Minimal MD5 Implementation (same as before)
-// ------------------------------------------------------------------
+// The exact order in which we build the string matters for MD5 hashing.
+// Adjust this order if your PostgreSQL code uses a different order of keys!
+const COL_ORDER = [
+  "year",
+  "region_name",
+  "sub_region_name",
+  "location_name",
+  "age_group_name_sorted",
+  "age_cluster_name_sorted",
+  "sex_name",
+  "l1_cause_name",
+  "l2_cause_name"
+];
+
+////////////////////////////////////////////////////////////////////////////////
+// 2) Minimal MD5 Implementation
+////////////////////////////////////////////////////////////////////////////////
 function md5(str) {
-  function rotateLeft(lValue, iShiftBits) {
-    return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
-  }
+  // ... (same MD5 code as before, omitted here for brevity)
+  function rotateLeft(lValue, iShiftBits) { return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits)); }
   function addUnsigned(lX, lY) {
-    const lX4 = (lX & 0x40000000);
-    const lY4 = (lY & 0x40000000);
-    const lX8 = (lX & 0x80000000);
-    const lY8 = (lY & 0x80000000);
+    const lX4 = (lX & 0x40000000), lY4 = (lY & 0x40000000),
+          lX8 = (lX & 0x80000000), lY8 = (lY & 0x80000000);
     let lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
     if (lX4 & lY4) { return (lResult ^ 0x80000000 ^ lX8 ^ lY8); }
     if (lX4 | lY4) {
@@ -365,8 +375,7 @@ function md5(str) {
     const lNumberOfWordsTemp2 = (lNumberOfWordsTemp1 - (lNumberOfWordsTemp1 % 64)) / 64;
     const lNumberOfWords = (lNumberOfWordsTemp2 + 1) * 16;
     const lWordArray = new Array(lNumberOfWords - 1);
-    let lBytePosition = 0;
-    let lByteCount = 0;
+    let lBytePosition = 0, lByteCount = 0;
     while (lByteCount < lMessageLength) {
       lWordCount = (lByteCount - (lByteCount % 4)) / 4;
       lBytePosition = (lByteCount % 4) * 8;
@@ -388,8 +397,7 @@ function md5(str) {
     }
     return wordToHexValue;
   }
-  let x = [];
-  let k, AA, BB, CC, DD, a, b, c, d;
+  let x = [], k, AA, BB, CC, DD, a, b, c, d;
   const S11 = 7, S12 = 12, S13 = 17, S14 = 22;
   const S21 = 5, S22 = 9, S23 = 14, S24 = 20;
   const S31 = 4, S32 = 11, S33 = 16, S34 = 23;
@@ -470,47 +478,53 @@ function md5(str) {
   return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
 }
 
-// ------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 // 3) Build the form on page load from decodingDict
-// ------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 window.onload = function() {
-  // The columns we want to handle
   const columns = [
-    "year", "region_name", "sub_region_name", "location_name",
-    "age_group_name_sorted", "age_cluster_name_sorted",
-    "sex_name", "l1_cause_name", "l2_cause_name"
+    "year",
+    "region_name",
+    "sub_region_name",
+    "location_name",
+    "age_group_name_sorted",
+    "age_cluster_name_sorted",
+    "sex_name",
+    "l1_cause_name",
+    "l2_cause_name"
   ];
 
+  // For each column, populate its <select> with the dictionary values
   columns.forEach(col => {
-    // Build a dropdown for each column
     const select = document.getElementById(col);
-    const dictForCol = decodingDict[col];
+    if (!select) return; // In case we skip some columns in HTML
 
-    if (dictForCol) {
-      // Create an empty/placeholder option
-      const blankOpt = document.createElement("option");
-      blankOpt.value = "";
-      blankOpt.textContent = "-- no selection --";
-      select.appendChild(blankOpt);
+    // Create a placeholder option
+    const blankOpt = document.createElement("option");
+    blankOpt.value = "";
+    blankOpt.textContent = "-- no selection --";
+    select.appendChild(blankOpt);
 
-      // For each entry in decodingDict[col], create an option
-      for (const key in dictForCol) {
+    // Add one <option> per decoded value
+    if (decodingDict[col]) {
+      for (const key in decodingDict[col]) {
         const opt = document.createElement("option");
-        opt.value = dictForCol[key]; // e.g., "China" or "2000"
-        opt.textContent = dictForCol[key];
+        opt.value = decodingDict[col][key];  // e.g. "China" or "2000"
+        opt.textContent = decodingDict[col][key];
         select.appendChild(opt);
       }
     }
   });
 
-  // Also build pivotCol dropdown with the same columns
+  // Also build pivotCol dropdown
   const pivotColSelect = document.getElementById("pivotCol");
-  const blankPivotOpt = document.createElement("option");
-  blankPivotOpt.value = "";
-  blankPivotOpt.textContent = "-- select pivot column --";
-  pivotColSelect.appendChild(blankPivotOpt);
+  const pivotBlank = document.createElement("option");
+  pivotBlank.value = "";
+  pivotBlank.textContent = "-- select pivot column --";
+  pivotColSelect.appendChild(pivotBlank);
 
-  columns.forEach(col => {
+  // Each possible column (that might appear in the final JSON)
+  COL_ORDER.forEach(col => {
     const opt = document.createElement("option");
     opt.value = col;
     opt.textContent = col;
@@ -518,10 +532,33 @@ window.onload = function() {
   });
 };
 
-// ------------------------------------------------------------------
-// 4) The main function to build combination, show the JSON string,
-//    compute MD5, and fetch the sub-object from partial-hash JSON.
-// ------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// 4) Function to replicate PostgreSQL-style JSON formatting (with spaces).
+//    Returns something like:
+//    {"region_name" : "Asia", "sub_region_name" : "Eastern Asia", ...}
+//    in the EXACT order defined by COL_ORDER, skipping the pivot column
+//    and any empty fields.
+////////////////////////////////////////////////////////////////////////////////
+function toPostgresStyleJsonString(obj, pivotCol) {
+  let pairs = [];
+  for (const col of COL_ORDER) {
+    // Skip pivot column
+    if (col === pivotCol) continue;
+    // If user left it blank, skip
+    if (!obj[col]) continue;
+
+    // Force everything as a string with quotes
+    // If you want an integer for "year", detect that here and do no quotes.
+    // e.g. if (col==='year') { pairs.push(`"${col}" : ${obj[col]}`); } else ...
+    pairs.push(`"${col}" : "${obj[col]}"`);
+  }
+  return `{${pairs.join(", ")}}`;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 5) The main logic: build the custom JSON string, show it, MD5-hash it,
+//    fetch the partial-hash file, and display the result.
+////////////////////////////////////////////////////////////////////////////////
 function onLookup() {
   // Gather user selections
   const tableType = document.getElementById("tableType").value.trim();
@@ -533,9 +570,8 @@ function onLookup() {
     return;
   }
 
-  // Build the inputFields object from each column's dropdown
-  const inputFields = {
-    year: document.getElementById("year").value.trim(),
+  // Build an object of the user-chosen values
+  const inputObj = {
     region_name: document.getElementById("region_name").value.trim(),
     sub_region_name: document.getElementById("sub_region_name").value.trim(),
     location_name: document.getElementById("location_name").value.trim(),
@@ -543,28 +579,25 @@ function onLookup() {
     age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
     sex_name: document.getElementById("sex_name").value.trim(),
     l1_cause_name: document.getElementById("l1_cause_name").value.trim(),
-    l2_cause_name: document.getElementById("l2_cause_name").value.trim()
+    l2_cause_name: document.getElementById("l2_cause_name").value.trim(),
+    year: document.getElementById("year").value.trim()
   };
 
-  // Omit pivot column
-  const comboObj = {...inputFields};
-  delete comboObj[pivotCol];
-
-  // Convert to JSON string
-  const comboStr = JSON.stringify(comboObj);
+  // 1) Build the "PostgreSQL style" JSON string with spacing
+  const comboStr = toPostgresStyleJsonString(inputObj, pivotCol);
+  // Show for debugging
   document.getElementById("jsonString").textContent = comboStr;
 
-  // Compute the MD5
+  // 2) Compute the MD5
   const fullHash = md5(comboStr);
   const partialHash = fullHash.slice(0, 3);
 
-  // Show the computed hash to help debug
+  // Show the computed hashes
   document.getElementById("hashInfo").textContent =
     `Full Hash: ${fullHash}\nPartial Hash: ${partialHash}`;
 
-  // Construct fetch URL
+  // 3) Fetch from the partial-hash JSON
   const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
-
   fetch(fetchUrl)
     .then(response => {
       if (!response.ok) {
@@ -581,7 +614,7 @@ function onLookup() {
       }
       const subObject = parsed[fullHash];
       if (!subObject) {
-        throw new Error(`No entry for hash ${fullHash} in partial hash file ${partialHash}.json`);
+        throw new Error(`No entry for hash ${fullHash} in file ${partialHash}.json`);
       }
       document.getElementById("result").textContent = JSON.stringify(subObject, null, 2);
     })
@@ -592,13 +625,15 @@ function onLookup() {
     </script>
 </head>
 <body>
-    <h1>Generating Combination &amp; Hash Lookup (Dropdowns)</h1>
+    <h1>Generating Combination &amp; Hash Lookup (PostgreSQL-Style Spacing)</h1>
 
     <p>
-      1) Select desired values in each dropdown below.<br/>
-      2) Choose which column is the <strong>pivot column</strong> (omitted from the final JSON).<br/>
-      3) Select the <strong>table type</strong>.<br/>
+      1) Select your values in each dropdown.<br/>
+      2) Choose which column is the <strong>pivot column</strong> (omitted).<br/>
+      3) Choose a <strong>table type</strong>.<br/>
       4) Click <em>“Generate Hash &amp; Lookup”</em>.<br/>
+      This constructs a JSON string with spaces (<code>"key" : "val"</code>), 
+      matches your PostgreSQL format, then MD5-hashes it.
     </p>
 
     <!-- Table Type -->
@@ -607,7 +642,7 @@ function onLookup() {
       <option value="">-- choose a table type --</option>
       <option value="population">population</option>
       <option value="long">long</option>
-      <!-- add more as needed -->
+      <!-- add more if needed -->
     </select>
     <br/><br/>
 
@@ -616,7 +651,7 @@ function onLookup() {
     <select id="pivotCol"></select>
     <br/><br/>
 
-    <!-- All columns (populated on window.onload from decodingDict) -->
+    <!-- All columns (populated on window.onload) -->
     <fieldset style="width: 600px;">
       <legend>Select Values</legend>
 
@@ -652,7 +687,7 @@ function onLookup() {
     <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
 
     <h2>Debug Info</h2>
-    <p><strong>Exact JSON String that is hashed</strong> (pivot column omitted):</p>
+    <p><strong>Exact JSON String that is hashed</strong> (with PostgreSQL-like spacing):</p>
     <pre id="jsonString" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
 
     <p><strong>Computed Hash Info</strong>:</p>
