@@ -12,8 +12,29 @@ con = engine.connect()
 table_types = ["population", "long"]
 
 for table_type in table_types:
+    print(table_type)
     # We'll read from the newly created cachefilter tables:
-    prep_table = f"gbd.db04_modelling.export_{table_type}_cachefilter_prep"
+    create_table_sql = f"""
+        DROP TABLE IF EXISTS gbd.db04_modelling.export_{table_type}_cachefilter_prep_agg CASCADE;
+        create table         gbd.db04_modelling.export_{table_type}_cachefilter_prep_agg as
+        select
+            indexing_column
+         ,  substr(generating_combination_hash,0,4) as partial_hash
+         ,  json_object_agg(
+                generating_combination_hash
+              , json_column
+            )::varchar as chunk_json_string
+        from gbd.db04_modelling.export_{table_type}_cachefilter_prep
+        group by
+            indexing_column
+         ,  substr(generating_combination_hash,0,4)
+    """
+    con.execute(text(create_table_sql))
+
+
+for table_type in table_types:
+    print(table_type)
+    prep_table = f"gbd.db04_modelling.export_{table_type}_cachefilter_prep_agg"
     
     # Output directory
     export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", f"cachefilter_{table_type}")
@@ -25,6 +46,7 @@ for table_type in table_types:
         FROM {prep_table}
         ORDER BY indexing_column
     """
+
     index_cols = list(pd.read_sql(index_cols_query, con=engine)['indexing_column'])
 
     for pivot_col in index_cols:
@@ -35,17 +57,16 @@ for table_type in table_types:
         os.makedirs(directory, exist_ok=True)
 
         # 2) Determine all partial-hash prefixes for the relevant rows
-        partial_hash_query = f"""
-            SELECT DISTINCT substring(generating_combination_hash, 1, 3) AS partial_hash
+        partial_hash_agg_query = f"""
+            SELECT *
             FROM {prep_table}
             WHERE indexing_column = '{pivot_col}'
             ORDER BY partial_hash
         """
-        partial_hash_list = list(pd.read_sql(partial_hash_query, con=engine)['partial_hash'])
+        df_partial_has_agg = pd.read_sql(partial_hash_agg_query, con=engine)
 
-        # 3) For each partial hash, we do one query that returns multiple rows:
-        #    each row has: generating_combination_hash, json_column
-        #    We then build chunk_data = { full_hash: row_json_dict }
+        
+
         for p_hash in partial_hash_list:
             print(p_hash)
             export_query = f"""
