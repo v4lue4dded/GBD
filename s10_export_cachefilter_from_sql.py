@@ -65,21 +65,8 @@ for table_type in table_types:
         """
         df_partial_has_agg = pd.read_sql(partial_hash_agg_query, con=engine)
 
-        
-
         for p_hash in partial_hash_list:
             print(p_hash)
-            export_query = f"""
-                SELECT
-                    json_object_agg(
-                        generating_combination_hash
-                      , json_column
-                    )::varchar as chunk_json_string
-                FROM {prep_table}
-                WHERE indexing_column = '{pivot_col}'
-                  AND generating_combination_hash LIKE '{p_hash}%'
-            """
-            chunk_json_string = pd.read_sql(text(export_query), con=engine).iloc[0,0]
 
             # 4) Write this chunk_data to a file named p_hash.json
             filename = f"{p_hash}.json"
