@@ -65,12 +65,15 @@ for table_type in table_types:
         """
         df_partial_has_agg = pd.read_sql(partial_hash_agg_query, con=engine)
 
-        for p_hash in partial_hash_list:
-            print(p_hash)
-
-            # 4) Write this chunk_data to a file named p_hash.json
+        for idx, row in df_partial_has_agg.iterrows():
+            if idx%10 == 0:
+                print(idx)
+            p_hash = row["partial_hash"]
+            chunk_json_string = row["chunk_json_string"]
+            
             filename = f"{p_hash}.json"
             filepath = opj(directory, filename)
+
             with open(filepath, "w") as f:
                 f.write(chunk_json_string)
 
