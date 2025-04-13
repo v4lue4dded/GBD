@@ -49,7 +49,7 @@ aggregated_columns_dict = {
 def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
     other_dims = [d for d in all_dimensions if d != pivot_col]
     combo_pairs = [f"'{od}', {od}::varchar" for od in other_dims]
-    generating_combination_expr = "json_build_object(" + ", ".join(combo_pairs) + ")::varchar"
+    identifying_string_expr = "json_build_object(" + ", ".join(combo_pairs) + ")::varchar"
     agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
     aggregator_expr = "json_build_object(" + ", ".join(agg_pairs) + ")"
 
@@ -57,16 +57,16 @@ def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
         WITH combo AS (
             SELECT
                 *,
-                {generating_combination_expr} AS generating_combination
+                {identifying_string_expr} AS identifying_string
             FROM {table_name}
         )
         SELECT
             '{pivot_col}' AS indexing_column,
-            generating_combination,
-            md5(generating_combination) AS generating_combination_hash,
+            identifying_string,
+            md5(identifying_string) AS identifying_string_hash,
             (
                 jsonb_build_object(
-                    'generating_combination', generating_combination
+                    'identifying_string', identifying_string
                 )
                 ||
                 jsonb_object_agg(
@@ -75,7 +75,7 @@ def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
                 )
             ) AS json_column
         FROM combo
-        GROUP BY generating_combination
+        GROUP BY identifying_string
     """
     return query
 

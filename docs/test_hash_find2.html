@@ -4,13 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Generating Combination &amp; Hash Lookup (PostgreSQL Spacing)</title>
-
-    <!-- 1) Load your external MD5 library -->
-    <script src="lib/md5/md5.js"></script>
-
-    <!-- 2) Load D3, used here for d3.json() -->
-    <script src="lib/d3/d3.js"></script>
-
+    <script src="lib/myHelperFunctions/md5.js"></script>
     <script>
         ////////////////////////////////////////////////////////////////////////////////
         // We will load these from the external JSON:
@@ -122,15 +116,9 @@
                 });
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // 3) Build a PostgreSQL-style JSON string (with spaces around colons)
-        //    in the EXACT order defined by COL_ORDER, skipping pivot column
-        //    and skipping empty fields.
-        ////////////////////////////////////////////////////////////////////////////////
-        function toPostgresStyleJsonString(obj, pivotCol) {
+        function createIdentifyingString(obj, pivotCol, colOrder) {
             let pairs = [];
-            for (const col of COL_ORDER) {
+            for (const col of colOrder) {
                 // Skip pivot column
                 if (col === pivotCol) continue;
                 // If user left it blank, skip
@@ -180,13 +168,13 @@
             };
 
             // 4b) Build the "PostgreSQL style" JSON string with spacing
-            const comboStr = toPostgresStyleJsonString(inputObj, pivotCol);
+            const indentifyingString = createIdentifyingString(inputObj, pivotCol, COL_ORDER);
 
             // Show for debugging
-            document.getElementById("jsonString").textContent = comboStr;
+            document.getElementById("jsonString").textContent = indentifyingString;
 
             // 4c) Compute the MD5 (from the md5.js library)
-            const fullHash = md5(comboStr);
+            const fullHash = md5(indentifyingString);
             const partialHash = fullHash.slice(0, 3);
 
             // Show the computed hashes

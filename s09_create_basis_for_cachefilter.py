@@ -76,7 +76,7 @@ for table_type in ["long"]:
 
             # Convert grouped DataFrame to the JSON-like structure
             json_data = group.set_index(i)[aggregated_columns].to_dict(orient="index")
-            json_data["generating_combination"] = combination
+            json_data["identifying_string"] = combination
 
             # Compute the full hash and the partial (first 3 chars)
             combination_str = json.dumps(combination, sort_keys=True)

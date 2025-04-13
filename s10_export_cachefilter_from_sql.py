@@ -19,15 +19,15 @@ for table_type in table_types:
         create table         gbd.db04_modelling.export_{table_type}_cachefilter_prep_agg as
         select
             indexing_column
-         ,  substr(generating_combination_hash,0,4) as partial_hash
+         ,  substr(identifying_string_hash,0,4) as partial_hash
          ,  json_object_agg(
-                generating_combination_hash
+                identifying_string_hash
               , json_column
             )::varchar as chunk_json_string
         from gbd.db04_modelling.export_{table_type}_cachefilter_prep
         group by
             indexing_column
-         ,  substr(generating_combination_hash,0,4)
+         ,  substr(identifying_string_hash,0,4)
     """
     con.execute(text(create_table_sql))
 

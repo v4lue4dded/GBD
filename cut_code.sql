@@ -128,9 +128,9 @@ SELECT
     ) AS hash_column,
     -- Build a single JSON object for each group:
     (
-        -- 1) Start with "generating_combination" = { ...grouping columns... }
+        -- 1) Start with "identifying_string" = { ...grouping columns... }
         jsonb_build_object(
-            'generating_combination',
+            'identifying_string',
             jsonb_build_object(
                 'region_name', region_name,
                 'sub_region_name', sub_region_name,
@@ -151,9 +151,9 @@ SELECT
     ) AS jsonb_column,
     -- Build a single JSON object for each group:
     (
-        -- 1) Start with "generating_combination" = { ...grouping columns... }
+        -- 1) Start with "identifying_string" = { ...grouping columns... }
         jsonb_build_object(
-            'generating_combination',
+            'identifying_string',
             jsonb_build_object(
                 'region_name', region_name,
                 'sub_region_name', sub_region_name,
