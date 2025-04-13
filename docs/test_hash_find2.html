@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>Generating Combination &amp; Hash Lookup (PostgreSQL Spacing)</title>
@@ -11,279 +12,285 @@
     <script src="lib/d3/d3.js"></script>
 
     <script>
-////////////////////////////////////////////////////////////////////////////////
-// We will load these from the external JSON:
-////////////////////////////////////////////////////////////////////////////////
-let decodingDict = null;
+        ////////////////////////////////////////////////////////////////////////////////
+        // We will load these from the external JSON:
+        ////////////////////////////////////////////////////////////////////////////////
+        let decodingDict = null;
 
-// The exact order in which we build the string matters for MD5 hashing.
-// Adjust if your PostgreSQL code uses a different order of keys!
-const COL_ORDER = [
-  "year",
-  "region_name",
-  "sub_region_name",
-  "location_name",
-  "age_group_name_sorted",
-  "age_cluster_name_sorted",
-  "sex_name",
-  "l1_cause_name",
-  "l2_cause_name"
-];
+        // The exact order in which we build the string matters for MD5 hashing.
+        // Adjust if your PostgreSQL code uses a different order of keys!
+        const COL_ORDER = [
+            "year",
+            "region_name",
+            "sub_region_name",
+            "location_name",
+            "age_group_name_sorted",
+            "age_cluster_name_sorted",
+            "sex_name",
+            "l1_cause_name",
+            "l2_cause_name"
+        ];
 
-////////////////////////////////////////////////////////////////////////////////
-// 1) Asynchronously load the decoding dictionary from external JSON.
-//    Then build the dropdowns and set up the page.
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// 1) Asynchronously load the decoding dictionary from external JSON.
-//    Then build the dropdowns and set up the page.
-////////////////////////////////////////////////////////////////////////////////
-async function loadDecodingDict() {
-  try {
-    // NOTE: Adjust this path if your file is served elsewhere:
-    // e.g., "data_doc/df_measure_narrow_import_dict.json"
-    const response = await fetch("data_doc/df_measure_narrow_import_dict.json");
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    decodingDict = data.decoding_dict;
-    console.log(decodingDict);
-    // Now that decodingDict is loaded, build the dropdowns.
-    buildDropdowns();
-  } catch (err) {
-    console.error("Error loading decoding dictionary:", err);
-    // Show error to the user:
-    const msg = document.getElementById("initError");
-    if (msg) {
-      msg.textContent = "Failed to load decoding dictionary JSON: " + err;
-    }
-  }
-}
+        ////////////////////////////////////////////////////////////////////////////////
+        // 1) Asynchronously load the decoding dictionary from external JSON.
+        //    Then build the dropdowns and set up the page.
+        ////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////
+        // 1) Asynchronously load the decoding dictionary from external JSON.
+        //    Then build the dropdowns and set up the page.
+        ////////////////////////////////////////////////////////////////////////////////
+        async function loadDecodingDict() {
+            try {
+                // NOTE: Adjust this path if your file is served elsewhere:
+                // e.g., "data_doc/df_measure_narrow_import_dict.json"
+                const response = await fetch("data_doc/df_measure_narrow_import_dict.json");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                decodingDict = data.decoding_dict;
+                console.log(decodingDict);
+                // Now that decodingDict is loaded, build the dropdowns.
+                buildDropdowns();
+            } catch (err) {
+                console.error("Error loading decoding dictionary:", err);
+                // Show error to the user:
+                const msg = document.getElementById("initError");
+                if (msg) {
+                    msg.textContent = "Failed to load decoding dictionary JSON: " + err;
+                }
+            }
+        }
 
-////////////////////////////////////////////////////////////////////////////////
-// 2) Build the form on page once we have decodingDict
-////////////////////////////////////////////////////////////////////////////////
-function buildDropdowns() {
-  const columns = [
-    "year",
-    "region_name",
-    "sub_region_name",
-    "location_name",
-    "age_group_name_sorted",
-    "age_cluster_name_sorted",
-    "sex_name",
-    "l1_cause_name",
-    "l2_cause_name"
-  ];
+        ////////////////////////////////////////////////////////////////////////////////
+        // 2) Build the form on page once we have decodingDict
+        ////////////////////////////////////////////////////////////////////////////////
+        function buildDropdowns() {
+            const columns = [
+                "year",
+                "region_name",
+                "sub_region_name",
+                "location_name",
+                "age_group_name_sorted",
+                "age_cluster_name_sorted",
+                "sex_name",
+                "l1_cause_name",
+                "l2_cause_name"
+            ];
 
-  // For each column, populate its <select> with the dictionary values
-  columns.forEach(col => {
-    const selectEl = document.getElementById(col);
-    if (!selectEl) return;
+            // For each column, populate its <select> with the dictionary values
+            columns.forEach(col => {
+                const selectEl = document.getElementById(col);
+                if (!selectEl) return;
 
-    // Create a placeholder option
-    const blankOpt = document.createElement("option");
-    blankOpt.value = "";
-    blankOpt.textContent = "-- no selection --";
-    selectEl.appendChild(blankOpt);
+                // Create a placeholder option
+                const AllOpt = document.createElement("option");
+                AllOpt.value = "All";
+                AllOpt.textContent = "All";
+                selectEl.appendChild(AllOpt);
+                // Add one <option> per decoded value
+                if (decodingDict[col]) {
+                    for (const key in decodingDict[col]) {
+                        const opt = document.createElement("option");
+                        opt.value = decodingDict[col][key];  // e.g. "China" or "2000"
+                        opt.textContent = decodingDict[col][key];
+                        selectEl.appendChild(opt);
+                    }
+                }
+                const blankOpt = document.createElement("option");
+                blankOpt.value = "";
+                blankOpt.textContent = "-- no selection --";
+                selectEl.appendChild(blankOpt);
 
-    // Add one <option> per decoded value
-    if (decodingDict[col]) {
-      for (const key in decodingDict[col]) {
-        const opt = document.createElement("option");
-        opt.value = decodingDict[col][key];  // e.g. "China" or "2000"
-        opt.textContent = decodingDict[col][key];
-        selectEl.appendChild(opt);
-      }
-    }
-  });
 
-  // Also build pivotCol dropdown
-  const pivotColSelect = document.getElementById("pivotCol");
-  if (pivotColSelect) {
-    const pivotBlank = document.createElement("option");
-    pivotBlank.value = "";
-    pivotBlank.textContent = "-- select pivot column --";
-    pivotColSelect.appendChild(pivotBlank);
+            });
 
-    // Each possible column (that might appear in the final JSON)
-    COL_ORDER.forEach(col => {
-      const opt = document.createElement("option");
-      opt.value = col;
-      opt.textContent = col;
-      pivotColSelect.appendChild(opt);
-    });
-  }
-}
+            // Also build pivotCol dropdown
+            const pivotColSelect = document.getElementById("pivotCol");
+            if (pivotColSelect) {
+                const pivotBlank = document.createElement("option");
+                pivotBlank.value = "";
+                pivotBlank.textContent = "-- select pivot column --";
+                pivotColSelect.appendChild(pivotBlank);
 
-////////////////////////////////////////////////////////////////////////////////
-// 3) Build a PostgreSQL-style JSON string (with spaces around colons)
-//    in the EXACT order defined by COL_ORDER, skipping pivot column
-//    and skipping empty fields.
-////////////////////////////////////////////////////////////////////////////////
-function toPostgresStyleJsonString(obj, pivotCol) {
-  let pairs = [];
-  for (const col of COL_ORDER) {
-    // Skip pivot column
-    if (col === pivotCol) continue;
-    // If user left it blank, skip
-    if (!obj[col]) continue;
+                // Each possible column (that might appear in the final JSON)
+                COL_ORDER.forEach(col => {
+                    const opt = document.createElement("option");
+                    opt.value = col;
+                    opt.textContent = col;
+                    pivotColSelect.appendChild(opt);
+                });
+            }
+        }
 
-    // Force everything as a string with quotes.
-    pairs.push(`"${col}" : "${obj[col]}"`);
-  }
-  return `{${pairs.join(", ")}}`;
-}
+        ////////////////////////////////////////////////////////////////////////////////
+        // 3) Build a PostgreSQL-style JSON string (with spaces around colons)
+        //    in the EXACT order defined by COL_ORDER, skipping pivot column
+        //    and skipping empty fields.
+        ////////////////////////////////////////////////////////////////////////////////
+        function toPostgresStyleJsonString(obj, pivotCol) {
+            let pairs = [];
+            for (const col of COL_ORDER) {
+                // Skip pivot column
+                if (col === pivotCol) continue;
+                // If user left it blank, skip
+                if (!obj[col]) continue;
 
-////////////////////////////////////////////////////////////////////////////////
-// 4) The main logic after we pick the dropdown values:
-//    - Build the custom JSON string
-//    - MD5-hash it
-//    - Fetch the partial-hash file
-//    - Display the result
-////////////////////////////////////////////////////////////////////////////////
-function onLookup() {
-  if (!decodingDict) {
-    document.getElementById("result").textContent =
-      "Decoding dictionary not loaded yet. Please wait.";
-    return;
-  }
+                // Force everything as a string with quotes.
+                pairs.push(`"${col}" : "${obj[col]}"`);
+            }
+            return `{${pairs.join(", ")}}`;
+        }
 
-  // 4a) Gather user selections
-  const tableType = document.getElementById("tableType").value.trim();
-  const pivotCol = document.getElementById("pivotCol").value.trim();
+        ////////////////////////////////////////////////////////////////////////////////
+        // 4) The main logic after we pick the dropdown values:
+        //    - Build the custom JSON string
+        //    - MD5-hash it
+        //    - Fetch the partial-hash file
+        //    - Display the result
+        ////////////////////////////////////////////////////////////////////////////////
+        function onLookup() {
+            if (!decodingDict) {
+                document.getElementById("result").textContent =
+                    "Decoding dictionary not loaded yet. Please wait.";
+                return;
+            }
 
-  if (!tableType || !pivotCol) {
-    document.getElementById("result").textContent =
-      "Please pick a Table Type and a Pivot Column.";
-    return;
-  }
+            // 4a) Gather user selections
+            const tableType = document.getElementById("tableType").value.trim();
+            const pivotCol = document.getElementById("pivotCol").value.trim();
 
-  // Build an object of the user-chosen values
-  const inputObj = {
-    year: document.getElementById("year").value.trim(),
-    region_name: document.getElementById("region_name").value.trim(),
-    sub_region_name: document.getElementById("sub_region_name").value.trim(),
-    location_name: document.getElementById("location_name").value.trim(),
-    age_group_name_sorted: document.getElementById("age_group_name_sorted").value.trim(),
-    age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
-    sex_name: document.getElementById("sex_name").value.trim(),
-    l1_cause_name: document.getElementById("l1_cause_name").value.trim(),
-    l2_cause_name: document.getElementById("l2_cause_name").value.trim()
-  };
+            if (!tableType || !pivotCol) {
+                document.getElementById("result").textContent =
+                    "Please pick a Table Type and a Pivot Column.";
+                return;
+            }
 
-  // 4b) Build the "PostgreSQL style" JSON string with spacing
-  const comboStr = toPostgresStyleJsonString(inputObj, pivotCol);
+            // Build an object of the user-chosen values
+            const inputObj = {
+                year: document.getElementById("year").value.trim(),
+                region_name: document.getElementById("region_name").value.trim(),
+                sub_region_name: document.getElementById("sub_region_name").value.trim(),
+                location_name: document.getElementById("location_name").value.trim(),
+                age_group_name_sorted: document.getElementById("age_group_name_sorted").value.trim(),
+                age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
+                sex_name: document.getElementById("sex_name").value.trim(),
+                l1_cause_name: document.getElementById("l1_cause_name").value.trim(),
+                l2_cause_name: document.getElementById("l2_cause_name").value.trim()
+            };
 
-  // Show for debugging
-  document.getElementById("jsonString").textContent = comboStr;
+            // 4b) Build the "PostgreSQL style" JSON string with spacing
+            const comboStr = toPostgresStyleJsonString(inputObj, pivotCol);
 
-  // 4c) Compute the MD5 (from the md5.js library)
-  const fullHash = md5(comboStr);
-  const partialHash = fullHash.slice(0, 3);
+            // Show for debugging
+            document.getElementById("jsonString").textContent = comboStr;
 
-  // Show the computed hashes
-  document.getElementById("hashInfo").textContent =
-    `Full Hash: ${fullHash}\nPartial Hash: ${partialHash}`;
+            // 4c) Compute the MD5 (from the md5.js library)
+            const fullHash = md5(comboStr);
+            const partialHash = fullHash.slice(0, 3);
 
-  // 4d) Construct the fetch URL
-  const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
+            // Show the computed hashes
+            document.getElementById("hashInfo").textContent =
+                `Full Hash: ${fullHash}\nPartial Hash: ${partialHash}`;
 
-  // 4e) Fetch from the partial-hash JSON
-  fetch(fetchUrl)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Fetch error: ${response.status} ${response.statusText}\nURL: ${fetchUrl}`);
-      }
-      return response.text();
-    })
-    .then(text => {
-      let parsed;
-      try {
-        parsed = JSON.parse(text);
-      } catch (err) {
-        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
-      }
-      const subObject = parsed[fullHash];
-      if (!subObject) {
-        throw new Error(`No entry for hash ${fullHash} in file ${partialHash}.json`);
-      }
-      document.getElementById("result").textContent = JSON.stringify(subObject, null, 2);
-    })
-    .catch(err => {
-      document.getElementById("result").textContent = "Error:\n" + err.message;
-    });
-}
+            // 4d) Construct the fetch URL
+            const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
 
-// --------------------------------------------------------------------
-// We call 'loadDecodingDict()' when the page finishes loading.
-// --------------------------------------------------------------------
-window.onload = loadDecodingDict;
+            // 4e) Fetch from the partial-hash JSON
+            fetch(fetchUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Fetch error: ${response.status} ${response.statusText}\nURL: ${fetchUrl}`);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(text);
+                    } catch (err) {
+                        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
+                    }
+                    const subObject = parsed[fullHash];
+                    if (!subObject) {
+                        throw new Error(`No entry for hash ${fullHash} in file ${partialHash}.json`);
+                    }
+                    document.getElementById("result").textContent = JSON.stringify(subObject, null, 2);
+                })
+                .catch(err => {
+                    document.getElementById("result").textContent = "Error:\n" + err.message;
+                });
+        }
+
+        // --------------------------------------------------------------------
+        // We call 'loadDecodingDict()' when the page finishes loading.
+        // --------------------------------------------------------------------
+        window.onload = loadDecodingDict;
     </script>
 </head>
+
 <body>
     <h1>Generating Combination &amp; Hash Lookup (PostgreSQL-Style Spacing)</h1>
 
     <div id="initError" style="color: red;"></div>
 
     <p>
-      1) Once the decoding dictionary JSON is loaded, select your values in each dropdown.<br/>
-      2) Choose which column is the <strong>pivot column</strong> (omitted).<br/>
-      3) Choose a <strong>table type</strong>.<br/>
-      4) Click <em>“Generate Hash &amp; Lookup”</em>.<br/>
-      This constructs a JSON string with spaces (<code>"key" : "val"</code>), 
-      matching your PostgreSQL format, then MD5-hashes it.
+        1) Once the decoding dictionary JSON is loaded, select your values in each dropdown.<br />
+        2) Choose which column is the <strong>pivot column</strong> (omitted).<br />
+        3) Choose a <strong>table type</strong>.<br />
+        4) Click <em>“Generate Hash &amp; Lookup”</em>.<br />
+        This constructs a JSON string with spaces (<code>"key" : "val"</code>),
+        matching your PostgreSQL format, then MD5-hashes it.
     </p>
 
     <!-- Table Type -->
-    <label>Table Type:</label><br/>
+    <label>Table Type:</label><br />
     <select id="tableType">
-      <option value="">-- choose a table type --</option>
-      <option value="population">population</option>
-      <option value="long">long</option>
-      <!-- add more if needed -->
+        <option value="">-- choose a table type --</option>
+        <option value="population">population</option>
+        <option value="long">long</option>
+        <!-- add more if needed -->
     </select>
-    <br/><br/>
+    <br /><br />
 
     <!-- Pivot Column -->
-    <label>Pivot Column:</label><br/>
+    <label>Pivot Column:</label><br />
     <select id="pivotCol"></select>
-    <br/><br/>
+    <br /><br />
 
     <!-- All columns (populated after decodingDict loads) -->
     <fieldset style="width: 600px;">
-      <legend>Select Values</legend>
+        <legend>Select Values</legend>
 
-      <label for="year">year:</label><br/>
-      <select id="year"></select><br/><br/>
+        <label for="year">year:</label><br />
+        <select id="year"></select><br /><br />
 
-      <label for="region_name">region_name:</label><br/>
-      <select id="region_name"></select><br/><br/>
+        <label for="region_name">region_name:</label><br />
+        <select id="region_name"></select><br /><br />
 
-      <label for="sub_region_name">sub_region_name:</label><br/>
-      <select id="sub_region_name"></select><br/><br/>
+        <label for="sub_region_name">sub_region_name:</label><br />
+        <select id="sub_region_name"></select><br /><br />
 
-      <label for="location_name">location_name:</label><br/>
-      <select id="location_name"></select><br/><br/>
+        <label for="location_name">location_name:</label><br />
+        <select id="location_name"></select><br /><br />
 
-      <label for="age_group_name_sorted">age_group_name_sorted:</label><br/>
-      <select id="age_group_name_sorted"></select><br/><br/>
+        <label for="age_group_name_sorted">age_group_name_sorted:</label><br />
+        <select id="age_group_name_sorted"></select><br /><br />
 
-      <label for="age_cluster_name_sorted">age_cluster_name_sorted:</label><br/>
-      <select id="age_cluster_name_sorted"></select><br/><br/>
+        <label for="age_cluster_name_sorted">age_cluster_name_sorted:</label><br />
+        <select id="age_cluster_name_sorted"></select><br /><br />
 
-      <label for="sex_name">sex_name:</label><br/>
-      <select id="sex_name"></select><br/><br/>
+        <label for="sex_name">sex_name:</label><br />
+        <select id="sex_name"></select><br /><br />
 
-      <label for="l1_cause_name">l1_cause_name:</label><br/>
-      <select id="l1_cause_name"></select><br/><br/>
+        <label for="l1_cause_name">l1_cause_name:</label><br />
+        <select id="l1_cause_name"></select><br /><br />
 
-      <label for="l2_cause_name">l2_cause_name:</label><br/>
-      <select id="l2_cause_name"></select><br/><br/>
+        <label for="l2_cause_name">l2_cause_name:</label><br />
+        <select id="l2_cause_name"></select><br /><br />
     </fieldset>
 
-    <br/>
+    <br />
     <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
 
     <h2>Debug Info</h2>
@@ -296,4 +303,5 @@ window.onload = loadDecodingDict;
     <h2>Lookup Result</h2>
     <pre id="result" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
 </body>
+
 </html>
