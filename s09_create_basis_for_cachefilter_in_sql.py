@@ -5,7 +5,14 @@ from sqlalchemy import text
 engine = config.engine
 con = engine.connect()
 
-table_types = ['population', 'long']
+table_types = ["population", "long"]
+
+# TODO: continue here and create jsons encoding this info
+rollup_column_groups = [
+    ["region_name", "sub_region_name", "location_name"],
+    ["age_group_name_sorted", "age_cluster_name_sorted"],
+    ["l1_cause_name", "l2_cause_name"],
+]
 
 dimension_cols_dict = {
     "population": [
@@ -46,6 +53,7 @@ aggregated_columns_dict = {
     ],
 }
 
+
 def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
     other_dims = [d for d in all_dimensions if d != pivot_col]
     combo_pairs = [f"'{od}', {od}::varchar" for od in other_dims]
@@ -78,6 +86,7 @@ def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
         GROUP BY identifying_string
     """
     return query
+
 
 # -------------------------------------------------------------------
 # Loop over each table_type, build the UNION ALL query, and create the table
