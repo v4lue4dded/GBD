@@ -98,99 +98,7 @@
             // IMPORTANT: Notice that any backslash inside this multiline string
             // is doubled so it remains a literal backslash in the final string.
 
-            const sampleChunk = `
-        "2005": {
-            "pop_val": 27206.558861321475,
-            "pop_lower": 24650.215075595584,
-            "pop_upper": 29745.10058249033
-        },
-        "2010": {
-            "pop_val": 28274.829581819275,
-            "pop_lower": 26155.08910915669,
-            "pop_upper": 30396.097106245707
-        },
-        "2015": {
-            "pop_val": 39701.118922738,
-            "pop_lower": 35718.436261934694,
-            "pop_upper": 43506.85256455758
-        },
-        "2019": {
-            "pop_val": 70086.92503496284,
-            "pop_lower": 62139.09322968516,
-            "pop_upper": 78269.30108283536
-        },
-        "generating_combination": \"{\\\"region_name\\\" : \\\"Asia\\\", \\\"sub_region_name\\\" : \\\"Southern Asia\\\", \\\"location_name\\\" : \\\"Bangladesh\\\", \\\"age_group_name_sorted\\\" : \\\"90 to 94\\\", \\\"age_cluster_name_sorted\\\" : \\\"75 plus\\\", \\\"sex_name\\\" : \\\"female\\\"}\"
-    },
-    "ffe255a74259cf2dd2c4b235a5bff266": {
-        "All": {
-            "pop_val": 448116.39906741306,
-            "pop_lower": 407941.53262712975,
-            "pop_upper": 489252.4915100769
-        },
-        "2000": {
-            "pop_val": 93859.53692706145,
-            "pop_lower": 86810.44771936814,
-            "pop_upper": 100482.06087860608
-        },
-        "2005": {
-            "pop_val": 82080.66850780565,
-            "pop_lower": 74679.45205525665,
-            "pop_upper": 89922.0379608353
-        },
-        "2010": {
-            "pop_val": 89070.50870327215,
-            "pop_lower": 82408.19076901568,
-            "pop_upper": 95822.49181201504
-        },
-        "2015": {
-            "pop_val": 94716.58030084662,
-            "pop_lower": 86420.87898007677,
-            "pop_upper": 103917.81881110794
-        },
-        "2019": {
-            "pop_val": 88389.10462842719,
-            "pop_lower": 77622.56310341251,
-            "pop_upper": 99108.0820475126
-        },
-        "generating_combination": \"{\\\"region_name\\\" : \\\"Asia\\\", \\\"sub_region_name\\\" : \\\"Western Asia\\\", \\\"location_name\\\" : \\\"Armenia\\\", \\\"age_group_name_sorted\\\" : \\\"01 to 04\\\", \\\"age_cluster_name_sorted\\\" : \\\"00 to 14\\\", \\\"sex_name\\\" : \\\"male\\\"}\"
-    },
-    "ffec4ac379b065eabac5b922b4de8720": {
-        "All": {
-            "pop_val": 3609273.1174422386,
-            "pop_lower": 3286066.7328573214,
-            "pop_upper": 3925172.8983170567
-        },
-        "2000": {
-            "pop_val": 502190.414625986,
-            "pop_lower": 461015.46246470814,
-            "pop_upper": 543087.3979987827
-        },
-        "2005": {
-            "pop_val": 603087.7669668789,
-            "pop_lower": 551843.1824187294,
-            "pop_upper": 651854.5845241891
-        },
-        "2010": {
-            "pop_val": 700770.6466876466,
-            "pop_lower": 638699.5505726456,
-            "pop_upper": 760202.2160583172
-        },
-        "2015": {
-            "pop_val": 831115.958591433,
-            "pop_lower": 765926.8354226513,
-            "pop_upper": 896805.9985295564
-        },
-        "2019": {
-            "pop_val": 972108.3305702943,
-            "pop_lower": 868581.7019785866,
-            "pop_upper": 1073222.7012062112
-        },
-        "generating_combination": \"{\\\"region_name\\\" : \\\"Africa\\\", \\\"sub_region_name\\\" : \\\"Sub-Saharan Africa\\\", \\\"location_name\\\" : \\\"Benin\\\", \\\"age_group_name_sorted\\\" : \\\"25 to 29\\\", \\\"age_cluster_name_sorted\\\" : \\\"15 to 29\\\", \\\"sex_name\\\" : \\\"All\\\"}\"
-    },
-    "ffe0d4a791dacff02e7c6b9d56fdd96c": {
-        "All": {
-            "pop_val": 624860.1233056523,
-            "pop_lower": 553680.964153542,
+            const sampleChunk = `9, "identifying_string": "year: 2010 | sex_name: female | region_name: Oceania | sub_region_name: Melanesia | location_name: Solomon Islands | age_cluster_name_sorted: 75 plus | age_group_name_sorted: 85 to 89 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Enteric infections"}, "ff8db5f91acc35e6fe3e98ad51fffc8c" : {"yll_val": 3081.9919663432406, "yll_lower": 1695.3205675800962, "yll_upper": 5008.651314088777, "deaths_val": 37.69675259054056, "deaths_lower": 20.735965796026395, "deaths_upper": 61.262291226382274, "identifying_string": "year: 2010 | sex_name: male | region_name: Africa | sub_region_name: Sub-Saharan Africa | location_name: Niger | age_cluster_name_sorted: 00 to 14 | age_group_name_sorted: 05 to 09 | l1_cause_name: Non-communicable diseases | l2_cause_name: Cardiovascular diseases"}, "ff841c67fffe354088c6fe588b6108d4" : {"yll_val": 50.44783401746037, "yll_lower": 33.83815529225762, "yll_upper": 71.46960880109219, "deaths_val": 1.3596005221926826, "deaths_lower": 0.911959343774151, "deaths_upper": 1.926150435184991, "identifying_string": "year: 2015 | sex_name: male | region_name: Americas | sub_region_name: Northern America | location_name: Canada | age_cluster_name_sorted: 45 to 59 | age_group_name_sorted: 50 to 54 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Nutritional deficiencies"}, "ff84d901a6fb3856d49379becbb2ca11" : {"yll_val": 1183.2440119594094, "yll_lower": 1023.505890209928, "yll_upper": 1364.0427122147144, "deaths_val": 17.785315154530245, "deaths_lower": 15.384294901063956, "deaths_upper": 20.50289650805444, "identifying_string": "year: 2010 | sex_name: female | region_name: Asia | sub_region_name: Central Asia | location_name: Kyrgyzstan | age_cluster_name_sorted: 15 to 29 | age_group_name_sorted: 20 to 24 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Maternal and neonatal disorders"}, "ff80929e38c29fa47047c6783a1b5501" : {"yll_val": 6359.433295488442, "yll_lower": 5389.409354882662, "yll_upper": 7672.398812872208, "deaths_val": 103.1800231244632, "deaths_lower": 87.44597994215876, "deaths_upper": 124.4839663773086, "identifying_string": "year: 2010 | sex_name: male | region_name: Asia | sub_region_name: Southern Asia | location_name: India | age_cluster_name_sorted: 15 to 29 | age_group_name_sorted: 25 to 29 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Nutritional deficiencies"}, "ff8e1a3d41e8c3a173af502e9083f2b2" : {"yll_val": 2660.288243862044, "yll_lower": 1950.869538582126, "yll_upper": 3589.472771064288, "deaths_val": 51.440421898846864, "deaths_lower": 37.72281156593255, "deaths_upper": 69.40751407821713, "identifying_string": "year: 2010 | sex_name: male | region_name: Americas | sub_region_name: Latin America and the Caribbean | location_name: Dominican Republic | age_cluster_name_sorted: 30 to 44 | age_group_name_sorted: 35 to 39 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Respiratory infections and tuberculosis"}, "ff88b086a8c01a0af0a3a2af06a6c29e" : {"yll_val": 0, "yll_lower": 0, "yll_upper": 0, "deaths_val": 0, "deaths_lower": 0, "deaths_upper": 0, "identifying_string": "year: 2019 | sex_name: male | region_name: Oceania | sub_region_name: Polynesia | location_name: Samoa | age_cluster_name_sorted: 75 plus | age_group_name_sorted: 85 to 89 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Maternal and neonatal disorders"}, "ff8125ccdd01d0cb0b88c9b240e09d18" : {"yll_val": 780137.7586644021, "yll_lower": 740384.5340102246, "yll_upper": 819545.0064464882, "deaths_val": 16681.39914628832, "deaths_lower": 15831.3299373794, "deaths_upper": 17524.062368005252, "identifying_string": "year: All | sex_name: male | region_name: Americas | sub_region_name: Latin America and the Caribbean | location_name: Brazil | age_cluster_name_sorted: 30 to 44 | age_group_name_sorted: 40 to 44 | l1_cause_name: Injuries | l2_cause_name: Transport injuries"}, "ff81408e2ada989c727767ce12340b2d" : {"yll_val": 70953.84492049878, "yll_lower": 63155.02993412016, "yll_upper": 79208.62982146697, "deaths_val": 1374.3153114344627, "deaths_lower": 1223.2642747025548, "deaths_upper": 1534.1995002922658, "identifying_string": "year: All | sex_name: male | region_name: Europe | sub_region_name: Southern Europe | location_name: Spain | age_cluster_name_sorted: 30 to 44 | age_group_name_sorted: 35 to 39 | l1_cause_name: Injuries | l2_cause_name: Self-harm and interpersonal violence"}, "ff860b3abb8b034760c0273539fe48da" : {"yll_val": 140.94810435453462, "yll_lower": 111.08974429782191, "yll_upper": 175.9689715550721, "deaths_val": 1.9806513602732752, "deaths_lower": 1.5610790546993911, "deaths_upper": 2.4727634003955763, "identifying_string": "year: All | sex_name: male | region_name: Europe | sub_region_name: Northern Europe | location_name: Iceland | age_cluster_name_sorted: 15 to 29 | age_group_name_sorted: 15 to 19 | l1_cause_name: Injuries | l2_cause_name: Unintentional injuries"}, "ff85e49113062759dfdcae05e6b40f43" : {"yll_val": 31726.724816601673, "yll_lower": 13655.637069144403, "yll_upper": 61780.241391888696, "deaths_val": 852.681032513115, "deaths_lower": 367.0064191150908, "deaths_upper": 1660.4443508743502, "identifying_string": "year: All | sex_name: All | region_name: Africa | sub_region_name: Sub-Saharan Africa | location_name: Burundi | age_cluster_name_sorted: 45 to 59 | age_group_name_sorted: 50 to 54 | l1_cause_name: Communicable, maternal, neonatal, and nutritional diseases | l2_cause_name: Neglected tropical diseases and malaria"}, "ff895b538962b0a80f4707b5942792fc" : {"yll_val": 0, "yll_lower": 0, "yll_upper": 0, "deaths_val": 0, 
       `;
 
             const parsedResults = parseChunkForSubObjects(sampleChunk);
@@ -198,8 +106,16 @@
             let output = "Parsed Results:\n" + JSON.stringify(parsedResults, null, 2) + "\n\n";
             // We expect only these two valid keys (the last one is incomplete and should be skipped)
             const expectedHashes = [
-                "ffe255a74259cf2dd2c4b235a5bff266",
-                "ffec4ac379b065eabac5b922b4de8720"
+            "ff8db5f91acc35e6fe3e98ad51fffc8c",
+            "ff841c67fffe354088c6fe588b6108d4",
+            "ff84d901a6fb3856d49379becbb2ca11",
+            "ff80929e38c29fa47047c6783a1b5501",
+            "ff8e1a3d41e8c3a173af502e9083f2b2",
+            "ff88b086a8c01a0af0a3a2af06a6c29e",
+            "ff8125ccdd01d0cb0b88c9b240e09d18",
+            "ff81408e2ada989c727767ce12340b2d",
+            "ff860b3abb8b034760c0273539fe48da",
+            "ff85e49113062759dfdcae05e6b40f43",
             ];
             const testPassed = expectedHashes.every(hash => hash in parsedResults);
 
