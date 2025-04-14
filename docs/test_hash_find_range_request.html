@@ -6,6 +6,9 @@
     <title>Guided Range Request Search (Proof of Concept)</title>
     <script>
         async function fetchRange(url, startByte, endByte) {
+            console.log("url:", url)
+            console.log("startByte:", startByte)
+            console.log("endByte:", endByte)
             // Example: Range: bytes=10000-10999
             const rangeHeader = `bytes=${startByte}-${endByte}`;
             const response = await fetch(url, {
@@ -18,52 +21,67 @@
         }
 
         function parseChunkForSubObjects(chunk) {
-            let results = [];
-            let index = 0;
+            const results = {};
 
-            // We'll look for "................" : {...}
-            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{.*\}/gi;
+            // Look for keys in the format "32-hexdigits": { ... }
+            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
             let match;
-            while ((match = hashRegex.exec(chunk)) !== null) {
-                const foundHash = match[1];
-                // The position in chunk of the '{'
-                const openBracePos = chunk.indexOf('{', match.index);
-                if (openBracePos < 0) continue; // shouldn't happen, but just in case
 
-                // Now find the matching '}' using brace depth
-                let braceDepth = 0;
-                let endPos = -1;
-                for (let i = openBracePos; i < chunk.length; i++) {
-                    if (chunk[i] === '{') braceDepth++;
-                    if (chunk[i] === '}') braceDepth--;
-                    if (braceDepth === 0) {
-                        endPos = i;
+            while ((match = hashRegex.exec(chunk)) !== null) {
+                const hash = match[1];
+                // Find the position of the opening brace.
+                const start = chunk.indexOf('{', match.index);
+                if (start === -1) continue; // safeguard if not found
+
+                // Find the matching closing brace by tracking nested braces.
+                let braceCount = 0;
+                let end = -1;
+                for (let i = start; i < chunk.length; i++) {
+                    if (chunk[i] === '{') {
+                        braceCount++;
+                    } else if (chunk[i] === '}') {
+                        braceCount--;
+                    }
+                    if (braceCount === 0) {
+                        end = i;
                         break;
                     }
                 }
-                if (endPos < 0) {
-                    // No matching brace in this chunk. We skip it or break out
-                    continue;
-                }
-                const subObjStr = chunk.slice(openBracePos, endPos + 1);
 
-                // Attempt to parse it
-                try {
-                    const parsed = JSON.parse(subObjStr);
-                    results.push([foundHash, parsed]);
-                } catch (e) {
-                    // Failed parse. Possibly truncated chunk, so skip this sub-object.
+                // If no matching closing brace is found, break out of the loop (chunk likely truncated).
+                if (end === -1) {
+                    break;
                 }
-                // Move on
-                index = endPos + 1;
+
+                const objString = chunk.slice(start, end + 1);
+
+                // Try to parse the object string.
+                try {
+                    const parsedObj = JSON.parse(objString);
+                    results[hash] = parsedObj;
+                } catch (error) {
+                    console.warn(`Failed to parse JSON for hash ${hash}: ${error}`);
+                }
             }
 
-            // Sort results by the hash (alphabetically). 
-            // This is optional if the chunk is guaranteed to be sorted already, 
-            // but safer to do so we can do min-hash / max-hash checks
-            results.sort((a, b) => a[0].localeCompare(b[0]));
             return results;
         }
+
+
+        function getWeight(searchHash, lowerHash, upperHash) {
+            // Convert each hex MD5 hash to a BigInt (128-bit integer)
+            const lower = BigInt("0x" + lowerHash);
+            const upper = BigInt("0x" + upperHash);
+            const search = BigInt("0x" + searchHash);
+            if (upper === lower) {
+                return 0.5; // or handle differently as needed
+            }
+            const numerator = search - upper;
+            const denominator = lower - upper;
+            let w = Number(numerator) / Number(denominator);
+            return w;
+        }
+
 
         // -----------------------------------------------------------------------------
         // The RECURSIVE guided search function
@@ -96,12 +114,13 @@
                 return null;
             }
 
+            let percentBetweenMinAndMaxHash = getWeight(searchHash, minHash, maxHash)
+            console.log(percentBetweenMinAndMaxHash)
+            let bestGuessByte = percentBetweenMinAndMaxHash * minHash + (1 - percentBetweenMinAndMaxHash) * maxByte
+
             // We'll clamp the range request so we don't exceed maxByte
-            let requestStart = minByte;
-            let requestEnd = minByte + rangeSize - 1;
-            if (requestEnd > maxByte) {
-                requestEnd = maxByte;
-            }
+            let requestStart = max(bestGuessByte - 0.5 * rangeSize, minByte);
+            let requestEnd = min(bestGuessByte + 0.5 * rangeSize, maxByte);
 
             // 2) Fetch that chunk via range request
             let chunkText;
@@ -192,13 +211,13 @@
         // Example usage or demonstration
         // -----------------------------------------------------------------------------
         async function demo() {
-            const fileUrl = "data_doc/cachefilter_population/location_name/fa6.json";
+            const fileUrl = "data_doc/cachefilter_long/ffd.json";
             // The parameters for the initial call:
-            const searchHash = "fa6a7e67833806738913d21164273f40";
+            const searchHash = "ffd0926e3ea3d41844bd7ff694134f58";
             const minByte = 0;
-            const maxByte = 999999999; // or the actual size of the file
-            const minHash = "fa600000000000000000000000000000";
-            const maxHash = "fa6fffffffffffffffffffffffffffff";
+            const maxByte = 500000; // or the actual size of the file
+            const minHash = "ffd00000000000000000000000000000";
+            const maxHash = "ffdfffffffffffffffffffffffffffff";
             const rangeSize = 5000;  // start reading 5KB chunks
 
             try {
