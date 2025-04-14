@@ -6,9 +6,6 @@
     <title>Guided Range Request Search (Proof of Concept)</title>
     <script>
         async function fetchRange(url, startByte, endByte) {
-            console.log("url:", url);
-            console.log("startByte:", startByte);
-            console.log("endByte:", endByte);
             // Example: Range: bytes=10000-10999
             const rangeHeader = `bytes=${startByte}-${endByte}`;
             const response = await fetch(url, {
@@ -21,7 +18,7 @@
         }
 
         /**
-         * parseChunkForSubObjects is tested and fine.
+         * parseChunkForSubObjects:
          * Returns an object: { "md5hash": { ...some JSON object... }, ... }
          */
         function parseChunkForSubObjects(chunk) {
@@ -30,7 +27,6 @@
             // Look for keys in the format "32-hexdigits": { ... }
             const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
             let match;
-
             while ((match = hashRegex.exec(chunk)) !== null) {
                 const hash = match[1];
                 // Find the position of the opening brace.
@@ -52,7 +48,7 @@
                     }
                 }
 
-                // If no matching closing brace is found, break out of the loop (chunk likely truncated).
+                // If no matching closing brace is found, break (chunk likely truncated).
                 if (end === -1) {
                     break;
                 }
@@ -90,17 +86,16 @@
         // -----------------------------------------------------------------------------
 
         /**
-         * @param {string} fileUrl - The URL of the big JSON file.
-         * @param {string} searchHash - The MD5 hash we want to find, e.g. 'fa6a7e6...'.
-         * @param {number} minByte    - Current lower bound of search in bytes.
-         * @param {number} maxByte    - Current upper bound of search in bytes.
-         * @param {string} minHash    - Guaranteed smallest hash in [minByte..maxByte].
-         * @param {string} maxHash    - Guaranteed largest  hash in [minByte..maxByte].
+         * @param {string} fileUrl - URL of the big JSON file.
+         * @param {string} searchHash - The MD5 hash we want to find.
+         * @param {number} minByte    - Lower bound of search in bytes.
+         * @param {number} maxByte    - Upper bound of search in bytes.
+         * @param {string} minHash    - Known smallest hash in [minByte..maxByte].
+         * @param {string} maxHash    - Known largest hash in [minByte..maxByte].
          * @param {number} rangeSize  - Number of bytes to fetch in each attempt.
          * 
          * If found, returns { hash: <searchHash>, data: <the sub-object> }.
-         * If definitely not found, returns null.
-         * Otherwise, modifies the search bounds/rangeSize and tries again recursively.
+         * If not found or outside range, returns null.
          */
         async function guidedSearchRange(
             fileUrl, searchHash,
@@ -108,24 +103,16 @@
             minHash, maxHash,
             rangeSize
         ) {
-            console.log("searchHash:", searchHash)
-            console.log("minHash:", minHash)
-            console.log("maxHash:", maxHash)
-
-            // 1) Quick base checks (string comparisons for hash range):
+            // 1) Quick checks
             if (searchHash < minHash || searchHash > maxHash) {
-                // The searchHash is out of the known [minHash..maxHash] range.
                 return null;
             }
             if (minByte > maxByte) {
-                // Byte range is inverted => not in file
                 return null;
             }
 
-            // Fraction of how far searchHash is between minHash and maxHash
+            // 2) Estimate position via fraction in [minHash..maxHash]
             let fraction = getWeight(searchHash, minHash, maxHash);
-
-            // Interpolate within [minByte..maxByte] to get best guess
             let bestGuessByte = minByte + fraction * (maxByte - minByte);
             bestGuessByte = Math.floor(bestGuessByte);
 
@@ -133,26 +120,24 @@
             let requestStart = Math.max(bestGuessByte - 0.5 * rangeSize, minByte);
             let requestEnd = Math.min(bestGuessByte + 0.5 * rangeSize, maxByte);
 
-            // 2) Fetch that chunk via range request
+            // 3) Fetch chunk
             let chunkText;
             try {
                 chunkText = await fetchRange(fileUrl, Math.floor(requestStart), Math.floor(requestEnd));
             } catch (err) {
-                // Could not fetch for some reason => consider an error or fallback
+                // Could not fetch => consider an error or fallback
                 throw err;
             }
 
-            // 3) Parse out sub-objects from that chunk (as a dictionary)
+            // 4) Parse out sub-objects from that chunk
             const subObjects = parseChunkForSubObjects(chunkText);
 
-            // If there are no sub-objects at all:
             if (Object.keys(subObjects).length === 0) {
-                // We found no data in this chunk, so let's expand range drastically
-                // and try again (same direction).
-                const newRangeSize = rangeSize * 2.0; // +100%
+                // No data in this chunk, expand range and move forward
+                const newRangeSize = rangeSize * 2.0;
                 return await guidedSearchRange(
                     fileUrl, searchHash,
-                    Math.floor(requestEnd + 1), // move forward
+                    Math.floor(requestEnd + 1), // shift forward
                     maxByte,
                     minHash,
                     maxHash,
@@ -160,36 +145,29 @@
                 );
             }
 
-            // Convert subObjects to a sorted array of [hash, object] by hash
+            // Sort found objects by their hash (lexicographically)
             const sortedEntries = Object.entries(subObjects)
-                .sort(([hashA], [hashB]) => hashA.localeCompare(hashB));
-
-            // 4) Analyze sub-objects in this chunk
+                .sort(([a], [b]) => a.localeCompare(b));
             const chunkMinHash = sortedEntries[0][0];
             const chunkMaxHash = sortedEntries[sortedEntries.length - 1][0];
 
-            console.log("chunkMinHash:", chunkMinHash)
-            console.log("chunkMaxHash:", chunkMaxHash)
-
-            // Check if searchHash is directly in subObjects
+            // Check if we directly have the hash
             for (const [h, obj] of sortedEntries) {
                 if (h === searchHash) {
-                    // Found it
                     return { hash: h, data: obj };
                 }
             }
 
-            // If chunkMinHash < searchHash < chunkMaxHash and we didn't find it, it's definitely not in the file
+            // If chunk range overshoots where the hash would be
             if (chunkMinHash < searchHash && chunkMaxHash > searchHash) {
                 return null;
             }
 
-            // If all sub-objects in this chunk are < searchHash, keep searching forward
+            // If everything is below target hash
             if (chunkMaxHash < searchHash) {
                 const newMinByte = Math.floor(requestEnd + 1);
-                const newMinHash = chunkMaxHash; // everything up to chunkMaxHash is done
+                const newMinHash = chunkMaxHash;
                 const newRangeSize = Math.floor(rangeSize * 1.3);
-
                 return await guidedSearchRange(
                     fileUrl, searchHash,
                     newMinByte, maxByte,
@@ -198,12 +176,11 @@
                 );
             }
 
-            // If all sub-objects in this chunk are > searchHash, search earlier in the file
+            // If everything is above target hash
             if (chunkMinHash > searchHash) {
                 const newMaxByte = Math.floor(requestStart - 1);
                 const newMaxHash = chunkMinHash;
                 const newRangeSize = Math.floor(rangeSize * 1.3);
-
                 return await guidedSearchRange(
                     fileUrl, searchHash,
                     minByte, newMaxByte,
@@ -212,50 +189,578 @@
                 );
             }
 
-            // If we somehow didn't handle a scenario, return null.
+            // Otherwise, not found
             return null;
         }
 
+
         // -----------------------------------------------------------------------------
-        // Example usage or demonstration
+        // DEMO: Testing multiple hashes to measure speed
         // -----------------------------------------------------------------------------
-        async function demo() {
-            const fileUrl = "data_doc/cachefilter_long/ffd.json";
-            // The parameters for the initial call:
-            const searchHash = "ffdffcddaac75a24d17dfd2bbc8cac82";
+
+        async function testAllHashes() {
+            // Placeholder list of 500 MD5 hashes (include real ones in practice)
+            // For demonstration, these are mostly duplicates or random examples:
+            const hashList = [
+                "ffd06b5a63ee4d2832be0617a71df801",
+                "ffd9e34630111c321eb5d4c1718ae3c1",
+                "ffd7beb286a905324d13b5e8b8ed136b",
+                "ffdb1453ee97246661cc8bdb3d0abacc",
+                "ffdeb6a92bdbc50a2129e44ff6e42e18",
+                "ffd7519e0223017e14a27b2a85e2b9b2",
+                "ffd11360c05530a20ffdb11ea5436132",
+                "ffdb15380891dec46cdbf40530641ce9",
+                "ffd324a96729d4940d6a5ac89079ab0b",
+                "ffd3eb74b71095aa2f2650a97bea4b70",
+                "ffd3ce1478230c7991f4beac7ea13209",
+                "ffd50d94c81da50f4c40d9687c099d6f",
+                "ffd6cea7ac1743262438a944004bfd71",
+                "ffd3f4d2149d07ec67d083829446520e",
+                "ffda0dc244e198ed00d2eeb6dab527ef",
+                "ffdf474eb3342409f648c964e8fdf85b",
+                "ffdc472d9fe0aca6dea3128606f07e0f",
+                "ffd999ebb742f27a585ea6c8974cea6a",
+                "ffdde40c3796b3602a8bdd4883ced786",
+                "ffd260b975f823ba4aded1ca9b5e921b",
+                "ffd0283aa949dbefd219ead917ae3438",
+                "ffddfeaa7dea0ceb3b14eaed41906595",
+                "ffd36616a1478c9e5a386086bce48f51",
+                "ffd751bde9cb5ba898e8674a6d366d23",
+                "ffda3fe7e81646fa93c09b5de1e6f927",
+                "ffdfbaebc38da5806ba6a8efd2c61537",
+                "ffd547e39676366d04abf542692714b2",
+                "ffdf2770a0ee351f3baf19b197133ee8",
+                "ffdc0b644226f4b36ae5edb7b226e9fb",
+                "ffd74b6c786b8e6a846666bfbea5fef6",
+                "ffdd86a9272e85eb83c9200c6f5d3a3f",
+                "ffdf802c3d4347622e3c61724c91e593",
+                "ffdd8c5369fde2eb8824d328b231b6e6",
+                "ffdd2038e38e7a5fef00db6090531a9c",
+                "ffd83de46b5678f2c409e585cf36eeb0",
+                "ffdc09e695e0cb0651c59243658df03a",
+                "ffd847a447183ef48fc4fcfdc212a8e9",
+                "ffd49f01b83605189a224621751133cc",
+                "ffdc65f72ab9ba612d39adcc60e56517",
+                "ffdb1910eeef66c5323ba9959dfc3e8c",
+                "ffd436c50a6a093c01cc859dd6a51c25",
+                "ffd9f33366d2f4b9aa0fa09469e87bb2",
+                "ffd9e96c5de7775db4744fdcb54abeeb",
+                "ffda6bb246d122d8fbd9d48a30eca537",
+                "ffd644a1b4d586818b6d3ec22caaf3ba",
+                "ffd36aa2c8903ecea78aa840244294ca",
+                "ffdbf9f846018a199507c53ec8289e86",
+                "ffd72e270596c52037c241951d6e376a",
+                "ffd9477310f284e1af203b7df77c9e91",
+                "ffd10eced7dd9dadae3031785c4343ae",
+                "ffd288e0d5234ff4f8b6a44bbb1364f5",
+                "ffd54c1567667b8491a0c1ea96cae836",
+                "ffdc93682adce1f70f54978f013c902b",
+                "ffd6bfb1cc1a6ad9bab7c37d9e300100",
+                "ffd5ff8af52f7a21b4a912380cb896bd",
+                "ffd2c98278a333cbbd0d1b6599d8b752",
+                "ffdfcce381d26e192a54223f60f92cf4",
+                "ffd113d00a3f4a90c9decc24c4fbc9a9",
+                "ffdb4c8d067ff3481a26d3b908870b44",
+                "ffd3d51a979fa8acb2828a6157c0d20f",
+                "ffdc29424729a0d935a3643f82250aac",
+                "ffd63404f3d05e0c9ba606cfe45d7e33",
+                "ffd3a9ae83a3880157bdc04fac60db5b",
+                "ffda47c59357f4e30c11c32272271506",
+                "ffd204871284d85b285be1e36f99568c",
+                "ffde28c6a57d5ae3f133f6fc0b22b78c",
+                "ffdb80125b4bd3701fb7bfae37a477b1",
+                "ffdf4a4aed2bec497777cdd987bcb50e",
+                "ffdf822f85128efe4479a99d509120ba",
+                "ffd78c8aacde8041c4350ae0269c25d7",
+                "ffd2ace94e0cf66b65652e63f207311d",
+                "ffd13f09dfca8f88664542e0a7007b27",
+                "ffd04dae2d45197e99c7977e91788cbc",
+                "ffd2c8b1ef777d26aeaa62a5de80e483",
+                "ffdf4f829e81121071defffdf357651a",
+                "ffdf5eca5e69984083ee647752f726b7",
+                "ffd36a4ca2b94806ef261e1cbea5ac55",
+                "ffd83601e0aa4d28e46fa767e0bf058d",
+                "ffdd8a612290b47687bea628b0d6d998",
+                "ffde5f4a8e7b8c495947b162b5f4da93",
+                "ffdc45cb6ff8221b7936d644bf802112",
+                "ffd6bc7c496a662c37bab08ae69b200a",
+                "ffd6d5a846e5183dc6ffb77303b47470",
+                "ffd9b9ea43ae8847a5d9831bf6bb1cbc",
+                "ffd32764ab1c73a11a9cea53441796f2",
+                "ffd7827ce1e4d9399840e1e47c4df936",
+                "ffd11f3acf9ddc9b3c260978f9058cd9",
+                "ffddfc088a5f286d9476d977c5873239",
+                "ffdf1094964186cb42811692a1a18418",
+                "ffdd5b3066d039314cbfe6e826948e6f",
+                "ffd2bbe9f235bd63a42fc9f105d08665",
+                "ffd05d8565d731b59342cb1cbe03cc2b",
+                "ffd92d7002118e46f05d7eea7e20839b",
+                "ffd931aac79f437962b964aeafe9bb0d",
+                "ffdd5f0244f13c095cfbb2c46dea3d91",
+                "ffd2ae894e99867ae8cb923dca05fb55",
+                "ffd547625b7f0947142c25220599d819",
+                "ffd9afc62c7d371540b5ea27a8e3b243",
+                "ffd90292c52b5b0d9a273fce2967cae8",
+                "ffdd78bcc8c5be36068c6b388a2c4d99",
+                "ffd405f6d89b1c8c8c631c07452ed2af",
+                "ffd9885b0a00e3cf027a61e8c2a77791",
+                "ffda761bb2e32369def5018ec2857433",
+                "ffd4ed789d1eea1b3bbd05f9c9609d2e",
+                "ffd148be77dbe598cbf7b41df38c2eaa",
+                "ffde39ec2bbbacf759958a4971c99b0b",
+                "ffd0f5301c14bb9008208b2a2b2029f2",
+                "ffdaf1095029f18640dc7fc8fc8ec026",
+                "ffd8335666a39f74392801eca0170d1e",
+                "ffdc3b625bf58894baa93ac909672af9",
+                "ffd5171d1159dd639fcf3dc4be24ae33",
+                "ffdac40fd79676fceb48253f28c299f2",
+                "ffd6d093c34589dbc9d57598c80e9784",
+                "ffd909a9b6366553393ff6b779571c05",
+                "ffdae69eddd0feaca1260775fd821f27",
+                "ffdc53d6603971b52e5bdb7fa3d5588b",
+                "ffd21b535f6a602b490321a7d1a85ad0",
+                "ffde0ae31304ac00e62d9d7c153be3b3",
+                "ffd2d37272aa4192e666b28b7595a784",
+                "ffd0eb96438bdbb4a8d431fc969ee6e2",
+                "ffdb0aab28c07cc3eaf5ac9808a34dbe",
+                "ffdc81a45fd3cfdbfeca519b58bfe4e1",
+                "ffd42fea49e315735085d645ebf8d4aa",
+                "ffd93e7660d8a7ed090155ea17f29da2",
+                "ffd506a68c404dcd576ba3e2b8431618",
+                "ffd4e8a76f04f40decf450f14d93af44",
+                "ffd0c4b2ea3ed3bc353bee84a9a0fe68",
+                "ffd5facf21789a5df4e6942538efecc8",
+                "ffd583e818cfd455ffc7607cb231ec4b",
+                "ffdc7a9707a17a47f974cb871fd7fef1",
+                "ffd6ae7c5ae471a82c7024e63eb99fd8",
+                "ffdff03606146dda9b97d912a694617f",
+                "ffdd3393eb98e844b94a57bb2e1c8cf4",
+                "ffdc35fe31a54f71d63093066093d691",
+                "ffde4576d8b930b930e7bb4288775199",
+                "ffddfbf4539025f4d3ae1c35a661c412",
+                "ffd9ef8bd9ad85ab422060b05d1d7062",
+                "ffd99d99f26b74643c923d63a91f5ea0",
+                "ffd2ec29f5003d6ba836a82d359331ce",
+                "ffddd463f113dbd4e5b5ea4878e7d1c1",
+                "ffd86aa760bce0b21a1f6c1c2fbc06a7",
+                "ffd33cdc61d4b4aec0555ae02920ad14",
+                "ffd808d80dd6aa56f2d0e98f246d8f26",
+                "ffdf35c6afe7ce88a3c1102673e5be23",
+                "ffd77806295850a5921b81a54dcc56af",
+                "ffde914fee3ab3a03549d51e6ceeabe5",
+                "ffddf68adc0315d82fe22441d3ec99e3",
+                "ffd0926e3ea3d41844bd7ff694134f58",
+                "ffd2d5519ecc3a5bdddf0e7dc6a8d07f",
+                "ffdf0638ccf2bbdbd8c629040786aad4",
+                "ffd773083f259ad03db1693867fac58a",
+                "ffdfad52bf4af66fd47e5891a996c889",
+                "ffda69920572faa58c077b9a672bbfb2",
+                "ffd802bc3c114c069488c5ab1b3d641c",
+                "ffd5bee79f97018df0fec100f4a79dc1",
+                "ffd60052174eae2877d9454198aae57d",
+                "ffd7a956aac6d61880209780757ccad2",
+                "ffd3d920ef68b282cfb0f95461edc714",
+                "ffd61fead864b3f6cf30c4acc4c2c73b",
+                "ffdf0f6b02e378a5ec69cc940ff4e67b",
+                "ffd2ef8b546b5893b5afee34940eabe7",
+                "ffd9c622f02590e98852b16a2eed4f30",
+                "ffd2ec0a6d87655dfa1ef5d53f6246b2",
+                "ffde885f52df54c3d99e16cf721fe30e",
+                "ffde93667dabd259c1d195f6e450d63b",
+                "ffdf9bd286c578f2ffc0eaefad971008",
+                "ffd884688afb82a4fd6afa5dac2973b4",
+                "ffdc196739f29ccc51a3304989e96a00",
+                "ffda88069f3d783a1d3e68c4bae6d544",
+                "ffd622fd16d9e5b3301d8577ec3ca1be",
+                "ffd7870ee3fb38f16e1b2980744b9a68",
+                "ffd2aeddcdd658a917defd0cd65aee71",
+                "ffd2320175afeb5e2812218dc6251178",
+                "ffd36cd3b347c2d05c55f58b089e40a7",
+                "ffd8dfd1afdf4523f355496f49b12311",
+                "ffda4950bc86ac7c1f30e025016d1ae5",
+                "ffd82a58285b88914aaf1123e7ff9a78",
+                "ffdfebfea82c558ed1baa24e4a698c12",
+                "ffded1dd6c68e74cfb65c77e99910cf0",
+                "ffdf5ed398dd72deb472822e8229ab47",
+                "ffd2b3f7408c7f50435b29d43bf45bf4",
+                "ffdc19ebf4dc62fb24968e2f84cd808b",
+                "ffda665b5cf47e88682ecb930eb9d65c",
+                "ffd80b326d69ad95ffe3ea2bc6bca403",
+                "ffd4bef2fb068065d0778df7f671cce3",
+                "ffdef5ca9ebd9491d6822dbed12afef4",
+                "ffdd3befc7d9f8cf300d45a38172ea0e",
+                "ffd99c4cf9caeba550c24eb484a203b1",
+                "ffdfd79017acb18c43d0cadd6e8e8d54",
+                "ffd726957ec7c24e4d75a679f4d4c013",
+                "ffdfde36cc5434e6d0433d3bd0f2504d",
+                "ffd91d82c4eb6462a13f91328695bc5c",
+                "ffd6de88ec80df0eef31c7ea08bbd813",
+                "ffdf0e10464f52a427b107c5f79fef65",
+                "ffdae0345966d5ecef5d0b1bb21826e8",
+                "ffdcb604d713a62e2e5efdbf36f3d384",
+                "ffddff3b8a483318f0b54a3cce7e797b",
+                "ffd5031bac9d033c6593c3349118ad5f",
+                "ffd1a887d8d6999c5ee8b44de8e03fda",
+                "ffd39d8b41610752c07deaa4b98aa9a8",
+                "ffd9f2ea75e3628f4baa594bef0e26b4",
+                "ffd220919389cef52e82378b0230a7bb",
+                "ffd018649bc4895b1e3636b527aa5b5c",
+                "ffdf7b35983f2225d5a7235e262e4fc1",
+                "ffda81f4b8d18835cd9bd30fe80856da",
+                "ffda4409b75a16595ee42a531c298a2c",
+                "ffdce42f5e7199b791b58253de8d3310",
+                "ffd028da1cde9c51b5aaf10150f13713",
+                "ffdf93fc9df592068aff0a2bfde8182a",
+                "ffd862bb51287e957e03d319c5dcf176",
+                "ffdc85a15b25c428ec141a56f36339a0",
+                "ffdf05d714875be6f105f96ce9b7645f",
+                "ffda21149c567fda13ec11da74dd03e5",
+                "ffde602cf582150c9c532adb2b9572a2",
+                "ffd8d196e351a3584f38c8aa21eae2c6",
+                "ffdecbcb5e812ae0431c025679be30a9",
+                "ffdbaa5275f8f109be10b2bd9ceabc05",
+                "ffd5153521832aee24ddcc9d666355bb",
+                "ffdafc4df287a28cdf35763ebeb2d7c7",
+                "ffd571e962fd288094ffb4e65d969587",
+                "ffd6987363d866e604331ed93c2d17b6",
+                "ffd8b309f38d2a76e87cb53ddf113585",
+                "ffd9a8061fa76b829ac02c43eb8796be",
+                "ffd35fb7b97b4e4f2dd5e36b6a185907",
+                "ffd9abae82d2da2a9a28fa54442c5cee",
+                "ffdac2ec88ef2c4e5961ac7f336cf905",
+                "ffd213e7c7b42dc20841f692a56b4bf6",
+                "ffde5bdb1b19026073ea3bff1da19ace",
+                "ffdaccb268f8e3065e841543fad6f44b",
+                "ffd99f9d5fcc0b6741a4373c736ae67e",
+                "ffdee251a1ebf76d598a0b8c4641aad9",
+                "ffd7ac2b5dba46338fe1e6e7a378d045",
+                "ffd11386552e2335d28aebc60aa3ebcb",
+                "ffd663c9e81ab65f6831e12531eb3959",
+                "ffd1c4bf85598551ac80252a067880ed",
+                "ffd05736f9a1c7fca308b29875639d8a",
+                "ffdfe8878d0f945df72a42c378028ec0",
+                "ffded7a97bec9c4b0bcefb7a8d81277f",
+                "ffd8e0a1e478adc0cb3bafe8a672f510",
+                "ffdd40f5ff1ffb9ccd4fc00ec2af353b",
+                "ffd8498d5ac9c1d30ddae4abef79ac02",
+                "ffd3e7323cb33708087dac95417751c8",
+                "ffdc1b5d45995c090d84b7cf51073d4a",
+                "ffdc39a4a12cddee3370c200089fb60c",
+                "ffd8de52a2dfd3b08773b29f47d658b1",
+                "ffd202b442dc63f8a164f58f4b38d3dd",
+                "ffdaba7b429ef41641b746ec7dc3ad5a",
+                "ffd9fc4580b269ddcd9912e93be375f9",
+                "ffdd2a5df4eea6619116d4b3f8a7ce1b",
+                "ffd296d5a036e6d021c699f97b511b87",
+                "ffdde3d12a53e5b1e244985bbbf72253",
+                "ffde217664adeb7022184a081b4a102b",
+                "ffd1cbd59052d3601ad65ccf98dd7af7",
+                "ffd921d59f2cf9cff6d7c5d50440dbe4",
+                "ffdcacffa848502af2fb9616ec63940d",
+                "ffd4ebfc27e6f447dd69eb0643526c76",
+                "ffdf87042411283fe4ba9265e4b27044",
+                "ffd12241efe460b1d28e18e314b5c827",
+                "ffd641906cf3ae0137de12d32ee85ca6",
+                "ffd41b189e40487dfc4e8eba4053c2bf",
+                "ffdbed6175f14af42985121bf60bbdf6",
+                "ffd1e8434d1837cee7fe4eaa5b4a02bf",
+                "ffdd06742544dd6c502899068329572a",
+                "ffdce35f2aa6df5f372702633fe84afe",
+                "ffd2a5b4da5f808c164ea9d1aaefcc3c",
+                "ffdc81acf64297b3e5d129cd0ee0acce",
+                "ffd6a5ce3255165a3164c107e06b166b",
+                "ffd5b408bdc6e40bb6aaf3899534b043",
+                "ffdd00f2e9e4a4a3fd2b9029dcb3f726",
+                "ffd3e8174fc5c1dd88af31c9f6a162c3",
+                "ffd9a5096fd17752cb1e7c9543d265f5",
+                "ffd2cb2c37f71ac3f983d17cddb9499e",
+                "ffdcfcf8197c5cceefa34c8cdc1609bc",
+                "ffd151e07c97e9df1623df07ef67a9bd",
+                "ffd8f3bf91596366d690464adb8f6103",
+                "ffd178dd3c770026897f9b0380bed048",
+                "ffd766931ff5019704ea9f3a49f43381",
+                "ffd23a403afeb4a1d65b032937177f7e",
+                "ffd48abddde0197bd1fcec7609264640",
+                "ffd14262be9f6746bc86c0ddb20f003b",
+                "ffda5f7de04d90050f373f0dae09c83c",
+                "ffd85188601d9c8d3a9370db86447135",
+                "ffdb6388a4c8a8788617b0ae1004175a",
+                "ffd69a7f679aee93b3f2cce97862ecab",
+                "ffdffc222d4bb391928b89c99212c6a3",
+                "ffda4db103583ab11d0914b2305dd61f",
+                "ffd3e833433b5778485943c71dbb395b",
+                "ffd74339b5d549b0c99f6145d157b647",
+                "ffde1ae69a798cd42c9132978f1946bd",
+                "ffd0a8b4de90d9e878929bf0eb3441b3",
+                "ffd7b387a1531904690a4aeb521bd2ea",
+                "ffdb5497e9e2f095b8312e5db72c4316",
+                "ffd350798e2b0db778bc3b68f7eb7896",
+                "ffd479006455457a0ab6d4b25e8fc588",
+                "ffd270c44d6ca40f6edc609c1333e726",
+                "ffd57fd9a213d065f4abca0d27909b78",
+                "ffd1af7e63796afaa9c1c4754c3c2651",
+                "ffdac9a52148a1f4f86b5226a7cb9351",
+                "ffd31ca0de2a4e038eda86b05a245b6d",
+                "ffd20865d754d83dba75cbcd4f797738",
+                "ffd28bfbf97836ecdc6a640e197e84a5",
+                "ffde3ad8b36295c6d221d76eed102e91",
+                "ffd14df21fb0e376ec0d32f6c451d3fc",
+                "ffd862ad0f0e396705f3cabfcbb01524",
+                "ffd0e710ae9ee21defbd96dae2873fb3",
+                "ffdda9d04115ebf738191c28a278262c",
+                "ffdf41237d07c75cc392dabb938ae3a0",
+                "ffd0453df41a3a846f73e23dceacdf2e",
+                "ffd8de71ac1c003205efca6f8d080cfa",
+                "ffdf94e2a1251ae7c9b17c8e05ed3326",
+                "ffdcc09f33b0490a41547e9584a86432",
+                "ffdaf0bb0b4b31e1abb41e65c8107adf",
+                "ffdd33fe3ed8f77db0b89228151ce7e2",
+                "ffd51eb5e374e88f528f6f0d3ff50f11",
+                "ffd22510a45ed0cffbee665a0d2348a6",
+                "ffdaa1622de1cd94835814adbf0c94c8",
+                "ffd9efa436bac61df935736b4bee091c",
+                "ffd0b1b22d303551cce3754516feede7",
+                "ffdd7557e1def6781fa7c6fc0f437187",
+                "ffdc092f60b75403387e61ef659b279d",
+                "ffd4ec06b0cafd78af513edaa169a411",
+                "ffd1c9662ac66b1efe15e05d0d1de0ab",
+                "ffd5e70b76430d5730cca2bf8f69e33d",
+                "ffd73d6a392c30a3a5f93a387f3fa5b2",
+                "ffd02d43e39ba45eda98383a3548e126",
+                "ffda90d3f14c4bf8ad32b55ba00418d8",
+                "ffd08bc9f08602deefe272212e3ff907",
+                "ffd2742cc2f41056b809e6819374820e",
+                "ffd4edade821a36e44a70813107dfe24",
+                "ffd78ceb35839e3a1e04bdf1c44a8476",
+                "ffd0e5170011e9e76f21e03b235d62f2",
+                "ffd6112e48f868258ec1087dd92fa300",
+                "ffd9c0fccbca885e3b078c73168be72c",
+                "ffd0eb67c79ed54cf5c41ee8a66137ae",
+                "ffd80562e196f7be7bc9c9dee595065d",
+                "ffda39373e80ce5e191cad5db02c9dab",
+                "ffdffbac611f7b8cba39c14119e902e7",
+                "ffdaf4b1fe6bf3a22c0dd7fb30751601",
+                "ffd0749fe23977da37d8326450a470e8",
+                "ffd9d5f2079e10f5177aa1d866a2c98c",
+                "ffd84f321ad2fdcdd12fbca63dc89eb4",
+                "ffd801a96227d0f5e2ec7727633d125d",
+                "ffd637972ae02ed401104282fe8d8a30",
+                "ffd3e839a80da07139e29ba533ffb411",
+                "ffdc279cbdc24dabfa4c640ad395fdc1",
+                "ffd3bc803069885878e06949cdafa53b",
+                "ffd676e088a4d0117f1f71254eaf6eb3",
+                "ffdd52ae2b0dad49527a5c375ba43b35",
+                "ffd1957393e8a1118d94813db64416f2",
+                "ffdbd03b262dd1e81aed6ffffd3cafc7",
+                "ffda06b48b48833dedb93b985ebbd206",
+                "ffd2eccd271cd78e7f1f44172eeabe54",
+                "ffde689c5d67945078a1cc3eaaafe75e",
+                "ffd7dd333a3e52d88f1648304810fb92",
+                "ffd5fbe3aa3a62129f5a916a7ac718eb",
+                "ffd6978295b5f7ccb5a337785af96dde",
+                "ffdfa30bea7f7a4351efe64a8be0321a",
+                "ffd55d24a1855149f0d1b8952b4843cd",
+                "ffd5e34ed40ace3a88f92bb47130faad",
+                "ffddaa107fa1638aba2829f309d051bb",
+                "ffd88da233f646384fc51c30b487ca08",
+                "ffd85b75eeafaf0f3e95e43c11549416",
+                "ffdffcddaac75a24d17dfd2bbc8cac82",
+                "ffdca118486bea1f0596ca224cd1cbb3",
+                "ffd7d79567b04ad397e7001ad9674c9c",
+                "ffdaf6d85210c2ca992c744110d9c69f",
+                "ffd961b09ffc005e60de49e10ddd3ebb",
+                "ffd80470c57cff45eca0c46225c041c3",
+                "ffd8ec8ae3235a8b2451f91cf215b06f",
+                "ffd8b813874d643c665691381199905d",
+                "ffdd58ede1d746fe6fceb3967616adff",
+                "ffd2a634a7427383bbc19fd5928de853",
+                "ffdbb65d89d3ba39e5a5380714c046d5",
+                "ffda22453537254a56ffb8ffd3b2ed8d",
+                "ffdb5cbb7448b3abfbd82be1b336b919",
+                "ffd3909e8917736b136acec5a28ac1a5",
+                "ffd1469fd943edd18846559253feb486",
+                "ffd42affa57225ee1201eccd9927a891",
+                "ffdb03119d8c915d347a87f2f83c3b63",
+                "ffd6b7df5d0334577adbfce686ecee07",
+                "ffde61b729880df2c286d8132f883da1",
+                "ffd1937f4a6a09c66453efef19f10216",
+                "ffd8cbb6a049cfcc7562a26b41542143",
+                "ffd1b54b1e03c3ec5798ec8c44d05fba",
+                "ffd23fd54c0f5dff2772e00839ab9662",
+                "ffd25af1e7458be8793b2ccb071f1ee2",
+                "ffd1a39afbee43d8bd22f04ee0499140",
+                "ffde14e30410244a904fbbff67204643",
+                "ffd7183d3bc71950fc25bacaba4fbbf6",
+                "ffd1930a03bdde452b66e76f6ee8457d",
+                "ffd33c24b9fd2267bcf2552756e6d004",
+                "ffd81be5a151f5115ef8082bc9620a5c",
+                "ffde3e39807590e15608eaaa3d7b3367",
+                "ffd84677ca22ce34de031213500cdd30",
+                "ffdfe0d9d0d3388ee12e3b12b875f220",
+                "ffd35a1e5170c71cddc484edcc62b656",
+                "ffda6834bf3f1cad71e48e45df5240a8",
+                "ffd99a1b3c1551b5b319bbf0564f2b3a",
+                "ffd9f70c37ce91864efb198d38915a2f",
+                "ffd26819f5d1eddedf29f9593d31e501",
+                "ffd0398f5c9f9cc615c4fa5082dc5b49",
+                "ffd0f1af88994df8515478ff70de8e7d",
+                "ffd390c8b22dc1539f71fd8227b25213",
+                "ffd363a46012eeac9785a5b640e1a79d",
+                "ffd3865a9989c6f58f0628180fbf17d3",
+                "ffd4882cc69dea180e067a8f3c9f379f",
+                "ffd2e59e19673bf9afd7a9bf1ae28d84",
+                "ffd96be31003eb3391bff6c0cdd82955",
+                "ffd4177f74c9bc02eb23e181525b2134",
+                "ffd006ba3abfe468de5d84dd082f0c9c",
+                "ffd79dec657fc9f23abf131be8481955",
+                "ffd95c388205cc67c6ff7d9513c4703b",
+                "ffd3df0900be167735a5db64a644863f",
+                "ffd6fdb2f97c53656c9120204e1b52c6",
+                "ffd7d84cfcd5a5995cd3ba80d3307a4f",
+                "ffd13180c065a3faac6dc34b0b6d7e26",
+                "ffdaebac598bd8afef814f2b40e2ad05",
+                "ffd3c3bbe48c3ecf72b932b54af21876",
+                "ffd6c2e8c0c297b889edce2511076d93",
+                "ffd85ea8c5eb95175083878d0f388105",
+                "ffd983cecb79504c68e0b9df687100fb",
+                "ffddd859a80628daf7d02dc15024d20c",
+                "ffdfc3f63f2535b97051d5ef934c1073",
+                "ffdc021df6d85080180f2342c37c975d",
+                "ffd418036518d1cf3c9cf2c0561419da",
+                "ffda21e2c700a742c8eaa8c99bc82dd1",
+                "ffdbb12980268f55ea8ff49fb7b1a760",
+                "ffdce7f75fcf03334209cbb1ddad6b0b",
+                "ffdee0e8211a08a0f10538166ecee356",
+                "ffdbcd4da05c0cfa5c2eca5d07ef5273",
+                "ffd0fb06bd7baf3f8a74d023e769481a",
+                "ffd5c7b34b12a5573c5b850ec7158c9a",
+                "ffd7902ce53e99010118414baadcb58b",
+                "ffddf5caa2f6b9d65d4f05c7b479473b",
+                "ffd87b022f6d91103519e88eae496c6f",
+                "ffd89790a0f3eef24833f3ffb25de8fd",
+                "ffd42e6ea6a92224c1bca5e2d39b58bb",
+                "ffd7356c920cb50fac065176f67a7906",
+                "ffd1709f13c74e7354400cd02ac09f00",
+                "ffdba0e5ab43122b042e8feb8b270244",
+                "ffdd3d58f2e4ce01211ec72c4a40fc1a",
+                "ffd154a348d88539412b0a114f33493a",
+                "ffdd2e69633ee5b8bc0638deb4f746ac",
+                "ffd47c3224484cf5604a94550bd9e46e",
+                "ffd880dd547878f35b1da9dcc1f19835",
+                "ffd11e16bcd5be2c47fa9883b668ffc5",
+                "ffd379a59616e5148c277c8281ebdf41",
+                "ffd3d068352462b2b3f3fc522f55a5ed",
+                "ffd4afa16f03865150bb9a2209c21f57",
+                "ffd298efe7a376fb145fd54a5e9afee7",
+                "ffd4fa5d0b536c49119b6af261ac76b0",
+                "ffdb7cd52a60c02d5347d3a16a9339f2",
+                "ffdf4d45264b07598ea3c202d49aa8a9",
+                "ffd7f25b02de0910b8c781b111834e0b",
+                "ffd7e70ec5336fa0164d0c70a889399c",
+                "ffda0db7066c8175a58850ac21552c6d",
+                "ffd466eeb9595d4cec44757ce3d84c2c",
+                "ffd4d6cc24f25c5f3b839fe84627d385",
+                "ffd7abe2f58e85a59c00ea9ee8f5d39a",
+                "ffd99f47b3ed36e2b8a356a66f6eb8ce",
+                "ffd8827e0cda7ffdccc23a2eb3224466",
+                "ffd49b55feda62524dc19551a85d6f05",
+                "ffdd0dd4bec7f76e3a27abf549cbc72c",
+                "ffdc45ce4611d28a399127275726ff33",
+                "ffd67939fbe3feb19efb5e97a3c6e778",
+                "ffdc4cdec10f509993f2f7f66d41bd5d",
+                "ffd4818ee03a6fb906574cdff56ab001",
+                "ffd16d822c6f553d72bae66621a460c4",
+                "ffdde88014458ab6020cd0e441264408",
+                "ffd94dc5526764277fd44f85066c054c",
+                "ffd114ba5919754528e0fafd0b6fa521",
+                "ffd58566a31e083dabe10a0f6086fa31",
+                "ffd7a84f463f885144baf3932c71076f",
+                "ffd076e8da09b27a70f1331b6a598941",
+                "ffd10e7e58c392c025ccb979a17799c4",
+                "ffd32fbe069e0cb1c6f849dcfb496f19",
+                "ffddcaab39401c071790f4ea8713123b",
+                "ffd227d10d45995f84691835683b7102",
+                "ffd4abd4e3a2fc5ee24c1868e7b33378",
+                "ffdc751650c13b4330564d19df1f4d75",
+                "ffd84c76d989d78f88b51c9d7a7674fc",
+                "ffdf3bfa5b2aec1c594f871a8625b70c",
+                "ffdc57d1a9d96cd83bd25d8204bd62bd",
+                "ffd6778866d46f4eeffc8c5b796e1bac",
+                "ffdae83758d08142e73833d1bdb2a888",
+                "ffd69901df97e1fc894cbb976f1d5195",
+                "ffd1ee5e76e3962902d1470e95ce8b49",
+                "ffd080829a35ce65421141e170e76d23",
+                "ffdb506ecb879e9f597a57458eebfb11",
+                "ffdc2c3d87eb2edf594231ae1b810715",
+                "ffd639284e7911bb81a3f5a463ed9b98",
+                "ffd590001e1415e8a8bd6b514e2355f8",
+                "ffd9b88d75f21742aebb767a76f5fae4",
+                "ffdbbf25dea7636429d4a49a4b78fbb9",
+                "ffdccc59b2a253749922c72598edda41",
+                "ffd4df8eb985d57bbb30875d8745fb82",
+                "ffdbd93b4b9db9135913742293911908",
+                "ffdacdb0b8106834facec1fa1b4830a3",
+                "ffd8fdc3ad03dcffc358d20af971ad3b",
+                "ffd51143b11ced05cefb8625c10a158f",
+
+
+            ];
+
+            // Common search parameters (example values, adjust to your actual file):
+            const fileUrl = "data_doc/cachefilter_long/ffd.json"; // Big JSON file
             const minByte = 0;
-            const maxByte = 348636; // or the actual size of the file
-            // For MD5-like strings, you may rely on lexicographic comparisons:
+            const maxByte = 348636; // The byte size of your file
             const minHash = "ffd00000000000000000000000000000";
             const maxHash = "ffdfffffffffffffffffffffffffffff";
-            const rangeSize = 5000;  // start reading 5KB chunks
+            const initialRangeSize = 5000;  // 5KB chunk as an initial guess
 
-            try {
+            const overallStart = performance.now();
+
+            // Sequential example: 
+            // (You could do Promise.all for parallel, but that might overwhelm your server)
+            for (let i = 0; i < hashList.length; i++) {
+                const h = hashList[i];
+                // console.log(`Searching for hash #${i + 1}: ${h}`);
+
+                const startTime = performance.now();
                 const result = await guidedSearchRange(
-                    fileUrl, searchHash,
-                    minByte, maxByte,
-                    minHash, maxHash,
-                    rangeSize
+                    fileUrl,
+                    h,
+                    minByte,
+                    maxByte,
+                    minHash,
+                    maxHash,
+                    initialRangeSize
                 );
-                if (result) {
-                    console.log("Found sub-object for hash", result.hash, result.data);
-                } else {
-                    console.log("Sub-object not found or definitely not in file.");
-                }
-            } catch (err) {
-                console.error("Search error:", err);
+                const endTime = performance.now();
+
+                // if (result) {
+                //     console.log(
+                //         `Found hash ${h} in ${(endTime - startTime).toFixed(2)} ms. Sub-object:`,
+                //         result.data
+                //     );
+                // } else {
+                //     console.log(
+                //         `Hash ${h} not found or outside range. (Searched in ${(endTime - startTime).toFixed(2)} ms)`
+                //     );
+                // }
             }
+
+            const overallEnd = performance.now();
+            console.log(
+                `All searches complete. Total time: ${(overallEnd - overallStart).toFixed(2)} ms`
+            );
         }
 
-        // For demonstration, call `demo()` on page load
-        window.addEventListener('load', demo);
+        // Call testAllHashes() on page load
+        window.addEventListener('load', testAllHashes);
     </script>
 </head>
 
 <body>
-    <h1>Guided Range Request JSON Search – Proof of Concept</h1>
+    <h1>Guided Range Request JSON Search – Speed Test</h1>
     <p>
-        Open the browser console to see the results of the <code>demo()</code> function.
+        Open your browser console to see the search timings for 500 hashes.
     </p>
 </body>
 
