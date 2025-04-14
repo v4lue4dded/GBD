@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Test parseChunkForSubObjects Function</title>
     <style>
         body {
@@ -50,7 +50,6 @@
 
             while ((match = hashRegex.exec(chunk)) !== null) {
                 const hash = match[1];
-                console.log(hash)
                 // Find the position of the opening brace.
                 const start = chunk.indexOf('{', match.index);
                 if (start === -1) continue; // safeguard if not found
@@ -79,7 +78,6 @@
 
                 // Try to parse the object string.
                 try {
-                    console.log(objString)
                     const parsedObj = JSON.parse(objString);
                     results[hash] = parsedObj;
                 } catch (error) {
@@ -97,9 +95,10 @@
          * Logs the output and checks whether the expected keys are present.
          */
         function testParseChunkForSubObjects() {
-            // Sample chunk simulating a substring from a large JSON document.
-            // Note: The chunk ends with a truncated object, which should be skipped.
-            const sampleChunk = `       
+            // IMPORTANT: Notice that any backslash inside this multiline string
+            // is doubled so it remains a literal backslash in the final string.
+
+            const sampleChunk = `
         "2005": {
             "pop_val": 27206.558861321475,
             "pop_lower": 24650.215075595584,
@@ -120,7 +119,7 @@
             "pop_lower": 62139.09322968516,
             "pop_upper": 78269.30108283536
         },
-        "generating_combination": "{\"region_name\" : \"Asia\", \"sub_region_name\" : \"Southern Asia\", \"location_name\" : \"Bangladesh\", \"age_group_name_sorted\" : \"90 to 94\", \"age_cluster_name_sorted\" : \"75 plus\", \"sex_name\" : \"female\"}"
+        "generating_combination": \"{\\\"region_name\\\" : \\\"Asia\\\", \\\"sub_region_name\\\" : \\\"Southern Asia\\\", \\\"location_name\\\" : \\\"Bangladesh\\\", \\\"age_group_name_sorted\\\" : \\\"90 to 94\\\", \\\"age_cluster_name_sorted\\\" : \\\"75 plus\\\", \\\"sex_name\\\" : \\\"female\\\"}\"
     },
     "ffe255a74259cf2dd2c4b235a5bff266": {
         "All": {
@@ -153,7 +152,7 @@
             "pop_lower": 77622.56310341251,
             "pop_upper": 99108.0820475126
         },
-        "generating_combination": "{\"region_name\" : \"Asia\", \"sub_region_name\" : \"Western Asia\", \"location_name\" : \"Armenia\", \"age_group_name_sorted\" : \"01 to 04\", \"age_cluster_name_sorted\" : \"00 to 14\", \"sex_name\" : \"male\"}"
+        "generating_combination": \"{\\\"region_name\\\" : \\\"Asia\\\", \\\"sub_region_name\\\" : \\\"Western Asia\\\", \\\"location_name\\\" : \\\"Armenia\\\", \\\"age_group_name_sorted\\\" : \\\"01 to 04\\\", \\\"age_cluster_name_sorted\\\" : \\\"00 to 14\\\", \\\"sex_name\\\" : \\\"male\\\"}\"
     },
     "ffec4ac379b065eabac5b922b4de8720": {
         "All": {
@@ -186,12 +185,13 @@
             "pop_lower": 868581.7019785866,
             "pop_upper": 1073222.7012062112
         },
-        "generating_combination": "{\"region_name\" : \"Africa\", \"sub_region_name\" : \"Sub-Saharan Africa\", \"location_name\" : \"Benin\", \"age_group_name_sorted\" : \"25 to 29\", \"age_cluster_name_sorted\" : \"15 to 29\", \"sex_name\" : \"All\"}"
+        "generating_combination": \"{\\\"region_name\\\" : \\\"Africa\\\", \\\"sub_region_name\\\" : \\\"Sub-Saharan Africa\\\", \\\"location_name\\\" : \\\"Benin\\\", \\\"age_group_name_sorted\\\" : \\\"25 to 29\\\", \\\"age_cluster_name_sorted\\\" : \\\"15 to 29\\\", \\\"sex_name\\\" : \\\"All\\\"}\"
     },
     "ffe0d4a791dacff02e7c6b9d56fdd96c": {
         "All": {
             "pop_val": 624860.1233056523,
-            "pop_lower": 553680.964153542,`;
+            "pop_lower": 553680.964153542,
+      `;
 
             const parsedResults = parseChunkForSubObjects(sampleChunk);
 

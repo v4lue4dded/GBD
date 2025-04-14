@@ -56,8 +56,8 @@ aggregated_columns_dict = {
 
 def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
     other_dims = [d for d in all_dimensions if d != pivot_col]
-    combo_pairs = [f"'{od}', {od}::varchar" for od in other_dims]
-    identifying_string_expr = "json_build_object(" + ", ".join(combo_pairs) + ")::varchar"
+    combo_pairs = [f"'{od}: ' + {od}::varchar" for od in other_dims]
+    identifying_string_expr = "(" + "+ '|' +".join(combo_pairs) + ")"
     agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
     aggregator_expr = "json_build_object(" + ", ".join(agg_pairs) + ")"
 
@@ -119,7 +119,7 @@ for table_type in table_types:
     print(create_table_sql)
 
     # Execute the SQL
-    con.execute(text(create_table_sql))
+    # con.execute(text(create_table_sql))
 
 con.close()
 print("All tables created successfully.")
