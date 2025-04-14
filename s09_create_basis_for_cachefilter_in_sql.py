@@ -13,7 +13,6 @@ rollup_cols_dict = {
         ["sex_name"],
         ["region_name", "sub_region_name", "location_name"],
         ["age_group_name_sorted", "age_cluster_name_sorted"],
-        ["l1_cause_name", "l2_cause_name"],
     ],
     "long": [
         ["year"],
@@ -46,76 +45,62 @@ aggregated_cols_dict = {
 }
 
 for table_type in table_types:
-    source_table = f"gbd.db04_modelling.export_{table_type}"
-    target_table = f"gbd.db04_modelling.export_{table_type}_rollup"
+    source_table1 = f"gbd.db04_modelling.export_{table_type}"
+    target_table1 = f"gbd.db04_modelling.export_{table_type}_rollup"
 
     rollup_col_lists = rollup_cols_dict[table_type]
     dim_cols = dimension_cols_dict[table_type]
     agg_cols = aggregated_cols_dict[table_type]
 
+    dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
+    dim_select_str = ",\n    ".join(dim_selects)
+    agg_selects = [f"SUM({col}) AS {col}" for col in agg_cols]
+    agg_selects.append("COUNT(*) AS anz")
+    agg_select_str = ",\n    ".join(agg_selects)
+    group_by_parts = []
+    for group in rollup_col_lists:
+        group_cols = ", ".join(f"{c}::varchar" for c in group)
+        group_by_parts.append(f"ROLLUP({group_cols})")
+    group_by_str = ",\n    ".join(group_by_parts)
 
-    combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dim_cols]
-    identifying_string_expr = "(" +  ("\n"+" "*17+"|| ' | ' || ").join(combo_pairs) + ")"
-    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
-    aggregator_expr = ("\n"+" "*14+", ").join(agg_pairs)
-
-    query = f"""
-        DROP TABLE IF EXISTS {target_table} CASCADE;
-        CREATE TABLE {target_table} AS
+    create_rollup_sql = f"""
+        DROP TABLE IF EXISTS {target_table1} CASCADE;
+        CREATE TABLE {target_table1} AS
         SELECT
-            COALESCE(year::varchar, 'All') AS year,
-            COALESCE(region_name::varchar, 'All') AS region_name,
-            COALESCE(sub_region_name::varchar, 'All') AS sub_region_name,
-            COALESCE(location_name::varchar, 'All') AS location_name,
-            COALESCE(age_group_name_sorted::varchar, 'All') AS age_group_name_sorted,
-            COALESCE(age_cluster_name_sorted::varchar, 'All') AS age_cluster_name_sorted,
-            COALESCE(sex_name::varchar, 'All') AS sex_name,
-            COALESCE(l1_cause_name::varchar, 'All') AS l1_cause_name,
-            COALESCE(l2_cause_name::varchar, 'All') AS l2_cause_name,
-            SUM(yll_val) AS yll_val,
-            SUM(yll_upper) AS yll_upper,
-            SUM(yll_lower) AS yll_lower,
-            SUM(deaths_val) AS deaths_val,
-            SUM(deaths_upper) AS deaths_upper,
-            SUM(deaths_lower) AS deaths_lower,
-            count(*) as anz
-        FROM {source_table}
+            {dim_select_str},
+            {agg_select_str}
+        FROM {source_table1}
         GROUP BY
-            ROLLUP(year::varchar),
-            ROLLUP(sex_name::varchar),
-            ROLLUP(region_name::varchar, sub_region_name::varchar, location_name::varchar),
-            ROLLUP(age_cluster_name_sorted::varchar, age_group_name_sorted::varchar),
-            ROLLUP(l1_cause_name::varchar, l2_cause_name::varchar)
+            {group_by_str}
         ;
     """
 
-    print(f"Creating table: {target_table}")
-    print(query)
-
-    # Execute the SQL
-    # con.execute(text(create_table_sql))
-
+    print(f"Creating rollup table: {target_table1}")
+    print(create_rollup_sql)
+    con.execute(text(create_rollup_sql))
 
 for table_type in table_types:
-    source_table = f"gbd.db04_modelling.export_{table_type}_rollup"
-    target_table = f"gbd.db04_modelling.export_{table_type}_cachefilter"
-
+    source_table2 = f"gbd.db04_modelling.export_{table_type}_rollup"
+    target_table2 = f"gbd.db04_modelling.export_{table_type}_cachefilter"
 
     dim_cols = dimension_cols_dict[table_type]
     agg_cols = aggregated_cols_dict[table_type]
-    combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dim_cols]
-    identifying_string_expr = "(" +  ("\n"+" "*17+"|| ' | ' || ").join(combo_pairs) + ")"
-    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
-    aggregator_expr = ("\n"+" "*14+", ").join(agg_pairs)
 
-    query = f"""
-        DROP TABLE IF EXISTS {target_table} CASCADE;
-        CREATE TABLE {target_table} AS
+    combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dim_cols]
+    identifying_string_expr = "(" + ("\n" + " " * 17 + "|| ' | ' || ").join(combo_pairs) + ")"
+
+    # Build aggregator pairs
+    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
+    aggregator_expr = ("\n" + " " * 14 + ", ").join(agg_pairs)
+
+    create_cachefilter_sql = f"""
+        DROP TABLE IF EXISTS {target_table2} CASCADE;
+        CREATE TABLE {target_table2} AS
         WITH combo AS (
             SELECT
-                *
-                ,           {identifying_string_expr} AS identifying_string
-            FROM {source_table}
+                *,
+                {identifying_string_expr} AS identifying_string
+            FROM {source_table2}
         )
         SELECT
             identifying_string,
@@ -127,11 +112,9 @@ for table_type in table_types:
         FROM combo
     """
 
-    print(f"Creating table: {target_table}")
-    print(query)
-
-    # Execute the SQL
-    # con.execute(text(create_table_sql))
+    print(f"Creating cachefilter table: {target_table2}")
+    print(create_cachefilter_sql)
+    con.execute(text(create_cachefilter_sql))
 
 con.close()
 print("All tables created successfully.")
