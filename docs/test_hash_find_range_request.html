@@ -6,9 +6,9 @@
     <title>Guided Range Request Search (Proof of Concept)</title>
     <script>
         async function fetchRange(url, startByte, endByte) {
-            console.log("url:", url)
-            console.log("startByte:", startByte)
-            console.log("endByte:", endByte)
+            console.log("url:", url);
+            console.log("startByte:", startByte);
+            console.log("endByte:", endByte);
             // Example: Range: bytes=10000-10999
             const rangeHeader = `bytes=${startByte}-${endByte}`;
             const response = await fetch(url, {
@@ -20,6 +20,10 @@
             return response.text();
         }
 
+        /**
+         * parseChunkForSubObjects is tested and fine.
+         * Returns an object: { "md5hash": { ...some JSON object... }, ... }
+         */
         function parseChunkForSubObjects(chunk) {
             const results = {};
 
@@ -67,21 +71,19 @@
             return results;
         }
 
-
         function getWeight(searchHash, lowerHash, upperHash) {
             // Convert each hex MD5 hash to a BigInt (128-bit integer)
+            const search = BigInt("0x" + searchHash);
             const lower = BigInt("0x" + lowerHash);
             const upper = BigInt("0x" + upperHash);
-            const search = BigInt("0x" + searchHash);
             if (upper === lower) {
                 return 0.5; // or handle differently as needed
             }
-            const numerator = search - upper;
-            const denominator = lower - upper;
+            const numerator = search - lower;
+            const denominator = upper - lower;
             let w = Number(numerator) / Number(denominator);
             return w;
         }
-
 
         // -----------------------------------------------------------------------------
         // The RECURSIVE guided search function
@@ -100,11 +102,17 @@
          * If definitely not found, returns null.
          * Otherwise, modifies the search bounds/rangeSize and tries again recursively.
          */
-        async function guidedSearchRange(fileUrl, searchHash,
+        async function guidedSearchRange(
+            fileUrl, searchHash,
             minByte, maxByte,
             minHash, maxHash,
-            rangeSize) {
-            // 1) Quick base checks
+            rangeSize
+        ) {
+            console.log("searchHash:", searchHash)
+            console.log("minHash:", minHash)
+            console.log("maxHash:", maxHash)
+
+            // 1) Quick base checks (string comparisons for hash range):
             if (searchHash < minHash || searchHash > maxHash) {
                 // The searchHash is out of the known [minHash..maxHash] range.
                 return null;
@@ -114,35 +122,37 @@
                 return null;
             }
 
-            let percentBetweenMinAndMaxHash = getWeight(searchHash, minHash, maxHash)
-            console.log(percentBetweenMinAndMaxHash)
-            let bestGuessByte = percentBetweenMinAndMaxHash * minHash + (1 - percentBetweenMinAndMaxHash) * maxByte
+            // Fraction of how far searchHash is between minHash and maxHash
+            let fraction = getWeight(searchHash, minHash, maxHash);
 
-            // We'll clamp the range request so we don't exceed maxByte
-            let requestStart = max(bestGuessByte - 0.5 * rangeSize, minByte);
-            let requestEnd = min(bestGuessByte + 0.5 * rangeSize, maxByte);
+            // Interpolate within [minByte..maxByte] to get best guess
+            let bestGuessByte = minByte + fraction * (maxByte - minByte);
+            bestGuessByte = Math.floor(bestGuessByte);
+
+            // We'll clamp the range request so we don't exceed [minByte, maxByte]
+            let requestStart = Math.max(bestGuessByte - 0.5 * rangeSize, minByte);
+            let requestEnd = Math.min(bestGuessByte + 0.5 * rangeSize, maxByte);
 
             // 2) Fetch that chunk via range request
             let chunkText;
             try {
-                chunkText = await fetchRange(fileUrl, requestStart, requestEnd);
+                chunkText = await fetchRange(fileUrl, Math.floor(requestStart), Math.floor(requestEnd));
             } catch (err) {
                 // Could not fetch for some reason => consider an error or fallback
                 throw err;
             }
 
-            // 3) Parse out sub-objects from that chunk
+            // 3) Parse out sub-objects from that chunk (as a dictionary)
             const subObjects = parseChunkForSubObjects(chunkText);
-            // Returns an array of [hash, data], sorted by hash.
 
             // If there are no sub-objects at all:
-            if (subObjects.length === 0) {
+            if (Object.keys(subObjects).length === 0) {
                 // We found no data in this chunk, so let's expand range drastically
                 // and try again (same direction).
                 const newRangeSize = rangeSize * 2.0; // +100%
                 return await guidedSearchRange(
                     fileUrl, searchHash,
-                    requestEnd + 1, // move forward
+                    Math.floor(requestEnd + 1), // move forward
                     maxByte,
                     minHash,
                     maxHash,
@@ -150,31 +160,33 @@
                 );
             }
 
+            // Convert subObjects to a sorted array of [hash, object] by hash
+            const sortedEntries = Object.entries(subObjects)
+                .sort(([hashA], [hashB]) => hashA.localeCompare(hashB));
+
             // 4) Analyze sub-objects in this chunk
-            const chunkMinHash = subObjects[0][0];
-            const chunkMaxHash = subObjects[subObjects.length - 1][0];
+            const chunkMinHash = sortedEntries[0][0];
+            const chunkMaxHash = sortedEntries[sortedEntries.length - 1][0];
+
+            console.log("chunkMinHash:", chunkMinHash)
+            console.log("chunkMaxHash:", chunkMaxHash)
 
             // Check if searchHash is directly in subObjects
-            for (const [h, obj] of subObjects) {
+            for (const [h, obj] of sortedEntries) {
                 if (h === searchHash) {
                     // Found it
                     return { hash: h, data: obj };
                 }
             }
 
-            // If the chunk min-hash < searchHash < chunk max-hash,
-            // and we didn't find it => the searchHash definitely isn't in the file
-            // because we "jumped over" it in sorted order.
+            // If chunkMinHash < searchHash < chunkMaxHash and we didn't find it, it's definitely not in the file
             if (chunkMinHash < searchHash && chunkMaxHash > searchHash) {
-                // That means the sub-object doesn't exist.
                 return null;
             }
 
-            // If all sub-objects in this chunk are < searchHash
+            // If all sub-objects in this chunk are < searchHash, keep searching forward
             if (chunkMaxHash < searchHash) {
-                // We need to keep searching forward.
-                // We'll shift minByte, update minHash, and increase range by 30%.
-                const newMinByte = requestEnd + 1;
+                const newMinByte = Math.floor(requestEnd + 1);
                 const newMinHash = chunkMaxHash; // everything up to chunkMaxHash is done
                 const newRangeSize = Math.floor(rangeSize * 1.3);
 
@@ -186,12 +198,9 @@
                 );
             }
 
-            // If all sub-objects in this chunk are > searchHash
+            // If all sub-objects in this chunk are > searchHash, search earlier in the file
             if (chunkMinHash > searchHash) {
-                // We need to search earlier in the file.
-                // We'll move the maxByte boundary to the start of this chunk minus 1,
-                // update maxHash to chunkMinHash, and increase range by 30%.
-                const newMaxByte = requestStart - 1;
+                const newMaxByte = Math.floor(requestStart - 1);
                 const newMaxHash = chunkMinHash;
                 const newRangeSize = Math.floor(rangeSize * 1.3);
 
@@ -216,6 +225,7 @@
             const searchHash = "ffd0926e3ea3d41844bd7ff694134f58";
             const minByte = 0;
             const maxByte = 500000; // or the actual size of the file
+            // For MD5-like strings, you may rely on lexicographic comparisons:
             const minHash = "ffd00000000000000000000000000000";
             const maxHash = "ffdfffffffffffffffffffffffffffff";
             const rangeSize = 5000;  // start reading 5KB chunks
@@ -237,9 +247,8 @@
             }
         }
 
-        // For demonstration, we call `demo()` when the page loads
+        // For demonstration, call `demo()` on page load
         window.addEventListener('load', demo);
-
     </script>
 </head>
 
