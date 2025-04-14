@@ -129,3 +129,7 @@ GROUP BY
     ROLLUP(sex_name::varchar),
     ROLLUP(l1_cause_name::varchar, l2_cause_name::varchar)
 ;
+
+
+select *
+FROM gbd.db04_modelling.export_long

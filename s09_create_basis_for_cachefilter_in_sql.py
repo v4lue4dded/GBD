@@ -12,13 +12,13 @@ rollup_cols_dict = {
         ["year"],
         ["sex_name"],
         ["region_name", "sub_region_name", "location_name"],
-        ["age_group_name_sorted", "age_cluster_name_sorted"],
+        ["age_cluster_name_sorted", "age_group_name_sorted"],
     ],
     "long": [
         ["year"],
         ["sex_name"],
         ["region_name", "sub_region_name", "location_name"],
-        ["age_group_name_sorted", "age_cluster_name_sorted"],
+        ["age_cluster_name_sorted", "age_group_name_sorted"],
         ["l1_cause_name", "l2_cause_name"],
     ],
 }
