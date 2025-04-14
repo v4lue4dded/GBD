@@ -5,8 +5,7 @@ from sqlalchemy import text
 engine = config.engine
 con = engine.connect()
 
-# table_types = ["population", "long"]
-table_types = ["population", ]
+table_types = ["population", "long"]
 
 rollup_cols_dict = {
     "population": [
