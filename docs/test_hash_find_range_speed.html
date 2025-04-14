@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Guided Range Request Search (Proof of Concept)</title>
+    <script>
+        async function fetchRange(url, startByte, endByte) {
+            console.log("url:", url);
+            console.log("startByte:", startByte);
+            console.log("endByte:", endByte);
+            // Example: Range: bytes=10000-10999
+            const rangeHeader = `bytes=${startByte}-${endByte}`;
+            const response = await fetch(url, {
+                headers: { Range: rangeHeader }
+            });
+            if (!response.ok && response.status !== 206) {
+                throw new Error(`Failed partial fetch from ${startByte} to ${endByte}, got status=${response.status}`);
+            }
+            return response.text();
+        }
+
+        /**
+         * parseChunkForSubObjects is tested and fine.
+         * Returns an object: { "md5hash": { ...some JSON object... }, ... }
+         */
+        function parseChunkForSubObjects(chunk) {
+            const results = {};
+
+            // Look for keys in the format "32-hexdigits": { ... }
+            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
+            let match;
+
+            while ((match = hashRegex.exec(chunk)) !== null) {
+                const hash = match[1];
+                // Find the position of the opening brace.
+                const start = chunk.indexOf('{', match.index);
+                if (start === -1) continue; // safeguard if not found
+
+                // Find the matching closing brace by tracking nested braces.
+                let braceCount = 0;
+                let end = -1;
+                for (let i = start; i < chunk.length; i++) {
+                    if (chunk[i] === '{') {
+                        braceCount++;
+                    } else if (chunk[i] === '}') {
+                        braceCount--;
+                    }
+                    if (braceCount === 0) {
+                        end = i;
+                        break;
+                    }
+                }
+
+                // If no matching closing brace is found, break out of the loop (chunk likely truncated).
+                if (end === -1) {
+                    break;
+                }
+
+                const objString = chunk.slice(start, end + 1);
+
+                // Try to parse the object string.
+                try {
+                    const parsedObj = JSON.parse(objString);
+                    results[hash] = parsedObj;
+                } catch (error) {
+                    console.warn(`Failed to parse JSON for hash ${hash}: ${error}`);
+                }
+            }
+
+            return results;
+        }
+
+        function getWeight(searchHash, lowerHash, upperHash) {
+            // Convert each hex MD5 hash to a BigInt (128-bit integer)
+            const search = BigInt("0x" + searchHash);
+            const lower = BigInt("0x" + lowerHash);
+            const upper = BigInt("0x" + upperHash);
+            if (upper === lower) {
+                return 0.5; // or handle differently as needed
+            }
+            const numerator = search - lower;
+            const denominator = upper - lower;
+            let w = Number(numerator) / Number(denominator);
+            return w;
+        }
+
+        // -----------------------------------------------------------------------------
+        // The RECURSIVE guided search function
+        // -----------------------------------------------------------------------------
+
+        /**
+         * @param {string} fileUrl - The URL of the big JSON file.
+         * @param {string} searchHash - The MD5 hash we want to find, e.g. 'fa6a7e6...'.
+         * @param {number} minByte    - Current lower bound of search in bytes.
+         * @param {number} maxByte    - Current upper bound of search in bytes.
+         * @param {string} minHash    - Guaranteed smallest hash in [minByte..maxByte].
+         * @param {string} maxHash    - Guaranteed largest  hash in [minByte..maxByte].
+         * @param {number} rangeSize  - Number of bytes to fetch in each attempt.
+         * 
+         * If found, returns { hash: <searchHash>, data: <the sub-object> }.
+         * If definitely not found, returns null.
+         * Otherwise, modifies the search bounds/rangeSize and tries again recursively.
+         */
+        async function guidedSearchRange(
+            fileUrl, searchHash,
+            minByte, maxByte,
+            minHash, maxHash,
+            rangeSize
+        ) {
+            console.log("searchHash:", searchHash)
+            console.log("minHash:", minHash)
+            console.log("maxHash:", maxHash)
+
+            // 1) Quick base checks (string comparisons for hash range):
+            if (searchHash < minHash || searchHash > maxHash) {
+                // The searchHash is out of the known [minHash..maxHash] range.
+                return null;
+            }
+            if (minByte > maxByte) {
+                // Byte range is inverted => not in file
+                return null;
+            }
+
+            // Fraction of how far searchHash is between minHash and maxHash
+            let fraction = getWeight(searchHash, minHash, maxHash);
+
+            // Interpolate within [minByte..maxByte] to get best guess
+            let bestGuessByte = minByte + fraction * (maxByte - minByte);
+            bestGuessByte = Math.floor(bestGuessByte);
+
+            // We'll clamp the range request so we don't exceed [minByte, maxByte]
+            let requestStart = Math.max(bestGuessByte - 0.5 * rangeSize, minByte);
+            let requestEnd = Math.min(bestGuessByte + 0.5 * rangeSize, maxByte);
+
+            // 2) Fetch that chunk via range request
+            let chunkText;
+            try {
+                chunkText = await fetchRange(fileUrl, Math.floor(requestStart), Math.floor(requestEnd));
+            } catch (err) {
+                // Could not fetch for some reason => consider an error or fallback
+                throw err;
+            }
+
+            // 3) Parse out sub-objects from that chunk (as a dictionary)
+            const subObjects = parseChunkForSubObjects(chunkText);
+
+            // If there are no sub-objects at all:
+            if (Object.keys(subObjects).length === 0) {
+                // We found no data in this chunk, so let's expand range drastically
+                // and try again (same direction).
+                const newRangeSize = rangeSize * 2.0; // +100%
+                return await guidedSearchRange(
+                    fileUrl, searchHash,
+                    Math.floor(requestEnd + 1), // move forward
+                    maxByte,
+                    minHash,
+                    maxHash,
+                    newRangeSize
+                );
+            }
+
+            // Convert subObjects to a sorted array of [hash, object] by hash
+            const sortedEntries = Object.entries(subObjects)
+                .sort(([hashA], [hashB]) => hashA.localeCompare(hashB));
+
+            // 4) Analyze sub-objects in this chunk
+            const chunkMinHash = sortedEntries[0][0];
+            const chunkMaxHash = sortedEntries[sortedEntries.length - 1][0];
+
+            console.log("chunkMinHash:", chunkMinHash)
+            console.log("chunkMaxHash:", chunkMaxHash)
+
+            // Check if searchHash is directly in subObjects
+            for (const [h, obj] of sortedEntries) {
+                if (h === searchHash) {
+                    // Found it
+                    return { hash: h, data: obj };
+                }
+            }
+
+            // If chunkMinHash < searchHash < chunkMaxHash and we didn't find it, it's definitely not in the file
+            if (chunkMinHash < searchHash && chunkMaxHash > searchHash) {
+                return null;
+            }
+
+            // If all sub-objects in this chunk are < searchHash, keep searching forward
+            if (chunkMaxHash < searchHash) {
+                const newMinByte = Math.floor(requestEnd + 1);
+                const newMinHash = chunkMaxHash; // everything up to chunkMaxHash is done
+                const newRangeSize = Math.floor(rangeSize * 1.3);
+
+                return await guidedSearchRange(
+                    fileUrl, searchHash,
+                    newMinByte, maxByte,
+                    newMinHash, maxHash,
+                    newRangeSize
+                );
+            }
+
+            // If all sub-objects in this chunk are > searchHash, search earlier in the file
+            if (chunkMinHash > searchHash) {
+                const newMaxByte = Math.floor(requestStart - 1);
+                const newMaxHash = chunkMinHash;
+                const newRangeSize = Math.floor(rangeSize * 1.3);
+
+                return await guidedSearchRange(
+                    fileUrl, searchHash,
+                    minByte, newMaxByte,
+                    minHash, newMaxHash,
+                    newRangeSize
+                );
+            }
+
+            // If we somehow didn't handle a scenario, return null.
+            return null;
+        }
+
+        // -----------------------------------------------------------------------------
+        // Example usage or demonstration
+        // -----------------------------------------------------------------------------
+        async function demo() {
+            const fileUrl = "data_doc/cachefilter_long/ffd.json";
+            // The parameters for the initial call:
+            const searchHash = "ffdffcddaac75a24d17dfd2bbc8cac82";
+            const minByte = 0;
+            const maxByte = 348636; // or the actual size of the file
+            // For MD5-like strings, you may rely on lexicographic comparisons:
+            const minHash = "ffd00000000000000000000000000000";
+            const maxHash = "ffdfffffffffffffffffffffffffffff";
+            const rangeSize = 5000;  // start reading 5KB chunks
+
+            try {
+                const result = await guidedSearchRange(
+                    fileUrl, searchHash,
+                    minByte, maxByte,
+                    minHash, maxHash,
+                    rangeSize
+                );
+                if (result) {
+                    console.log("Found sub-object for hash", result.hash, result.data);
+                } else {
+                    console.log("Sub-object not found or definitely not in file.");
+                }
+            } catch (err) {
+                console.error("Search error:", err);
+            }
+        }
+
+        // For demonstration, call `demo()` on page load
+        window.addEventListener('load', demo);
+    </script>
+</head>
+
+<body>
+    <h1>Guided Range Request JSON Search – Proof of Concept</h1>
+    <p>
+        Open the browser console to see the results of the <code>demo()</code> function.
+    </p>
+</body>
+
+</html>
