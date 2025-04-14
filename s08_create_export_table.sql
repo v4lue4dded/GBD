@@ -106,14 +106,14 @@ drop table if exists gbd.db04_modelling.export_long_rollup;
 create table         gbd.db04_modelling.export_long_rollup as
 SELECT
     COALESCE(year::varchar, 'All') AS year,
-    COALESCE(region_name, 'All') AS region_name,
-    COALESCE(sub_region_name, 'All') AS sub_region_name,
-    COALESCE(location_name, 'All') AS location_name,
-    COALESCE(age_group_name_sorted, 'All') AS age_group_name_sorted,
-    COALESCE(age_cluster_name_sorted, 'All') AS age_cluster_name_sorted,
-    COALESCE(sex_name, 'All') AS sex_name,
-    COALESCE(l1_cause_name, 'All') AS l1_cause_name,
-    COALESCE(l2_cause_name, 'All') AS l2_cause_name,
+    COALESCE(region_name::varchar, 'All') AS region_name,
+    COALESCE(sub_region_name::varchar, 'All') AS sub_region_name,
+    COALESCE(location_name::varchar, 'All') AS location_name,
+    COALESCE(age_group_name_sorted::varchar, 'All') AS age_group_name_sorted,
+    COALESCE(age_cluster_name_sorted::varchar, 'All') AS age_cluster_name_sorted,
+    COALESCE(sex_name::varchar, 'All') AS sex_name,
+    COALESCE(l1_cause_name::varchar, 'All') AS l1_cause_name,
+    COALESCE(l2_cause_name::varchar, 'All') AS l2_cause_name,
     SUM(yll_val) AS yll_val,
     SUM(yll_upper) AS yll_upper,
     SUM(yll_lower) AS yll_lower,
@@ -124,8 +124,8 @@ SELECT
 FROM gbd.db04_modelling.export_long
 GROUP BY
     ROLLUP(year::varchar),
-    ROLLUP(region_name, sub_region_name, location_name),
-    ROLLUP(age_cluster_name_sorted, age_group_name_sorted),
-    ROLLUP(sex_name),
-    ROLLUP(l1_cause_name, l2_cause_name)
+    ROLLUP(region_name::varchar, sub_region_name::varchar, location_name::varchar),
+    ROLLUP(age_cluster_name_sorted::varchar, age_group_name_sorted::varchar),
+    ROLLUP(sex_name::varchar),
+    ROLLUP(l1_cause_name::varchar, l2_cause_name::varchar)
 ;
