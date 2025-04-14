@@ -2,294 +2,236 @@
 <html>
 
 <head>
-    <meta charset="utf-8" />
-    <title>Generating Combination &amp; Hash Lookup (PostgreSQL Spacing)</title>
-    <script src="lib/myHelperFunctions/md5.js"></script>
+    <meta charset="UTF-8" />
+    <title>Guided Range Request Search (Proof of Concept)</title>
     <script>
-        ////////////////////////////////////////////////////////////////////////////////
-        // We will load these from the external JSON:
-        ////////////////////////////////////////////////////////////////////////////////
-        let decodingDict = null;
-
-        // The exact order in which we build the string matters for MD5 hashing.
-        // Adjust if your PostgreSQL code uses a different order of keys!
-        const COL_ORDER = [
-            "year",
-            "region_name",
-            "sub_region_name",
-            "location_name",
-            "age_group_name_sorted",
-            "age_cluster_name_sorted",
-            "sex_name",
-            "l1_cause_name",
-            "l2_cause_name"
-        ];
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // 1) Asynchronously load the decoding dictionary from external JSON.
-        //    Then build the dropdowns and set up the page.
-        ////////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////////
-        // 1) Asynchronously load the decoding dictionary from external JSON.
-        //    Then build the dropdowns and set up the page.
-        ////////////////////////////////////////////////////////////////////////////////
-        async function loadDecodingDict() {
-            try {
-                // NOTE: Adjust this path if your file is served elsewhere:
-                // e.g., "data_doc/df_measure_narrow_import_dict.json"
-                const response = await fetch("data_doc/df_measure_narrow_import_dict.json");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                decodingDict = data.decoding_dict;
-                console.log(decodingDict);
-                // Now that decodingDict is loaded, build the dropdowns.
-                buildDropdowns();
-            } catch (err) {
-                console.error("Error loading decoding dictionary:", err);
-                // Show error to the user:
-                const msg = document.getElementById("initError");
-                if (msg) {
-                    msg.textContent = "Failed to load decoding dictionary JSON: " + err;
-                }
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // 2) Build the form on page once we have decodingDict
-        ////////////////////////////////////////////////////////////////////////////////
-        function buildDropdowns() {
-            const columns = [
-                "year",
-                "region_name",
-                "sub_region_name",
-                "location_name",
-                "age_group_name_sorted",
-                "age_cluster_name_sorted",
-                "sex_name",
-                "l1_cause_name",
-                "l2_cause_name"
-            ];
-
-            // For each column, populate its <select> with the dictionary values
-            columns.forEach(col => {
-                const selectEl = document.getElementById(col);
-                if (!selectEl) return;
-
-                // Create a placeholder option
-                const AllOpt = document.createElement("option");
-                AllOpt.value = "All";
-                AllOpt.textContent = "All";
-                selectEl.appendChild(AllOpt);
-                // Add one <option> per decoded value
-                if (decodingDict[col]) {
-                    for (const key in decodingDict[col]) {
-                        const opt = document.createElement("option");
-                        opt.value = decodingDict[col][key];  // e.g. "China" or "2000"
-                        opt.textContent = decodingDict[col][key];
-                        selectEl.appendChild(opt);
-                    }
-                }
-                const blankOpt = document.createElement("option");
-                blankOpt.value = "";
-                blankOpt.textContent = "-- no selection --";
-                selectEl.appendChild(blankOpt);
-
-
+        async function fetchRange(url, startByte, endByte) {
+            // Example: Range: bytes=10000-10999
+            const rangeHeader = `bytes=${startByte}-${endByte}`;
+            const response = await fetch(url, {
+                headers: { Range: rangeHeader }
             });
-
-            // Also build pivotCol dropdown
-            const pivotColSelect = document.getElementById("pivotCol");
-            if (pivotColSelect) {
-                const pivotBlank = document.createElement("option");
-                pivotBlank.value = "";
-                pivotBlank.textContent = "-- select pivot column --";
-                pivotColSelect.appendChild(pivotBlank);
-
-                // Each possible column (that might appear in the final JSON)
-                COL_ORDER.forEach(col => {
-                    const opt = document.createElement("option");
-                    opt.value = col;
-                    opt.textContent = col;
-                    pivotColSelect.appendChild(opt);
-                });
+            if (!response.ok && response.status !== 206) {
+                throw new Error(`Failed partial fetch from ${startByte} to ${endByte}, got status=${response.status}`);
             }
-        }
-        function createIdentifyingString(obj, pivotCol, colOrder) {
-            let pairs = [];
-            for (const col of colOrder) {
-                // Skip pivot column
-                if (col === pivotCol) continue;
-                // If user left it blank, skip
-                if (!obj[col]) continue;
-
-                // Force everything as a string with quotes.
-                pairs.push(`"${col}" : "${obj[col]}"`);
-            }
-            return `{${pairs.join(", ")}}`;
+            return response.text();
         }
 
-        ////////////////////////////////////////////////////////////////////////////////
-        // 4) The main logic after we pick the dropdown values:
-        //    - Build the custom JSON string
-        //    - MD5-hash it
-        //    - Fetch the partial-hash file
-        //    - Display the result
-        ////////////////////////////////////////////////////////////////////////////////
-        function onLookup() {
-            if (!decodingDict) {
-                document.getElementById("result").textContent =
-                    "Decoding dictionary not loaded yet. Please wait.";
-                return;
+        function parseChunkForSubObjects(chunk) {
+            // A more robust approach might parse the entire chunk as partial JSON,
+            // but for demonstration, we'll do a simple substring + brace-tracking approach.
+
+            let results = [];
+            let index = 0;
+
+            // We'll look for "................" : {...}
+            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
+            let match;
+            while ((match = hashRegex.exec(chunk)) !== null) {
+                const foundHash = match[1];
+                // The position in chunk of the '{'
+                const openBracePos = chunk.indexOf('{', match.index);
+                if (openBracePos < 0) continue; // shouldn't happen, but just in case
+
+                // Now find the matching '}' using brace depth
+                let braceDepth = 0;
+                let endPos = -1;
+                for (let i = openBracePos; i < chunk.length; i++) {
+                    if (chunk[i] === '{') braceDepth++;
+                    if (chunk[i] === '}') braceDepth--;
+                    if (braceDepth === 0) {
+                        endPos = i;
+                        break;
+                    }
+                }
+                if (endPos < 0) {
+                    // No matching brace in this chunk. We skip it or break out
+                    continue;
+                }
+                const subObjStr = chunk.slice(openBracePos, endPos + 1);
+
+                // Attempt to parse it
+                try {
+                    const parsed = JSON.parse(subObjStr);
+                    results.push([foundHash, parsed]);
+                } catch (e) {
+                    // Failed parse. Possibly truncated chunk, so skip this sub-object.
+                }
+                // Move on
+                index = endPos + 1;
             }
 
-            // 4a) Gather user selections
-            const tableType = document.getElementById("tableType").value.trim();
-            const pivotCol = document.getElementById("pivotCol").value.trim();
-
-            if (!tableType || !pivotCol) {
-                document.getElementById("result").textContent =
-                    "Please pick a Table Type and a Pivot Column.";
-                return;
-            }
-
-            // Build an object of the user-chosen values
-            const inputObj = {
-                year: document.getElementById("year").value.trim(),
-                region_name: document.getElementById("region_name").value.trim(),
-                sub_region_name: document.getElementById("sub_region_name").value.trim(),
-                location_name: document.getElementById("location_name").value.trim(),
-                age_group_name_sorted: document.getElementById("age_group_name_sorted").value.trim(),
-                age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
-                sex_name: document.getElementById("sex_name").value.trim(),
-                l1_cause_name: document.getElementById("l1_cause_name").value.trim(),
-                l2_cause_name: document.getElementById("l2_cause_name").value.trim()
-            };
-
-            // 4b) Build the "PostgreSQL style" JSON string with spacing
-            const indentifyingString = createIdentifyingString(inputObj, pivotCol, COL_ORDER);
-
-            // Show for debugging
-            document.getElementById("jsonString").textContent = indentifyingString;
-
-            // 4c) Compute the MD5 (from the md5.js library)
-            const fullHash = md5(indentifyingString);
-            const partialHash = fullHash.slice(0, 3);
-
-            // Show the computed hashes
-            document.getElementById("hashInfo").textContent =
-                `Full Hash: ${fullHash}\nPartial Hash: ${partialHash}`;
-
-            // 4d) Construct the fetch URL
-            const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
-
-            // 4e) Fetch from the partial-hash JSON
-            fetch(fetchUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Fetch error: ${response.status} ${response.statusText}\nURL: ${fetchUrl}`);
-                    }
-                    return response.text();
-                })
-                .then(text => {
-                    let parsed;
-                    try {
-                        parsed = JSON.parse(text);
-                    } catch (err) {
-                        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
-                    }
-                    const subObject = parsed[fullHash];
-                    if (!subObject) {
-                        throw new Error(`No entry for hash ${fullHash} in file ${partialHash}.json`);
-                    }
-                    document.getElementById("result").textContent = JSON.stringify(subObject, null, 2);
-                })
-                .catch(err => {
-                    document.getElementById("result").textContent = "Error:\n" + err.message;
-                });
+            // Sort results by the hash (alphabetically). 
+            // This is optional if the chunk is guaranteed to be sorted already, 
+            // but safer to do so we can do min-hash / max-hash checks
+            results.sort((a, b) => a[0].localeCompare(b[0]));
+            return results;
         }
 
-        // --------------------------------------------------------------------
-        // We call 'loadDecodingDict()' when the page finishes loading.
-        // --------------------------------------------------------------------
-        window.onload = loadDecodingDict;
+        // -----------------------------------------------------------------------------
+        // The RECURSIVE guided search function
+        // -----------------------------------------------------------------------------
+
+        /**
+         * @param {string} fileUrl - The URL of the big JSON file.
+         * @param {string} searchHash - The MD5 hash we want to find, e.g. 'fa6a7e6...'.
+         * @param {number} minByte    - Current lower bound of search in bytes.
+         * @param {number} maxByte    - Current upper bound of search in bytes.
+         * @param {string} minHash    - Guaranteed smallest hash in [minByte..maxByte].
+         * @param {string} maxHash    - Guaranteed largest  hash in [minByte..maxByte].
+         * @param {number} rangeSize  - Number of bytes to fetch in each attempt.
+         * 
+         * If found, returns { hash: <searchHash>, data: <the sub-object> }.
+         * If definitely not found, returns null.
+         * Otherwise, modifies the search bounds/rangeSize and tries again recursively.
+         */
+        async function guidedSearchRange(fileUrl, searchHash,
+            minByte, maxByte,
+            minHash, maxHash,
+            rangeSize) {
+            // 1) Quick base checks
+            if (searchHash < minHash || searchHash > maxHash) {
+                // The searchHash is out of the known [minHash..maxHash] range.
+                return null;
+            }
+            if (minByte > maxByte) {
+                // Byte range is inverted => not in file
+                return null;
+            }
+
+            // We'll clamp the range request so we don't exceed maxByte
+            let requestStart = minByte;
+            let requestEnd = minByte + rangeSize - 1;
+            if (requestEnd > maxByte) {
+                requestEnd = maxByte;
+            }
+
+            // 2) Fetch that chunk via range request
+            let chunkText;
+            try {
+                chunkText = await fetchRange(fileUrl, requestStart, requestEnd);
+            } catch (err) {
+                // Could not fetch for some reason => consider an error or fallback
+                throw err;
+            }
+
+            // 3) Parse out sub-objects from that chunk
+            const subObjects = parseChunkForSubObjects(chunkText);
+            // Returns an array of [hash, data], sorted by hash.
+
+            // If there are no sub-objects at all:
+            if (subObjects.length === 0) {
+                // We found no data in this chunk, so let's expand range drastically
+                // and try again (same direction).
+                const newRangeSize = rangeSize * 2.0; // +100%
+                return await guidedSearchRange(
+                    fileUrl, searchHash,
+                    requestEnd + 1, // move forward
+                    maxByte,
+                    minHash,
+                    maxHash,
+                    newRangeSize
+                );
+            }
+
+            // 4) Analyze sub-objects in this chunk
+            const chunkMinHash = subObjects[0][0];
+            const chunkMaxHash = subObjects[subObjects.length - 1][0];
+
+            // Check if searchHash is directly in subObjects
+            for (const [h, obj] of subObjects) {
+                if (h === searchHash) {
+                    // Found it
+                    return { hash: h, data: obj };
+                }
+            }
+
+            // If the chunk min-hash < searchHash < chunk max-hash,
+            // and we didn't find it => the searchHash definitely isn't in the file
+            // because we "jumped over" it in sorted order.
+            if (chunkMinHash < searchHash && chunkMaxHash > searchHash) {
+                // That means the sub-object doesn't exist.
+                return null;
+            }
+
+            // If all sub-objects in this chunk are < searchHash
+            if (chunkMaxHash < searchHash) {
+                // We need to keep searching forward.
+                // We'll shift minByte, update minHash, and increase range by 30%.
+                const newMinByte = requestEnd + 1;
+                const newMinHash = chunkMaxHash; // everything up to chunkMaxHash is done
+                const newRangeSize = Math.floor(rangeSize * 1.3);
+
+                return await guidedSearchRange(
+                    fileUrl, searchHash,
+                    newMinByte, maxByte,
+                    newMinHash, maxHash,
+                    newRangeSize
+                );
+            }
+
+            // If all sub-objects in this chunk are > searchHash
+            if (chunkMinHash > searchHash) {
+                // We need to search earlier in the file.
+                // We'll move the maxByte boundary to the start of this chunk minus 1,
+                // update maxHash to chunkMinHash, and increase range by 30%.
+                const newMaxByte = requestStart - 1;
+                const newMaxHash = chunkMinHash;
+                const newRangeSize = Math.floor(rangeSize * 1.3);
+
+                return await guidedSearchRange(
+                    fileUrl, searchHash,
+                    minByte, newMaxByte,
+                    minHash, newMaxHash,
+                    newRangeSize
+                );
+            }
+
+            // If we somehow didn't handle a scenario, return null.
+            return null;
+        }
+
+        // -----------------------------------------------------------------------------
+        // Example usage or demonstration
+        // -----------------------------------------------------------------------------
+        async function demo() {
+            const fileUrl = "data_doc/cachefilter_population/location_name/fa6.json";
+            // The parameters for the initial call:
+            const searchHash = "fa6a7e67833806738913d21164273f40";
+            const minByte = 0;
+            const maxByte = 999999999; // or the actual size of the file
+            const minHash = "fa600000000000000000000000000000";
+            const maxHash = "fa6fffffffffffffffffffffffffffff";
+            const rangeSize = 5000;  // start reading 5KB chunks
+
+            try {
+                const result = await guidedSearchRange(
+                    fileUrl, searchHash,
+                    minByte, maxByte,
+                    minHash, maxHash,
+                    rangeSize
+                );
+                if (result) {
+                    console.log("Found sub-object for hash", result.hash, result.data);
+                } else {
+                    console.log("Sub-object not found or definitely not in file.");
+                }
+            } catch (err) {
+                console.error("Search error:", err);
+            }
+        }
+
+        // For demonstration, we call `demo()` when the page loads
+        window.addEventListener('load', demo);
+
     </script>
 </head>
 
 <body>
-    <h1>Generating Combination &amp; Hash Lookup (PostgreSQL-Style Spacing)</h1>
-
-    <div id="initError" style="color: red;"></div>
-
+    <h1>Guided Range Request JSON Search – Proof of Concept</h1>
     <p>
-        1) Once the decoding dictionary JSON is loaded, select your values in each dropdown.<br />
-        2) Choose which column is the <strong>pivot column</strong> (omitted).<br />
-        3) Choose a <strong>table type</strong>.<br />
-        4) Click <em>“Generate Hash &amp; Lookup”</em>.<br />
-        This constructs a JSON string with spaces (<code>"key" : "val"</code>),
-        matching your PostgreSQL format, then MD5-hashes it.
+        Open the browser console to see the results of the <code>demo()</code> function.
     </p>
-
-    <!-- Table Type -->
-    <label>Table Type:</label><br />
-    <select id="tableType">
-        <option value="">-- choose a table type --</option>
-        <option value="population">population</option>
-        <option value="long">long</option>
-        <!-- add more if needed -->
-    </select>
-    <br /><br />
-
-    <!-- Pivot Column -->
-    <label>Pivot Column:</label><br />
-    <select id="pivotCol"></select>
-    <br /><br />
-
-    <!-- All columns (populated after decodingDict loads) -->
-    <fieldset style="width: 600px;">
-        <legend>Select Values</legend>
-
-        <label for="year">year:</label><br />
-        <select id="year"></select><br /><br />
-
-        <label for="region_name">region_name:</label><br />
-        <select id="region_name"></select><br /><br />
-
-        <label for="sub_region_name">sub_region_name:</label><br />
-        <select id="sub_region_name"></select><br /><br />
-
-        <label for="location_name">location_name:</label><br />
-        <select id="location_name"></select><br /><br />
-
-        <label for="age_group_name_sorted">age_group_name_sorted:</label><br />
-        <select id="age_group_name_sorted"></select><br /><br />
-
-        <label for="age_cluster_name_sorted">age_cluster_name_sorted:</label><br />
-        <select id="age_cluster_name_sorted"></select><br /><br />
-
-        <label for="sex_name">sex_name:</label><br />
-        <select id="sex_name"></select><br /><br />
-
-        <label for="l1_cause_name">l1_cause_name:</label><br />
-        <select id="l1_cause_name"></select><br /><br />
-
-        <label for="l2_cause_name">l2_cause_name:</label><br />
-        <select id="l2_cause_name"></select><br /><br />
-    </fieldset>
-
-    <br />
-    <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
-
-    <h2>Debug Info</h2>
-    <p><strong>Exact JSON String that is hashed</strong> (with PostgreSQL-like spacing):</p>
-    <pre id="jsonString" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
-
-    <p><strong>Computed Hash Info</strong>:</p>
-    <pre id="hashInfo" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
-
-    <h2>Lookup Result</h2>
-    <pre id="result" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
 </body>
 
 </html>
