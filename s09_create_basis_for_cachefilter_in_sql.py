@@ -53,70 +53,39 @@ aggregated_columns_dict = {
     ],
 }
 
-
-def build_query_for_dimension(table_name, pivot_col, all_dimensions, agg_cols):
-    other_dims = [d for d in all_dimensions if d != pivot_col]
-    combo_pairs = [f"'{od}: ' + {od}::varchar" for od in other_dims]
-    identifying_string_expr = "(" + "+ '|' +".join(combo_pairs) + ")"
-    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
-    aggregator_expr = "json_build_object(" + ", ".join(agg_pairs) + ")"
-
-    query = f"""
-        WITH combo AS (
-            SELECT
-                *,
-                {identifying_string_expr} AS identifying_string
-            FROM {table_name}
-        )
-        SELECT
-            '{pivot_col}' AS indexing_column,
-            identifying_string,
-            md5(identifying_string) AS identifying_string_hash,
-            (
-                jsonb_build_object(
-                    'identifying_string', identifying_string
-                )
-                ||
-                jsonb_object_agg(
-                    {pivot_col}::varchar,
-                    {aggregator_expr}
-                )
-            ) AS json_column
-        FROM combo
-        GROUP BY identifying_string
-    """
-    return query
-
-
-# -------------------------------------------------------------------
-# Loop over each table_type, build the UNION ALL query, and create the table
-# -------------------------------------------------------------------
 for table_type in table_types:
     source_table = f"gbd.db04_modelling.export_{table_type}_rollup"
-    target_table = f"gbd.db04_modelling.export_{table_type}_cachefilter_prep"
+    target_table = f"gbd.db04_modelling.export_{table_type}_cachefilter"
+
 
     dimensions = dimension_cols_dict[table_type]
-    aggregations = aggregated_columns_dict[table_type]
+    agg_cols = aggregated_columns_dict[table_type]
+    combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dimensions]
+    identifying_string_expr = "(" +  ("\n"+" "*17+"|| ' | ' || ").join(combo_pairs) + ")"
+    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
+    aggregator_expr = ("\n"+" "*14+", ").join(agg_pairs)
 
-    # Build the individual pivot queries and then UNION ALL
-    individual_queries = []
-    for dim in dimensions:
-        sql_for_dim = build_query_for_dimension(source_table, dim, dimensions, aggregations)
-        # Wrap in parentheses so we can safely do "UNION ALL" among them
-        individual_queries.append(f"({sql_for_dim})")
-
-    union_sql = " UNION ALL ".join(individual_queries)
-
-    # Create the table with these results (dropping the old one if it exists)
-    create_table_sql = f"""
+    query = f"""
         DROP TABLE IF EXISTS {target_table} CASCADE;
         CREATE TABLE {target_table} AS
-        {union_sql}
-        ;
+        WITH combo AS (
+            SELECT
+                *
+                ,           {identifying_string_expr} AS identifying_string
+            FROM {source_table}
+        )
+        SELECT
+            identifying_string,
+            md5(identifying_string) AS identifying_string_hash,
+            jsonb_build_object(
+                'identifying_string', identifying_string
+              , {aggregator_expr}
+            ) AS json_column
+        FROM combo
     """
 
     print(f"Creating table: {target_table}")
-    print(create_table_sql)
+    print(query)
 
     # Execute the SQL
     # con.execute(text(create_table_sql))
