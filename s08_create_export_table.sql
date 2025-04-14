@@ -132,4 +132,6 @@ GROUP BY
 
 
 select *
-FROM gbd.db04_modelling.export_long
+FROM gbd.db04_modelling.export_long_cachefilter
+where substr(identifying_string_hash,0,4) = 'ffd'
+order by random()

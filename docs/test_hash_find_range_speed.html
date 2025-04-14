@@ -720,7 +720,7 @@
             // (You could do Promise.all for parallel, but that might overwhelm your server)
             for (let i = 0; i < hashList.length; i++) {
                 const h = hashList[i];
-                // console.log(`Searching for hash #${i + 1}: ${h}`);
+                console.log(`Searching for hash #${i + 1}: ${h}`);
 
                 const startTime = performance.now();
                 const result = await guidedSearchRange(
@@ -734,16 +734,16 @@
                 );
                 const endTime = performance.now();
 
-                // if (result) {
-                //     console.log(
-                //         `Found hash ${h} in ${(endTime - startTime).toFixed(2)} ms. Sub-object:`,
-                //         result.data
-                //     );
-                // } else {
-                //     console.log(
-                //         `Hash ${h} not found or outside range. (Searched in ${(endTime - startTime).toFixed(2)} ms)`
-                //     );
-                // }
+                if (result) {
+                    console.log(
+                        `Found hash ${h} in ${(endTime - startTime).toFixed(2)} ms. Sub-object:`,
+                        result.data
+                    );
+                } else {
+                    console.log(
+                        `Hash ${h} not found or outside range. (Searched in ${(endTime - startTime).toFixed(2)} ms)`
+                    );
+                }
             }
 
             const overallEnd = performance.now();
