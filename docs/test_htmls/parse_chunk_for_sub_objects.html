@@ -1,93 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Test parseChunkForSubObjects Function</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      line-height: 1.6;
-    }
-    #output {
-      margin-top: 20px;
-      white-space: pre-wrap;
-      background-color: #f5f5f5;
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 15px;
-      font-size: 1rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test parseChunkForSubObjects Function</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+
+        #output {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 1rem;
+        }
+    </style>
 </head>
+
 <body>
-  <h1>Test parseChunkForSubObjects Function</h1>
-  <p>Click the button below to run the test:</p>
-  <button id="testButton">Run Test</button>
-  <div id="output"></div>
+    <h1>Test parseChunkForSubObjects Function</h1>
+    <p>Click the button below to run the test:</p>
+    <button id="testButton">Run Test</button>
+    <div id="output"></div>
 
-  <script>
-    /**
-     * Parses a string chunk (a substring of a larger JSON file) and returns an object
-     * whose keys are 32-character hexadecimal hashes and whose values are the associated parsed JSON objects.
-     *
-     * @param {string} chunk - A random substring that may contain one or more key-value pairs.
-     * @returns {Object} An object mapping each hash to its parsed JSON sub-object.
-     */
-    function parseChunkForSubObjects(chunk) {
-      const results = {};
+    <script>
+        /**
+         * Parses a string chunk (a substring of a larger JSON file) and returns an object
+         * whose keys are 32-character hexadecimal hashes and whose values are the associated parsed JSON objects.
+         *
+         * @param {string} chunk - A random substring that may contain one or more key-value pairs.
+         * @returns {Object} An object mapping each hash to its parsed JSON sub-object.
+         */
+        function parseChunkForSubObjects(chunk) {
+            const results = {};
 
-      // Look for keys in the format "32-hexdigits": { ... }
-      const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
-      let match;
+            // Look for keys in the format "32-hexdigits": { ... }
+            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
+            let match;
 
-      while ((match = hashRegex.exec(chunk)) !== null) {
-        const hash = match[1];
-        const start = chunk.indexOf('{', match.index);
-        if (start === -1) continue; // safeguard
+            while ((match = hashRegex.exec(chunk)) !== null) {
+                const hash = match[1];
+                const start = chunk.indexOf('{', match.index);
+                if (start === -1) continue; // safeguard
 
-        // Find the matching closing brace by tracking nested braces
-        let braceCount = 0;
-        let end = -1;
-        for (let i = start; i < chunk.length; i++) {
-          if (chunk[i] === '{') {
-            braceCount++;
-          } else if (chunk[i] === '}') {
-            braceCount--;
-          }
-          if (braceCount === 0) {
-            end = i;
-            break;
-          }
+                // Find the matching closing brace by tracking nested braces
+                let braceCount = 0;
+                let end = -1;
+                for (let i = start; i < chunk.length; i++) {
+                    if (chunk[i] === '{') {
+                        braceCount++;
+                    } else if (chunk[i] === '}') {
+                        braceCount--;
+                    }
+                    if (braceCount === 0) {
+                        end = i;
+                        break;
+                    }
+                }
+                if (end === -1) continue;
+
+                const objString = chunk.slice(start, end + 1);
+
+                // Try to parse the object string.
+                try {
+                    const parsedObj = JSON.parse(objString);
+                    results[hash] = parsedObj;
+                } catch (error) {
+                    console.warn(`Failed to parse JSON for hash ${hash}: ${error}`);
+                }
+            }
+
+            return results;
         }
-        if (end === -1) continue;
 
-        const objString = chunk.slice(start, end + 1);
-
-        // Try to parse the object string.
-        try {
-          const parsedObj = JSON.parse(objString);
-          results[hash] = parsedObj;
-        } catch (error) {
-          console.warn(`Failed to parse JSON for hash ${hash}: ${error}`);
-        }
-      }
-
-      return results;
-    }
-
-    /**
-     * Test the parseChunkForSubObjects function.
-     *
-     * Creates a sample chunk containing two sub-objects keyed by 32-character hexadecimal hashes.
-     * Logs the output and checks whether the expected keys are present.
-     */
-    function testParseChunkForSubObjects() {
-      // Sample chunk simulating a substring from a large JSON document.
-      const sampleChunk = `       "2005": {
+        /**
+         * Test the parseChunkForSubObjects function.
+         *
+         * Creates a sample chunk containing two sub-objects keyed by 32-character hexadecimal hashes.
+         * Logs the output and checks whether the expected keys are present.
+         */
+        function testParseChunkForSubObjects() {
+            // Sample chunk simulating a substring from a large JSON document.
+            const sampleChunk = `       "2005": {
             "pop_val": 27206.558861321475,
             "pop_lower": 24650.215075595584,
             "pop_upper": 29745.10058249033
@@ -180,22 +184,23 @@
             "pop_val": 624860.1233056523,
             "pop_lower": 553680.964153542,`
 
-      const parsedResults = parseChunkForSubObjects(sampleChunk);
+            const parsedResults = parseChunkForSubObjects(sampleChunk);
 
-      let output = "Parsed Results:\n" + JSON.stringify(parsedResults, null, 2) + "\n\n";
-      const expectedHashes = [
-        "ffe255a74259cf2dd2c4b235a5bff266",
-        "ffec4ac379b065eabac5b922b4de8720"
-      ];
-      const testPassed = expectedHashes.every(hash => hash in parsedResults);
+            let output = "Parsed Results:\n" + JSON.stringify(parsedResults, null, 2) + "\n\n";
+            const expectedHashes = [
+                "ffe255a74259cf2dd2c4b235a5bff266",
+                "ffec4ac379b065eabac5b922b4de8720"
+            ];
+            const testPassed = expectedHashes.every(hash => hash in parsedResults);
 
-      output += testPassed ? "Test passed!" : "Test failed!";
-      document.getElementById("output").textContent = output;
-      console.log(parsedResults);
-    }
+            output += testPassed ? "Test passed!" : "Test failed!";
+            document.getElementById("output").textContent = output;
+            console.log(parsedResults);
+        }
 
-    // Add event listener to run test on button click
-    document.getElementById("testButton").addEventListener("click", testParseChunkForSubObjects);
-  </script>
+        // Add event listener to run test on button click
+        document.getElementById("testButton").addEventListener("click", testParseChunkForSubObjects);
+    </script>
 </body>
+
 </html>
