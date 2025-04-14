@@ -79,12 +79,12 @@ for table_type in table_types:
             SUM(deaths_upper) AS deaths_upper,
             SUM(deaths_lower) AS deaths_lower,
             count(*) as anz
-        FROM gbd.db04_modelling.export_long
+        FROM {source_table}
         GROUP BY
             ROLLUP(year::varchar),
+            ROLLUP(sex_name::varchar),
             ROLLUP(region_name::varchar, sub_region_name::varchar, location_name::varchar),
             ROLLUP(age_cluster_name_sorted::varchar, age_group_name_sorted::varchar),
-            ROLLUP(sex_name::varchar),
             ROLLUP(l1_cause_name::varchar, l2_cause_name::varchar)
         ;
     """
