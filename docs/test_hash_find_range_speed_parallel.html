@@ -3,37 +3,32 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Guided Range Request Search (Proof of Concept)</title>
+    <title>Guided Range Request Search (Parallel)</title>
     <script>
         async function fetchRange(url, startByte, endByte) {
-            // Example: Range: bytes=10000-10999
             const rangeHeader = `bytes=${startByte}-${endByte}`;
             const response = await fetch(url, {
                 headers: { Range: rangeHeader }
             });
             if (!response.ok && response.status !== 206) {
-                throw new Error(`Failed partial fetch from ${startByte} to ${endByte}, got status=${response.status}`);
+                throw new Error(`Failed partial fetch from ${startByte} to ${endByte}, status=${response.status}`);
             }
             return response.text();
         }
 
-        /**
-         * parseChunkForSubObjects:
-         * Returns an object: { "md5hash": { ...some JSON object... }, ... }
-         */
         function parseChunkForSubObjects(chunk) {
             const results = {};
-
-            // Look for keys in the format "32-hexdigits": { ... }
+            // Regex to find "32-hexdigit": { ... }
             const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
             let match;
+
             while ((match = hashRegex.exec(chunk)) !== null) {
                 const hash = match[1];
-                // Find the position of the opening brace.
+                // Find the '{' from where the regex matched
                 const start = chunk.indexOf('{', match.index);
-                if (start === -1) continue; // safeguard if not found
+                if (start === -1) continue; // safeguard
 
-                // Find the matching closing brace by tracking nested braces.
+                // Find the matching '}' by tracking brace depth
                 let braceCount = 0;
                 let end = -1;
                 for (let i = start; i < chunk.length; i++) {
@@ -47,20 +42,14 @@
                         break;
                     }
                 }
-
-                // If no matching closing brace is found, break (chunk likely truncated).
-                if (end === -1) {
-                    break;
-                }
+                if (end === -1) break;
 
                 const objString = chunk.slice(start, end + 1);
-
-                // Try to parse the object string.
                 try {
                     const parsedObj = JSON.parse(objString);
                     results[hash] = parsedObj;
                 } catch (error) {
-                    console.warn(`Failed to parse JSON for hash ${hash}: ${error}`);
+                    console.warn(`Failed to parse for hash=${hash}, error=${error}`);
                 }
             }
 
@@ -68,42 +57,25 @@
         }
 
         function getWeight(searchHash, lowerHash, upperHash) {
-            // Convert each hex MD5 hash to a BigInt (128-bit integer)
             const search = BigInt("0x" + searchHash);
             const lower = BigInt("0x" + lowerHash);
             const upper = BigInt("0x" + upperHash);
+
             if (upper === lower) {
-                return 0.5; // or handle differently as needed
+                return 0.5;
             }
+
             const numerator = search - lower;
             const denominator = upper - lower;
-            let w = Number(numerator) / Number(denominator);
-            return w;
+            return Number(numerator) / Number(denominator);
         }
 
-        // -----------------------------------------------------------------------------
-        // The RECURSIVE guided search function
-        // -----------------------------------------------------------------------------
-
-        /**
-         * @param {string} fileUrl - URL of the big JSON file.
-         * @param {string} searchHash - The MD5 hash we want to find.
-         * @param {number} minByte    - Lower bound of search in bytes.
-         * @param {number} maxByte    - Upper bound of search in bytes.
-         * @param {string} minHash    - Known smallest hash in [minByte..maxByte].
-         * @param {string} maxHash    - Known largest hash in [minByte..maxByte].
-         * @param {number} rangeSize  - Number of bytes to fetch in each attempt.
-         * 
-         * If found, returns { hash: <searchHash>, data: <the sub-object> }.
-         * If not found or outside range, returns null.
-         */
         async function guidedSearchRange(
             fileUrl, searchHash,
             minByte, maxByte,
             minHash, maxHash,
             rangeSize
         ) {
-            // 1) Quick checks
             if (searchHash < minHash || searchHash > maxHash) {
                 return null;
             }
@@ -111,33 +83,27 @@
                 return null;
             }
 
-            // 2) Estimate position via fraction in [minHash..maxHash]
+            // Approximate where to look by fraction
             let fraction = getWeight(searchHash, minHash, maxHash);
             let bestGuessByte = minByte + fraction * (maxByte - minByte);
             bestGuessByte = Math.floor(bestGuessByte);
 
-            // We'll clamp the range request so we don't exceed [minByte, maxByte]
             let requestStart = Math.max(bestGuessByte - 0.5 * rangeSize, minByte);
             let requestEnd = Math.min(bestGuessByte + 0.5 * rangeSize, maxByte);
 
-            // 3) Fetch chunk
             let chunkText;
             try {
                 chunkText = await fetchRange(fileUrl, Math.floor(requestStart), Math.floor(requestEnd));
             } catch (err) {
-                // Could not fetch => consider an error or fallback
-                throw err;
+                throw err;  // or handle error
             }
 
-            // 4) Parse out sub-objects from that chunk
             const subObjects = parseChunkForSubObjects(chunkText);
-
             if (Object.keys(subObjects).length === 0) {
-                // No data in this chunk, expand range and move forward
-                const newRangeSize = rangeSize * 2.0;
+                const newRangeSize = rangeSize * 2;
                 return await guidedSearchRange(
                     fileUrl, searchHash,
-                    Math.floor(requestEnd + 1), // shift forward
+                    Math.floor(requestEnd + 1),
                     maxByte,
                     minHash,
                     maxHash,
@@ -145,25 +111,24 @@
                 );
             }
 
-            // Sort found objects by their hash (lexicographically)
-            const sortedEntries = Object.entries(subObjects)
-                .sort(([a], [b]) => a.localeCompare(b));
+            // Sort the subObjects by hash
+            const sortedEntries = Object.entries(subObjects).sort(([a], [b]) => a.localeCompare(b));
             const chunkMinHash = sortedEntries[0][0];
             const chunkMaxHash = sortedEntries[sortedEntries.length - 1][0];
 
-            // Check if we directly have the hash
+            // Direct match?
             for (const [h, obj] of sortedEntries) {
                 if (h === searchHash) {
                     return { hash: h, data: obj };
                 }
             }
 
-            // If chunk range overshoots where the hash would be
+            // If chunkMinHash < searchHash < chunkMaxHash but not found => not present
             if (chunkMinHash < searchHash && chunkMaxHash > searchHash) {
                 return null;
             }
 
-            // If everything is below target hash
+            // If entire chunk is below
             if (chunkMaxHash < searchHash) {
                 const newMinByte = Math.floor(requestEnd + 1);
                 const newMinHash = chunkMaxHash;
@@ -176,7 +141,7 @@
                 );
             }
 
-            // If everything is above target hash
+            // If entire chunk is above
             if (chunkMinHash > searchHash) {
                 const newMaxByte = Math.floor(requestStart - 1);
                 const newMaxHash = chunkMinHash;
@@ -189,18 +154,14 @@
                 );
             }
 
-            // Otherwise, not found
             return null;
         }
 
-
-        // -----------------------------------------------------------------------------
-        // DEMO: Testing multiple hashes to measure speed
-        // -----------------------------------------------------------------------------
-
-        async function testAllHashes() {
-            // Placeholder list of 500 MD5 hashes (include real ones in practice)
-            // For demonstration, these are mostly duplicates or random examples:
+        // --------------------------------------------------------------------
+        // PARALLEL IMPLEMENTATION
+        // --------------------------------------------------------------------
+        async function testAllHashesParallel() {
+            // Example placeholder list of MD5 hashes; replace with your real 500
             const hashList = [
                 "ffd06b5a63ee4d2832be0617a71df801",
                 "ffd9e34630111c321eb5d4c1718ae3c1",
@@ -706,61 +667,61 @@
 
             ];
 
-            // Common search parameters (example values, adjust to your actual file):
-            const fileUrl = "data_doc/cachefilter_long/ffd.json"; // Big JSON file
+            const fileUrl = "data_doc/cachefilter_long/ffd.json";
             const minByte = 0;
-            const maxByte = 348636; // The byte size of your file
+            const maxByte = 348636; // actual file size in bytes
             const minHash = "ffd00000000000000000000000000000";
             const maxHash = "ffdfffffffffffffffffffffffffffff";
-            const initialRangeSize = 5000;  // 5KB chunk as an initial guess
+            const initialRangeSize = 5000;  // e.g., 5 KB
 
             const overallStart = performance.now();
 
-            // Sequential example: 
-            // (You could do Promise.all for parallel, but that might overwhelm your server)
-            for (let i = 0; i < hashList.length; i++) {
-                const h = hashList[i];
-                console.log(`Searching for hash #${i + 1}: ${h}`);
-
-                const startTime = performance.now();
-                const result = await guidedSearchRange(
-                    fileUrl,
-                    h,
-                    minByte,
-                    maxByte,
-                    minHash,
-                    maxHash,
-                    initialRangeSize
-                );
-                const endTime = performance.now();
-
-                if (result) {
-                    console.log(
-                        `Found hash ${h} in ${(endTime - startTime).toFixed(2)} ms. Sub-object:`,
-                        result.data
+            // Parallel search for all hashes.
+            // This can create up to hashList.length concurrent requests.
+            // If that is too large, consider a concurrency limit or chunking.
+            const results = await Promise.all(
+                hashList.map(async (hash, index) => {
+                    const startTime = performance.now();
+                    const foundObj = await guidedSearchRange(
+                        fileUrl,
+                        hash,
+                        minByte,
+                        maxByte,
+                        minHash,
+                        maxHash,
+                        initialRangeSize
                     );
-                } else {
-                    console.log(
-                        `Hash ${h} not found or outside range. (Searched in ${(endTime - startTime).toFixed(2)} ms)`
-                    );
-                }
-            }
+                    const endTime = performance.now();
+
+                    const elapsed = (endTime - startTime).toFixed(2);
+                    // if (foundObj) {
+                    //     console.log(
+                    //         `(${index + 1}/${hashList.length}) Found: ${hash} in ${elapsed}ms`,
+                    //         foundObj.data
+                    //     );
+                    // } else {
+                    //     console.log(
+                    //         `(${index + 1}/${hashList.length}) Not Found: ${hash} (searched in ${elapsed}ms)`
+                    //     );
+                    // }
+
+                    return { hash, result: foundObj, timeMs: elapsed };
+                })
+            );
 
             const overallEnd = performance.now();
-            console.log(
-                `All searches complete. Total time: ${(overallEnd - overallStart).toFixed(2)} ms`
-            );
+            console.log(`\nAll parallel searches completed in ${(overallEnd - overallStart).toFixed(2)}ms`);
+            console.log("Results array:", results);
         }
 
-        // Call testAllHashes() on page load
-        window.addEventListener('load', testAllHashes);
+        window.addEventListener('load', testAllHashesParallel);
     </script>
 </head>
 
 <body>
-    <h1>Guided Range Request JSON Search – Speed Test</h1>
+    <h1>Guided Range Request JSON Search – Parallel Test</h1>
     <p>
-        Open your browser console to see the search timings for 500 hashes.
+        Open your browser console to see parallelized results for all (500) hashes.
     </p>
 </body>
 
