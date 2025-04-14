@@ -22,6 +22,7 @@ for table_type in table_types:
          ,  json_object_agg(
                 identifying_string_hash
               , json_column
+                ORDER BY identifying_string_hash
             )::varchar as chunk_json_string
         from gbd.db04_modelling.export_{table_type}_cachefilter
         group by
