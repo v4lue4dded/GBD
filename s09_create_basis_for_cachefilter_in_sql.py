@@ -53,22 +53,22 @@ for table_type in table_types:
     agg_cols = aggregated_cols_dict[table_type]
 
     dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
-    dim_select_str = ",\n    ".join(dim_selects)
+    dim_select_str = ("\n"+ " " * 7 +"   , ").join(dim_selects)
     agg_selects = [f"SUM({col}) AS {col}" for col in agg_cols]
     agg_selects.append("COUNT(*) AS anz")
-    agg_select_str = ",\n    ".join(agg_selects)
+    agg_select_str = ("\n"+ " " * 7 +"   , ").join(agg_selects)
     group_by_parts = []
     for group in rollup_col_lists:
         group_cols = ", ".join(f"{c}::varchar" for c in group)
         group_by_parts.append(f"ROLLUP({group_cols})")
-    group_by_str = ",\n    ".join(group_by_parts)
+    group_by_str = ("\n"+ " " * 7 +"   , ").join(group_by_parts)
 
     create_rollup_sql = f"""
         DROP TABLE IF EXISTS {target_table1} CASCADE;
         CREATE TABLE {target_table1} AS
         SELECT
-            {dim_select_str},
-            {agg_select_str}
+            {dim_select_str}
+          , {agg_select_str}
         FROM {source_table1}
         GROUP BY
             {group_by_str}
@@ -77,7 +77,7 @@ for table_type in table_types:
 
     print(f"Creating rollup table: {target_table1}")
     print(create_rollup_sql)
-    con.execute(text(create_rollup_sql))
+    # con.execute(text(create_rollup_sql))
 
 for table_type in table_types:
     source_table2 = f"gbd.db04_modelling.export_{table_type}_rollup"
@@ -114,7 +114,7 @@ for table_type in table_types:
 
     print(f"Creating cachefilter table: {target_table2}")
     print(create_cachefilter_sql)
-    con.execute(text(create_cachefilter_sql))
+    # con.execute(text(create_cachefilter_sql))
 
 con.close()
 print("All tables created successfully.")
