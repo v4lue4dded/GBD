@@ -18,14 +18,11 @@
         }
 
         function parseChunkForSubObjects(chunk) {
-            // A more robust approach might parse the entire chunk as partial JSON,
-            // but for demonstration, we'll do a simple substring + brace-tracking approach.
-
             let results = [];
             let index = 0;
 
             // We'll look for "................" : {...}
-            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
+            const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{.*\}/gi;
             let match;
             while ((match = hashRegex.exec(chunk)) !== null) {
                 const foundHash = match[1];

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test parseChunkForSubObjects Function</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    #output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background-color: #f5f5f5;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test parseChunkForSubObjects Function</h1>
+  <p>Click the button below to run the test:</p>
+  <button id="testButton">Run Test</button>
+  <div id="output"></div>
+
+  <script>
+    /**
+     * Parses a string chunk (a substring of a larger JSON file) and returns an object
+     * whose keys are 32-character hexadecimal hashes and whose values are the associated parsed JSON objects.
+     *
+     * @param {string} chunk - A random substring that may contain one or more key-value pairs.
+     * @returns {Object} An object mapping each hash to its parsed JSON sub-object.
+     */
+    function parseChunkForSubObjects(chunk) {
+      const results = {};
+
+      // Look for keys in the format "32-hexdigits": { ... }
+      const hashRegex = /"([0-9a-f]{32})"\s*:\s*\{/gi;
+      let match;
+
+      while ((match = hashRegex.exec(chunk)) !== null) {
+        const hash = match[1];
+        const start = chunk.indexOf('{', match.index);
+        if (start === -1) continue; // safeguard
+
+        // Find the matching closing brace by tracking nested braces
+        let braceCount = 0;
+        let end = -1;
+        for (let i = start; i < chunk.length; i++) {
+          if (chunk[i] === '{') {
+            braceCount++;
+          } else if (chunk[i] === '}') {
+            braceCount--;
+          }
+          if (braceCount === 0) {
+            end = i;
+            break;
+          }
+        }
+        if (end === -1) continue;
+
+        const objString = chunk.slice(start, end + 1);
+
+        // Try to parse the object string.
+        try {
+          const parsedObj = JSON.parse(objString);
+          results[hash] = parsedObj;
+        } catch (error) {
+          console.warn(`Failed to parse JSON for hash ${hash}: ${error}`);
+        }
+      }
+
+      return results;
+    }
+
+    /**
+     * Test the parseChunkForSubObjects function.
+     *
+     * Creates a sample chunk containing two sub-objects keyed by 32-character hexadecimal hashes.
+     * Logs the output and checks whether the expected keys are present.
+     */
+    function testParseChunkForSubObjects() {
+      // Sample chunk simulating a substring from a large JSON document.
+      const sampleChunk = `       "2005": {
+            "pop_val": 27206.558861321475,
+            "pop_lower": 24650.215075595584,
+            "pop_upper": 29745.10058249033
+        },
+        "2010": {
+            "pop_val": 28274.829581819275,
+            "pop_lower": 26155.08910915669,
+            "pop_upper": 30396.097106245707
+        },
+        "2015": {
+            "pop_val": 39701.118922738,
+            "pop_lower": 35718.436261934694,
+            "pop_upper": 43506.85256455758
+        },
+        "2019": {
+            "pop_val": 70086.92503496284,
+            "pop_lower": 62139.09322968516,
+            "pop_upper": 78269.30108283536
+        },
+        "generating_combination": "{\"region_name\" : \"Asia\", \"sub_region_name\" : \"Southern Asia\", \"location_name\" : \"Bangladesh\", \"age_group_name_sorted\" : \"90 to 94\", \"age_cluster_name_sorted\" : \"75 plus\", \"sex_name\" : \"female\"}"
+    },
+    "ffe255a74259cf2dd2c4b235a5bff266": {
+        "All": {
+            "pop_val": 448116.39906741306,
+            "pop_lower": 407941.53262712975,
+            "pop_upper": 489252.4915100769
+        },
+        "2000": {
+            "pop_val": 93859.53692706145,
+            "pop_lower": 86810.44771936814,
+            "pop_upper": 100482.06087860608
+        },
+        "2005": {
+            "pop_val": 82080.66850780565,
+            "pop_lower": 74679.45205525665,
+            "pop_upper": 89922.0379608353
+        },
+        "2010": {
+            "pop_val": 89070.50870327215,
+            "pop_lower": 82408.19076901568,
+            "pop_upper": 95822.49181201504
+        },
+        "2015": {
+            "pop_val": 94716.58030084662,
+            "pop_lower": 86420.87898007677,
+            "pop_upper": 103917.81881110794
+        },
+        "2019": {
+            "pop_val": 88389.10462842719,
+            "pop_lower": 77622.56310341251,
+            "pop_upper": 99108.0820475126
+        },
+        "generating_combination": "{\"region_name\" : \"Asia\", \"sub_region_name\" : \"Western Asia\", \"location_name\" : \"Armenia\", \"age_group_name_sorted\" : \"01 to 04\", \"age_cluster_name_sorted\" : \"00 to 14\", \"sex_name\" : \"male\"}"
+    },
+    "ffec4ac379b065eabac5b922b4de8720": {
+        "All": {
+            "pop_val": 3609273.1174422386,
+            "pop_lower": 3286066.7328573214,
+            "pop_upper": 3925172.8983170567
+        },
+        "2000": {
+            "pop_val": 502190.414625986,
+            "pop_lower": 461015.46246470814,
+            "pop_upper": 543087.3979987827
+        },
+        "2005": {
+            "pop_val": 603087.7669668789,
+            "pop_lower": 551843.1824187294,
+            "pop_upper": 651854.5845241891
+        },
+        "2010": {
+            "pop_val": 700770.6466876466,
+            "pop_lower": 638699.5505726456,
+            "pop_upper": 760202.2160583172
+        },
+        "2015": {
+            "pop_val": 831115.958591433,
+            "pop_lower": 765926.8354226513,
+            "pop_upper": 896805.9985295564
+        },
+        "2019": {
+            "pop_val": 972108.3305702943,
+            "pop_lower": 868581.7019785866,
+            "pop_upper": 1073222.7012062112
+        },
+        "generating_combination": "{\"region_name\" : \"Africa\", \"sub_region_name\" : \"Sub-Saharan Africa\", \"location_name\" : \"Benin\", \"age_group_name_sorted\" : \"25 to 29\", \"age_cluster_name_sorted\" : \"15 to 29\", \"sex_name\" : \"All\"}"
+    },
+    "ffe0d4a791dacff02e7c6b9d56fdd96c": {
+        "All": {
+            "pop_val": 624860.1233056523,
+            "pop_lower": 553680.964153542,`
+
+      const parsedResults = parseChunkForSubObjects(sampleChunk);
+
+      let output = "Parsed Results:\n" + JSON.stringify(parsedResults, null, 2) + "\n\n";
+      const expectedHashes = [
+        "ffe255a74259cf2dd2c4b235a5bff266",
+        "ffec4ac379b065eabac5b922b4de8720"
+      ];
+      const testPassed = expectedHashes.every(hash => hash in parsedResults);
+
+      output += testPassed ? "Test passed!" : "Test failed!";
+      document.getElementById("output").textContent = output;
+      console.log(parsedResults);
+    }
+
+    // Add event listener to run test on button click
+    document.getElementById("testButton").addEventListener("click", testParseChunkForSubObjects);
+  </script>
+</body>
+</html>
