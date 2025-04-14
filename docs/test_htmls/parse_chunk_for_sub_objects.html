@@ -50,10 +50,12 @@
 
             while ((match = hashRegex.exec(chunk)) !== null) {
                 const hash = match[1];
+                console.log(hash)
+                // Find the position of the opening brace.
                 const start = chunk.indexOf('{', match.index);
-                if (start === -1) continue; // safeguard
+                if (start === -1) continue; // safeguard if not found
 
-                // Find the matching closing brace by tracking nested braces
+                // Find the matching closing brace by tracking nested braces.
                 let braceCount = 0;
                 let end = -1;
                 for (let i = start; i < chunk.length; i++) {
@@ -67,7 +69,11 @@
                         break;
                     }
                 }
-                if (end === -1) continue;
+
+                // If no matching closing brace is found, break out of the loop (chunk likely truncated).
+                if (end === -1) {
+                    break;
+                }
 
                 const objString = chunk.slice(start, end + 1);
 
@@ -86,12 +92,14 @@
         /**
          * Test the parseChunkForSubObjects function.
          *
-         * Creates a sample chunk containing two sub-objects keyed by 32-character hexadecimal hashes.
+         * Creates a sample chunk containing several sub-objects, some keyed by 32-character hexadecimal hashes.
          * Logs the output and checks whether the expected keys are present.
          */
         function testParseChunkForSubObjects() {
             // Sample chunk simulating a substring from a large JSON document.
-            const sampleChunk = `       "2005": {
+            // Note: The chunk ends with a truncated object, which should be skipped.
+            const sampleChunk = `       
+        "2005": {
             "pop_val": 27206.558861321475,
             "pop_lower": 24650.215075595584,
             "pop_upper": 29745.10058249033
@@ -182,11 +190,12 @@
     "ffe0d4a791dacff02e7c6b9d56fdd96c": {
         "All": {
             "pop_val": 624860.1233056523,
-            "pop_lower": 553680.964153542,`
+            "pop_lower": 553680.964153542,`;
 
             const parsedResults = parseChunkForSubObjects(sampleChunk);
 
             let output = "Parsed Results:\n" + JSON.stringify(parsedResults, null, 2) + "\n\n";
+            // We expect only these two valid keys (the last one is incomplete and should be skipped)
             const expectedHashes = [
                 "ffe255a74259cf2dd2c4b235a5bff266",
                 "ffec4ac379b065eabac5b922b4de8720"
