@@ -46,6 +46,19 @@ aggregated_cols_dict = {
     ],
 }
 
+# ── save rollup/config metadata to a separate JSON ─────────────────────────────
+config_metadata = {
+    "rollup_cols_dict": rollup_cols_dict,
+    "dimension_cols_dict": dimension_cols_dict,
+    "aggregated_cols_dict": aggregated_cols_dict,
+}
+
+with open("gbd_rollup_config_metadata.json", "w", encoding="utf-8") as fh:
+    json.dump(config_metadata, fh, indent=2, ensure_ascii=False)
+
+print("Config metadata written to gbd_rollup_config_metadata.json")
+
+
 for table_type in table_types:
     source_table1 = f"gbd.db04_modelling.export_{table_type}"
     target_table1 = f"gbd.db04_modelling.export_{table_type}_rollup"

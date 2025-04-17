@@ -47,8 +47,10 @@ for table_type in table_types:
     """
     df_partial_has_agg = pd.read_sql(partial_hash_agg_query, con=engine)
 
+    metadata = {}
+
     for idx, row in df_partial_has_agg.iterrows():
-        if idx%10 == 0:
+        if idx % 10 == 0:
             print(idx)
         p_hash = row["partial_hash"]
         chunk_json_string = row["chunk_json_string"]
@@ -58,6 +60,15 @@ for table_type in table_types:
 
         with open(filepath, "w") as f:
             f.write(chunk_json_string)
+
+        # Record file size
+        file_size = os.path.getsize(filepath)
+        metadata[p_hash] = file_size
+
+    # Export metadata.json
+    metadata_path = opj(export_dir, "metadata_file_sizes.json")
+    with open(metadata_path, "w") as meta_file:
+        json.dump(metadata, meta_file, indent=1)
 
 con.close()
 print("Export complete.")
