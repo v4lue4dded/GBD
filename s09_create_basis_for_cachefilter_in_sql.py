@@ -1,5 +1,7 @@
 import my_config as config
 from sqlalchemy import text
+import json
+import pandas as pd
 
 # Database connection
 engine = config.engine
@@ -53,15 +55,15 @@ for table_type in table_types:
     agg_cols = aggregated_cols_dict[table_type]
 
     dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
-    dim_select_str = ("\n"+ " " * 7 +"   , ").join(dim_selects)
+    dim_select_str = ("\n" + " " * 7 + "   , ").join(dim_selects)
     agg_selects = [f"SUM({col}) AS {col}" for col in agg_cols]
     agg_selects.append("COUNT(*) AS anz")
-    agg_select_str = ("\n"+ " " * 7 +"   , ").join(agg_selects)
+    agg_select_str = ("\n" + " " * 7 + "   , ").join(agg_selects)
     group_by_parts = []
     for group in rollup_col_lists:
         group_cols = ", ".join(f"{c}::varchar" for c in group)
         group_by_parts.append(f"ROLLUP({group_cols})")
-    group_by_str = ("\n"+ " " * 7 +"   , ").join(group_by_parts)
+    group_by_str = ("\n" + " " * 7 + "   , ").join(group_by_parts)
 
     create_rollup_sql = f"""
         DROP TABLE IF EXISTS {target_table1} CASCADE;
@@ -115,6 +117,55 @@ for table_type in table_types:
     print(f"Creating cachefilter table: {target_table2}")
     print(create_cachefilter_sql)
     # con.execute(text(create_cachefilter_sql))
+
+metadata_dict = {}
+
+for table_type in table_types:
+    source_table = f"gbd.db04_modelling.export_{table_type}"
+
+    for rollup_list in rollup_cols_dict[table_type]:
+        if len(rollup_list) < 2:
+            continue  # skip single-col groups like ["year"]
+
+        for lvl in range(1, len(rollup_list)):
+            lower_col = rollup_list[lvl]
+            higher_cols = rollup_list[:lvl]
+            all_cols = [lower_col] + higher_cols
+
+            cols_sql = ", ".join(all_cols)
+            partition_col = lower_col
+            is_unique_col_sql = (
+                f"SELECT *, COUNT(*) OVER (PARTITION BY {partition_col}) AS is_unique_col\n"
+                f"FROM (\n"
+                f"  SELECT DISTINCT {cols_sql} FROM {source_table}\n"
+                f") x"
+            )
+
+            df = pd.read_sql(is_unique_col_sql, con)
+
+            # ── check n:1 assumption ───────────────────────────────────────
+            violating_rows = df[df["is_unique_col"] > 1].sort_values(
+                by=["is_unique_col", lower_col], ascending=[False, True]
+            )
+
+            if not violating_rows.empty:
+                error_string = (
+                    f"\nViolation detected for: {table_type}.{lower_col}"
+                    + "Rows with multiple parent mappings:\n"
+                    + violating_rows.to_string(index=False)
+                    + f"\n{table_type}.{lower_col} has non-unique mappings to parents. "
+                )
+
+                raise ValueError()
+
+            # ── build nested mapping ────────────────────────────────────────
+            clean_mapping = {row[lower_col]: {col: row[col] for col in higher_cols} for _, row in df.iterrows()}
+
+            metadata_dict.setdefault(table_type, {}).setdefault(lower_col, {}).update(clean_mapping)
+
+# ── save to file ──────────────────────────────────────────────────────────────
+with open("gbd_rollup_metadata.json", "w", encoding="utf-8") as fh:
+    json.dump(metadata_dict, fh, indent=2, ensure_ascii=False)
 
 con.close()
 print("All tables created successfully.")
