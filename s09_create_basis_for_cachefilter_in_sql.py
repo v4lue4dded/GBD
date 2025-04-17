@@ -7,64 +7,20 @@ import pandas as pd
 engine = config.engine
 con = engine.connect()
 
-table_types = ["population", "long"]
+with open("gbd_setup.json", "r") as fh:
+    setup_dict = json.load(fh)
 
-rollup_cols_dict = {
-    "population": [
-        ["year"],
-        ["sex_name"],
-        ["region_name", "sub_region_name", "location_name"],
-        ["age_cluster_name_sorted", "age_group_name_sorted"],
-    ],
-    "long": [
-        ["year"],
-        ["sex_name"],
-        ["region_name", "sub_region_name", "location_name"],
-        ["age_cluster_name_sorted", "age_group_name_sorted"],
-        ["l1_cause_name", "l2_cause_name"],
-    ],
-}
-
-dimension_cols_dict = {
-    table_type: [col for group in rollup_lists for col in group]
-    for table_type, rollup_lists in rollup_cols_dict.items()
-}
-
-aggregated_cols_dict = {
-    "population": [
-        "pop_val",
-        "pop_upper",
-        "pop_lower",
-    ],
-    "long": [
-        "yll_val",
-        "yll_upper",
-        "yll_lower",
-        "deaths_val",
-        "deaths_upper",
-        "deaths_lower",
-    ],
-}
-
-# ── save rollup/config metadata to a separate JSON ─────────────────────────────
-config_metadata = {
-    "rollup_cols_dict": rollup_cols_dict,
-    "dimension_cols_dict": dimension_cols_dict,
-    "aggregated_cols_dict": aggregated_cols_dict,
-}
-
-with open("gbd_rollup_config_metadata.json", "w", encoding="utf-8") as fh:
-    json.dump(config_metadata, fh, indent=2, ensure_ascii=False)
-
-print("Config metadata written to gbd_rollup_config_metadata.json")
-
+table_types = setup_dict["table_types"]
+rollup_cols_dict = setup_dict["rollup_cols_dict"]
+dimension_cols_ordered_dict = setup_dict["dimension_cols_ordered_dict"]
+aggregated_cols_dict = setup_dict["aggregated_cols_dict"]
 
 for table_type in table_types:
     source_table1 = f"gbd.db04_modelling.export_{table_type}"
     target_table1 = f"gbd.db04_modelling.export_{table_type}_rollup"
 
     rollup_col_lists = rollup_cols_dict[table_type]
-    dim_cols = dimension_cols_dict[table_type]
+    dim_cols = dimension_cols_ordered_dict[table_type]
     agg_cols = aggregated_cols_dict[table_type]
 
     dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
@@ -98,7 +54,7 @@ for table_type in table_types:
     source_table2 = f"gbd.db04_modelling.export_{table_type}_rollup"
     target_table2 = f"gbd.db04_modelling.export_{table_type}_cachefilter"
 
-    dim_cols = dimension_cols_dict[table_type]
+    dim_cols = dimension_cols_ordered_dict[table_type]
     agg_cols = aggregated_cols_dict[table_type]
 
     combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dim_cols]

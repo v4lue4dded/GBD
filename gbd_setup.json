@@ -1,4 +1,5 @@
 {
+  "table_types": ["population", "long"],
   "rollup_cols_dict": {
     "population": [
       [
@@ -39,7 +40,7 @@
       ]
     ]
   },
-  "dimension_cols_dict": {
+  "dimension_cols_ordered_dict": {
     "population": [
       "year",
       "sex_name",
