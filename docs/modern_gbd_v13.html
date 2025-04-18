@@ -634,18 +634,7 @@
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
 
-
-            // async function guidedSearchRange(
-            //     fileUrl, searchHash,
-            //     minByte, maxByte,
-            //     minHash, maxHash,
-            //     rangeSize
-            // )
-
-            // guidedSearchRange()
-            // const getValNew0 = (dataSource, dimension, searchKey, valueCol) => 
-
-
+            console.log(gbd_dim_distinct_values)
 
             var validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset

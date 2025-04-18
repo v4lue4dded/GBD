@@ -131,6 +131,7 @@
          * Any missing/blank values become the literal string "All" so the hash matches.
          */
         function buildIdentifyingString(obj, colOrder) {
+            console.log("obj:",obj)
             return colOrder
                 .map(col => `${col}: ${obj[col] || "All"}`)
                 .join(" | ");
