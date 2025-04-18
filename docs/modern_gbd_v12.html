@@ -156,6 +156,7 @@
             top: 0;
             z-index: 1000;
         }
+
         #filter-banner span {
             margin-right: 12px;
         }
@@ -409,7 +410,7 @@
                             });
                         }
                         /* --- attach metadata for banner --- */     // *** NEW
-                        dimensions[dimensionName]._filterName   = dimensionName; // *** NEW
+                        dimensions[dimensionName]._filterName = dimensionName; // *** NEW
                         dimensions[dimensionName]._datasetIndex = datasetIndex;  // *** NEW
                     }
 
@@ -524,16 +525,16 @@
             ];
 
             /* ---------- banner tracking ---------- */                // *** NEW
-            var currentFilters = {0:{},1:{}};                           // *** NEW
-            function updateFilterBanner(){                              // *** NEW
+            var currentFilters = { 0: {}, 1: {} };                           // *** NEW
+            function updateFilterBanner() {                              // *** NEW
                 var banner = document.getElementById('filter-banner');  // *** NEW
                 var html = '';                                          // *** NEW
-                [0,1].forEach(function(ds){                             // *** NEW
-                    html += '<div><strong>Dataset '+ds+'</strong>: ';   // *** NEW
-                    dimensionNames.forEach(function(dim){               // *** NEW
+                [0, 1].forEach(function (ds) {                             // *** NEW
+                    html += '<div><strong>Dataset ' + ds + '</strong>: ';   // *** NEW
+                    dimensionNames.forEach(function (dim) {               // *** NEW
                         var vals = currentFilters[ds][dim];             // *** NEW
-                        if(vals && vals.length){                        // *** NEW
-                            html += '<span><em>'+dim+'</em>: '+vals.join(", ")+'</span> '; // *** NEW
+                        if (vals && vals.length) {                        // *** NEW
+                            html += '<span><em>' + dim + '</em>: ' + vals.join(", ") + '</span> '; // *** NEW
                         }                                               // *** NEW
                     });                                                 // *** NEW
                     html += '</div>';                                   // *** NEW
@@ -541,24 +542,24 @@
                 banner.innerHTML = html || 'No filters active';         // *** NEW
             }                                                           // *** NEW
             /* ------------------------------------ */                  // *** NEW
-                        
+
             // TODO: precalculate this
             // Object for collecting unique values
             const cat_vars_and_values = {};
             // Loop through the array of data
             for (let i = 0; i < gbd_data.length; i++) {
-              const row = gbd_data[i];
-              
-              // For each dimension in dimensionNames
-              for (const dimName of dimensionNames) {
-                // If we haven't seen this dimension yet, initialize it to a Set
-                if (!cat_vars_and_values[dimName]) {
-                  cat_vars_and_values[dimName] = new Set();
+                const row = gbd_data[i];
+
+                // For each dimension in dimensionNames
+                for (const dimName of dimensionNames) {
+                    // If we haven't seen this dimension yet, initialize it to a Set
+                    if (!cat_vars_and_values[dimName]) {
+                        cat_vars_and_values[dimName] = new Set();
+                    }
+
+                    // Add this row's value for the dimension to the dimension's Set
+                    cat_vars_and_values[dimName].add(row[dimName]);
                 }
-                
-                // Add this row's value for the dimension to the dimension's Set
-                cat_vars_and_values[dimName].add(row[dimName]);
-              }
             }
 
             console.log("cat_vars_and_values:", cat_vars_and_values)
@@ -622,7 +623,7 @@
                 minByte, maxByte,
                 minHash, maxHash,
                 rangeSize
-            ) 
+            )
 
             guidedSearchRange()
             const getValNew0 = (dataSource, dimension, searchKey, valueCol) => 
@@ -630,658 +631,661 @@
 
 
             var validYears = Array.from(cat_vars_and_values["year"])
-            // Helper function to snap the year to the nearest valid year in the dataset
-            function snapToValidYear(year) {
-                return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
-            }
+                // Helper function to snap the year to the nearest valid year in the dataset
+                function snapToValidYear(year) {
+                    return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
+                }
 
-            var charts = [];
-            var timeline;
-            charts.push(timeline = new c3.Plot({
-                anchor: '#gbd_timeline',
-                height: 600,
-                width: "100%",
-                h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
-                v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
-                // The **x** function uses the key directly, which represents the year from the year dimension.
-                x: function (d) { return d.key; },
-                // The default **y** function generates its value based on the population value.
-                y: function (d) { return d.value.pop_val; },
-                // Set margins on all sides of the chart to allow extra room for labels to fit.
-                margins: 50,
-                // Create **axes** for this plot.
-                axes: [
-                    new c3.Axis.X({
-                        label: "Year",
-                        grid: true,
-                        tick_label: d3.format('f')
-                    }),
-                    new c3.Axis.Y({
-                        label: "Population",
-                        grid: true,
-                        tick_label: d3.format(',')
-                    }),
-                ],
-                // Create the **layers** for this timeline.
-                layers: [
-                    new c3.Plot.Layer.Area({
-                        options: {
-                            title: "Population",
-                            "class": "population_area_graph"
-                        },
-                        data: aggDict0['population']['year'],
-                        v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
-                        y: function (d) { return d.value.pop_val; },
-                        interpolate: 'cardinal'
-                    }),
-                    new c3.Plot.Layer.Line({
-                        options: {
-                            title: "population",
-                            "class": 'population_line_graph'
-                        },
-                        data: aggDict0['population']['year']
-                    }),
-                    new c3.Plot.Layer.Line.Vertical({
-                        data: [2000],
-                        draggable: true,
-                        options: {
-                            title: "from Year",
-                            "class": 'from_year'
-                        },
-                        handlers: {
-                            'drag': function (from_year) {
-                                from_year = snapToValidYear(from_year);
-                                this.data = [from_year];
-                                currentFilters[0]['year'] = [from_year].slice()
-                                updateFiltering([CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
+                var charts = [];
+                var timeline;
+                charts.push(timeline = new c3.Plot({
+                    anchor: '#gbd_timeline',
+                    height: 600,
+                    width: "100%",
+                    h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
+                    v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
+                    // The **x** function uses the key directly, which represents the year from the year dimension.
+                    x: function (d) { return d.key; },
+                    // The default **y** function generates its value based on the population value.
+                    y: function (d) { return d.value.pop_val; },
+                    // Set margins on all sides of the chart to allow extra room for labels to fit.
+                    margins: 50,
+                    // Create **axes** for this plot.
+                    axes: [
+                        new c3.Axis.X({
+                            label: "Year",
+                            grid: true,
+                            tick_label: d3.format('f')
+                        }),
+                        new c3.Axis.Y({
+                            label: "Population",
+                            grid: true,
+                            tick_label: d3.format(',')
+                        }),
+                    ],
+                    // Create the **layers** for this timeline.
+                    layers: [
+                        new c3.Plot.Layer.Area({
+                            options: {
+                                title: "Population",
+                                "class": "population_area_graph"
                             },
-                            'render': function () {
-                                this.handlers['drag'](this.data[0]);
-                            }
-                        }
-                    }),
-                    new c3.Plot.Layer.Line.Vertical({
-                        data: [2019],
-                        draggable: true,
-                        options: {
-                            title: "until Year",
-                            "class": 'until_year'
-                        },
-                        handlers: {
-                            'drag': function (until_year) {
-                                until_year = snapToValidYear(until_year);
-                                this.data = [until_year];
-                                currentFilters[1]['year'] = [until_year].slice()
-                                updateFiltering([CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
+                            data: aggDict0['population']['year'],
+                            v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
+                            y: function (d) { return d.value.pop_val; },
+                            interpolate: 'cardinal'
+                        }),
+                        new c3.Plot.Layer.Line({
+                            options: {
+                                title: "population",
+                                "class": 'population_line_graph'
                             },
-                            // Filter the data based on the initial year selection
-                            'render': function () {
-                                this.handlers['drag'](this.data[0]);
+                            data: aggDict0['population']['year']
+                        }),
+                        new c3.Plot.Layer.Line.Vertical({
+                            data: [2000],
+                            draggable: true,
+                            options: {
+                                title: "from Year",
+                                "class": 'from_year'
+                            },
+                            handlers: {
+                                'drag': function (from_year) {
+                                    from_year = snapToValidYear(from_year);
+                                    this.data = [from_year];
+                                    currentFilters[0]['year'] = [from_year].slice()
+                                    updateFiltering([CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
+                                },
+                                'render': function () {
+                                    this.handlers['drag'](this.data[0]);
+                                }
                             }
+                        }),
+                        new c3.Plot.Layer.Line.Vertical({
+                            data: [2019],
+                            draggable: true,
+                            options: {
+                                title: "until Year",
+                                "class": 'until_year'
+                            },
+                            handlers: {
+                                'drag': function (until_year) {
+                                    until_year = snapToValidYear(until_year);
+                                    this.data = [until_year];
+                                    currentFilters[1]['year'] = [until_year].slice()
+                                    updateFiltering([CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
+                                },
+                                // Filter the data based on the initial year selection
+                                'render': function () {
+                                    this.handlers['drag'](this.data[0]);
+                                }
+                            }
+                        }),
+                    ]
+                }));
+
+
+                function combineGroups(xGroup, yGroup, combineFunction) {
+                    return {
+                        all: function () {
+                            var xData = xGroup.all();
+                            var yData = yGroup.all();
+                            var xMap = new Map(xData.map(d => [d.key, d.value]));
+                            var yMap = new Map(yData.map(d => [d.key, d.value]));
+                            var keys = new Set([...xMap.keys(), ...yMap.keys()]);
+                            var result = Array.from(keys).map(key => {
+                                var xValue = xMap.get(key) || 0;
+                                var yValue = yMap.get(key) || 0;
+                                return {
+                                    key: key,
+                                    value: combineFunction(xValue, yValue) // Use the custom function to combine values
+                                };
+                            });
+                            return result;
                         }
-                    }),
-                ]
-            }));
+                    };
+                }
 
+                // Function to calculate the ratio
+                function ratio(x, y) {
+                    return y > 0 ? x / y : 0;
+                }
+                // Function to calculate the ratio
+                function ratio_m1(x, y) {
+                    return y > 0 ? x / y - 1 : 0;
+                }
 
-            function combineGroups(xGroup, yGroup, combineFunction) {
-                return {
+                // Usage examples
+                var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+                var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+                var YLLPerPerson0 = combineGroups(locationNameDimGBDAgg0, locationNameDimPopAgg0, ratio);
+
+                var locationNameDimPopAgg1 = CFDDict1['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+                var locationNameDimGBDAgg1 = CFDDict1['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+                var YLLPerPerson1 = combineGroups(locationNameDimGBDAgg1, locationNameDimPopAgg1, ratio);
+
+                var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
+
+                const WrappedYLLPerPerson0 = {
                     all: function () {
-                        var xData = xGroup.all();
-                        var yData = yGroup.all();
-                        var xMap = new Map(xData.map(d => [d.key, d.value]));
-                        var yMap = new Map(yData.map(d => [d.key, d.value]));
-                        var keys = new Set([...xMap.keys(), ...yMap.keys()]);
-                        var result = Array.from(keys).map(key => {
-                            var xValue = xMap.get(key) || 0;
-                            var yValue = yMap.get(key) || 0;
-                            return {
-                                key: key,
-                                value: combineFunction(xValue, yValue) // Use the custom function to combine values
-                            };
-                        });
-                        return result;
+                        return YLLPerPerson0.all();
                     }
                 };
-            }
+                const WrappedYLLPerPerson1 = {
+                    all: function () {
+                        return YLLPerPerson1.all();
+                    }
+                };
+                const WrappedYLLPerPersonChange = {
+                    all: function () {
+                        return YLLPerPersonChange.all();
+                    }
+                };
 
-            // Function to calculate the ratio
-            function ratio(x, y) {
-                return y > 0 ? x / y : 0;
-            }
-            // Function to calculate the ratio
-            function ratio_m1(x, y) {
-                return y > 0 ? x / y - 1: 0;
-            }
+                var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
+                var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
+                var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
+                let YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+                let YLLPerPersonChangeColorDomain = [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
 
-            // Usage examples
-            var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
-            var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
-            var YLLPerPerson0 = combineGroups(locationNameDimGBDAgg0, locationNameDimPopAgg0, ratio);
+                let YLLPerPersonColorRange = [
+                    "#3399FF",  // Lighter Vivid Blue
+                    "#66B2FF",  // Lighter Blue-Green
+                    "#70C5C9",  // Lighter Pale Turquoise
+                    "#9BD79D",  // Lighter Light Green
+                    "#C8E88E",  // Lighter Olive Green
+                    "#FFFFA6",  // Lightest Yellow (Middle Point)
+                    "#F4DC98",  // Lighter Peach
+                    "#F7BBA3",  // Lighter Soft Salmon
+                    "#EB8680",  // Lighter Muted Coral
+                    "#C0C0C0",  // Lighter Gray
+                    "#A0A0A0"   // Lighter Darker Gray
+                ];
 
-            var locationNameDimPopAgg1 = CFDDict1['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
-            var locationNameDimGBDAgg1 = CFDDict1['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
-            var YLLPerPerson1 = combineGroups(locationNameDimGBDAgg1, locationNameDimPopAgg1, ratio);
+                let YLLPerPersonChangeColorRange = [
+                    "#0072E5",
+                    "#3399EA",
+                    "#47B4B8",
+                    "#76C76E",
+                    "#ABD459",
+                    "#e0e043",
+                    "#E3B95F",
+                    "#E6917A",
+                    "#DD4C5A",
+                    "#9E9E9E",
+                    "#787878"
+                ];
 
-            var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
-
-            const WrappedYLLPerPerson0 = {
-              all: function() {
-                return YLLPerPerson0.all();
-              }
-            };
-            const WrappedYLLPerPerson1 = {
-              all: function() {
-                return YLLPerPerson1.all();
-              }
-            };
-            const WrappedYLLPerPersonChange = {
-              all: function() {
-                return YLLPerPersonChange.all();
-              }
-            };
-
-            var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
-            var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
-            var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
-            let YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
-            let YLLPerPersonChangeColorDomain = [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
-
-            let YLLPerPersonColorRange = [
-                "#3399FF",  // Lighter Vivid Blue
-                "#66B2FF",  // Lighter Blue-Green
-                "#70C5C9",  // Lighter Pale Turquoise
-                "#9BD79D",  // Lighter Light Green
-                "#C8E88E",  // Lighter Olive Green
-                "#FFFFA6",  // Lightest Yellow (Middle Point)
-                "#F4DC98",  // Lighter Peach
-                "#F7BBA3",  // Lighter Soft Salmon
-                "#EB8680",  // Lighter Muted Coral
-                "#C0C0C0",  // Lighter Gray
-                "#A0A0A0"   // Lighter Darker Gray
-            ];
-
-            let YLLPerPersonChangeColorRange = [
-                "#0072E5",
-                "#3399EA",
-                "#47B4B8",
-                "#76C76E",
-                "#ABD459",
-                "#e0e043",
-                "#E3B95F",
-                "#E6917A",
-                "#DD4C5A",
-                "#9E9E9E",
-                "#787878" 
-            ];
-
-            //#endregion
-            worldChart0
-                .width(1000)
-                .height(400)
-                .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
-                .group(WrappedYLLPerPerson0)
-                .colors(d3.scale.linear().range(YLLPerPersonColorRange))
-                .colorDomain(YLLPerPersonColorDomain)
-                .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
-                .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
-                .projection(d3.geo.equirectangular()
-                    .center([0, 5])
-                    .scale(140)
-                )
-                .valueAccessor(function (kv) { return kv.value; })
-                .title(function (d) { return "Location: " + d.key + "\nYears of live lost per Person: " + d.value; })
-                .on('filtered', function (chart, filter) {
-                    var selectedKeys = worldChart0.filters();
-                    currentFilters[0]['location_name'] = selectedKeys.slice()
-                    currentFilters[1]['location_name'] = selectedKeys.slice()
-                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
-                });
+                //#endregion
+                worldChart0
+                    .width(1000)
+                    .height(400)
+                    .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                    .group(WrappedYLLPerPerson0)
+                    .colors(d3.scale.linear().range(YLLPerPersonColorRange))
+                    .colorDomain(YLLPerPersonColorDomain)
+                    .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
+                    .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
+                    .projection(d3.geo.equirectangular()
+                        .center([0, 5])
+                        .scale(140)
+                    )
+                    .valueAccessor(function (kv) { return kv.value; })
+                    .title(function (d) { return "Location: " + d.key + "\nYears of live lost per Person: " + d.value; })
+                    .on('filtered', function (chart, filter) {
+                        var selectedKeys = worldChart0.filters();
+                        currentFilters[0]['location_name'] = selectedKeys.slice()
+                        currentFilters[1]['location_name'] = selectedKeys.slice()
+                        updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                    });
 
 
-            worldChart1
-                .width(1000)
-                .height(400)
-                .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
-                .group(WrappedYLLPerPerson1)
-                .colors(d3.scale.linear().range(YLLPerPersonColorRange))
-                .colorDomain(YLLPerPersonColorDomain)
-                .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
-                .overlayGeoJson(world_geojson.features, "name", function (d) {
-                    return d.properties.nameMapped;
-                })
-                .projection(d3.geo.equirectangular()
-                    .center([0, 5])
-                    .scale(140)
-                )
-                .valueAccessor(function (kv) {
-                    return kv.value; // This will now reflect the ratio
-                })
-                .title(function (d) {
-                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
-                })
-                .on('filtered', function (chart, filter) {
-                    var selectedKeys = worldChart1.filters();
-                    currentFilters[0]['location_name'] = selectedKeys.slice()
-                    currentFilters[1]['location_name'] = selectedKeys.slice()
-                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
-                });
+                worldChart1
+                    .width(1000)
+                    .height(400)
+                    .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                    .group(WrappedYLLPerPerson1)
+                    .colors(d3.scale.linear().range(YLLPerPersonColorRange))
+                    .colorDomain(YLLPerPersonColorDomain)
+                    .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
+                    .overlayGeoJson(world_geojson.features, "name", function (d) {
+                        return d.properties.nameMapped;
+                    })
+                    .projection(d3.geo.equirectangular()
+                        .center([0, 5])
+                        .scale(140)
+                    )
+                    .valueAccessor(function (kv) {
+                        return kv.value; // This will now reflect the ratio
+                    })
+                    .title(function (d) {
+                        return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                    })
+                    .on('filtered', function (chart, filter) {
+                        var selectedKeys = worldChart1.filters();
+                        currentFilters[0]['location_name'] = selectedKeys.slice()
+                        currentFilters[1]['location_name'] = selectedKeys.slice()
+                        updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                    });
 
 
-            worldChartChange
-                .width(1000)
-                .height(400)
-                .dimension(CFDDict1['population']['d']['location_name'])
-                .group(WrappedYLLPerPersonChange)
-                .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
-                .colorDomain(YLLPerPersonChangeColorDomain)
-                .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
-                .overlayGeoJson(world_geojson.features, "name", function (d) {
-                    return d.properties.nameMapped;
-                })
-                .projection(d3.geo.equirectangular()
-                    .center([0, 5])
-                    .scale(140)
-                )
-                .valueAccessor(function (kv) {
-                    return kv.value;
-                })
-                .title(function (d) {
-                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
-                })
-                .on('filtered', function (chart, filter) {
-                    var selectedKeys = worldChartChange.filters();
-                    currentFilters[0]['location_name'] = selectedKeys.slice()
-                    currentFilters[1]['location_name'] = selectedKeys.slice()
-                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
-                });
+                worldChartChange
+                    .width(1000)
+                    .height(400)
+                    .dimension(CFDDict1['population']['d']['location_name'])
+                    .group(WrappedYLLPerPersonChange)
+                    .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
+                    .colorDomain(YLLPerPersonChangeColorDomain)
+                    .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
+                    .overlayGeoJson(world_geojson.features, "name", function (d) {
+                        return d.properties.nameMapped;
+                    })
+                    .projection(d3.geo.equirectangular()
+                        .center([0, 5])
+                        .scale(140)
+                    )
+                    .valueAccessor(function (kv) {
+                        return kv.value;
+                    })
+                    .title(function (d) {
+                        return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                    })
+                    .on('filtered', function (chart, filter) {
+                        var selectedKeys = worldChartChange.filters();
+                        currentFilters[0]['location_name'] = selectedKeys.slice()
+                        currentFilters[1]['location_name'] = selectedKeys.slice()
+                        updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                    });
 
 
 
                 function addLegendToChart(chart, chartId, format = '') {
-                chart.on('pretransition', function (chart) {
-                    var legendWidth = 55;
-                    var legendHeight = 300; // Height of the gradient rectangle
-                    var totalSvgHeight = legendHeight + 10; // Extra space for axis labels
-                    var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
+                    chart.on('pretransition', function (chart) {
+                        var legendWidth = 55;
+                        var legendHeight = 300; // Height of the gradient rectangle
+                        var totalSvgHeight = legendHeight + 10; // Extra space for axis labels
+                        var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
 
-                    // Remove any existing legend
-                    d3.select(chartId + ' .dc-legend').remove();
-                    var legend = d3.select(chartId)
-                        .append('div')
-                        .attr('class', 'dc-legend')
-                        .style('position', 'absolute')
-                        .style('top', '20px') // Increased top padding
-                        .style('right', '0')
-                        .style('width', legendWidth + 'px')
-                        .style('height', totalSvgHeight + 'px');
+                        // Remove any existing legend
+                        d3.select(chartId + ' .dc-legend').remove();
+                        var legend = d3.select(chartId)
+                            .append('div')
+                            .attr('class', 'dc-legend')
+                            .style('position', 'absolute')
+                            .style('top', '20px') // Increased top padding
+                            .style('right', '0')
+                            .style('width', legendWidth + 'px')
+                            .style('height', totalSvgHeight + 'px');
 
-                    var svg = legend.append('svg')
-                        .attr('width', legendWidth)
-                        .attr('height', totalSvgHeight);
+                        var svg = legend.append('svg')
+                            .attr('width', legendWidth)
+                            .attr('height', totalSvgHeight);
 
-                    var gradient = svg.append('defs')
-                        .append('linearGradient')
-                        .attr('id', gradientId)
-                        .attr('x1', '0%')
-                        .attr('y1', '100%')
-                        .attr('x2', '0%')
-                        .attr('y2', '0%');
+                        var gradient = svg.append('defs')
+                            .append('linearGradient')
+                            .attr('id', gradientId)
+                            .attr('x1', '0%')
+                            .attr('y1', '100%')
+                            .attr('x2', '0%')
+                            .attr('y2', '0%');
 
-                    gradient.selectAll('stop')
-                        .data(chart.colors().range())
-                        .enter()
-                        .append('stop')
-                        .attr('offset', function (d, i) { return i / (chart.colors().range().length - 1); })
-                        .attr('stop-color', function (d) { return d; });
+                        gradient.selectAll('stop')
+                            .data(chart.colors().range())
+                            .enter()
+                            .append('stop')
+                            .attr('offset', function (d, i) { return i / (chart.colors().range().length - 1); })
+                            .attr('stop-color', function (d) { return d; });
 
-                    svg.append('rect')
-                        .attr('width', 20)
-                        .attr('height', legendHeight)
-                        .attr('y', 5) // Shift the rectangle down by 5px
-                        .style('fill', 'url(#' + gradientId + ')');
+                        svg.append('rect')
+                            .attr('width', 20)
+                            .attr('height', legendHeight)
+                            .attr('y', 5) // Shift the rectangle down by 5px
+                            .style('fill', 'url(#' + gradientId + ')');
 
-                    // Dynamic legend scale based on the chart's color domain
-                    var legendScale = d3.scale.linear()
-                        .domain([d3.min(chart.colorDomain()), d3.max(chart.colorDomain())])
-                        .range([legendHeight, 0]);
+                        // Dynamic legend scale based on the chart's color domain
+                        var legendScale = d3.scale.linear()
+                            .domain([d3.min(chart.colorDomain()), d3.max(chart.colorDomain())])
+                            .range([legendHeight, 0]);
 
-                    var formatter = d3.format(format); // Create a formatter using the provided format string
+                        var formatter = d3.format(format); // Create a formatter using the provided format string
 
-                    var legendAxis = d3.svg.axis()
-                        .scale(legendScale)
-                        .orient('right')
-                        .ticks(5)
-                        .tickFormat(formatter); // Apply the formatter to the axis
+                        var legendAxis = d3.svg.axis()
+                            .scale(legendScale)
+                            .orient('right')
+                            .ticks(5)
+                            .tickFormat(formatter); // Apply the formatter to the axis
 
-                    svg.append('g')
-                        .attr('class', 'legend-axis')
-                        .attr('transform', 'translate(20, 5)')
-                        .call(legendAxis);
-                });
-            }
-
-            // Apply the legend addition function to each chart
-            addLegendToChart(worldChart0, '#gbd_map0', '.2f');
-            addLegendToChart(worldChart1, '#gbd_map1', '.2f');
-            addLegendToChart(worldChartChange, '#gbd_map_change', '.0%');
-
-            const common_columns = [
-                {
-                    header: { text: "Population" },
-                    cells: { html: function (d) { 
-                        console.log("blub:")
-                        console.log(d.categorical_variable, d.categorical_value)
-                        console.log((bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))))
-                        return (bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"))); } },
-                    sort: function (d) { return round_z(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightgreen'
-                        }
-                    }
-                }, {
-                    header: { text: "Deaths" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
-                    sort: function (d) { return round_z(getVal1("gbd", d.categorical_variable, d.categorical_value, "deaths_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightsalmon',
-                            'text-align': 'right',
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val"))); } },
-                    sort: function (d) { return round_z(getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightblue'
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost per Person 0" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'range': YLLPerPersonColorRange,
-                            'domain':YLLPerPersonColorDomain,
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost per Person 1" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'range': YLLPerPersonColorRange,
-                            'domain':YLLPerPersonColorDomain,
-                        }
-                    }
-                }, {
-                    header: { text: "Years of live lost per Person change" },
-                    cells: { html: function (d) { return d3.format('.2%')((getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
-                    sort: function (d) { return (getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
-                    vis: 'color',
-                    vis_options: {
-                        styles: {
-                            'domain': YLLPerPersonChangeColorDomain,
-                            'range': YLLPerPersonChangeColorRange,
-                        }
-                    }
-                },
-            ]
-            // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
-            // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
-            // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
-            // lets the user indicate when that needs to be done.
-            function redraw() {
-                for (var _i = 0, charts_redraw = charts; _i < charts_redraw.length; _i++) {
-                    var chart = charts_redraw[_i];
-                    chart.redraw();
+                        svg.append('g')
+                            .attr('class', 'legend-axis')
+                            .attr('transform', 'translate(20, 5)')
+                            .call(legendAxis);
+                    });
                 }
-            }
-            function redrawDcAndC3() {
-                dc.redrawAll();
-                redraw();
-            }
-            function restyle() {
-                for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
-                    var chart = charts_restyle[_i];
-                    chart.restyle();
-                }
-            }
 
-            function createDataTable({
-                anchorId,
-                data,
-                filter_dimensions = [],
-                initialSortColumn,
-                columns,
-                customOptions = {},
-                selectable = 'multi',
-            }) {
-                var tableOptions = {
-                    anchor: anchorId,
-                    data: data,
-                    sortable: true,
-                    width: '100%',
-                    columns: columns,
-                    sort_column: initialSortColumn,
-                    selectable: selectable,
-                    row_options: {
-                        events: {
-                            mouseenter: function () {
-                                this.classList.add('hover');
-                            },
-                            mouseleave: function () {
-                                this.classList.remove('hover');
+                // Apply the legend addition function to each chart
+                addLegendToChart(worldChart0, '#gbd_map0', '.2f');
+                addLegendToChart(worldChart1, '#gbd_map1', '.2f');
+                addLegendToChart(worldChartChange, '#gbd_map_change', '.0%');
+
+                const common_columns = [
+                    {
+                        header: { text: "Population" },
+                        cells: {
+                            html: function (d) {
+                                console.log("blub:")
+                                console.log(d.categorical_variable, d.categorical_value)
+                                console.log((bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))))
+                                return (bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                            }
+                        },
+                        sort: function (d) { return round_z(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightgreen'
+                            }
+                        }
+                    }, {
+                        header: { text: "Deaths" },
+                        cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                        sort: function (d) { return round_z(getVal1("gbd", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightsalmon',
+                                'text-align': 'right',
+                            }
+                        }
+                    }, {
+                        header: { text: "Years of live lost" },
+                        cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                        sort: function (d) { return round_z(getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val")); },
+                        vis: 'bar',
+                        vis_options: {
+                            styles: {
+                                'background-color': 'lightblue'
+                            }
+                        }
+                    }, {
+                        header: { text: "Years of live lost per Person 0" },
+                        cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                        sort: function (d) { return getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                        vis: 'color',
+                        vis_options: {
+                            styles: {
+                                'range': YLLPerPersonColorRange,
+                                'domain': YLLPerPersonColorDomain,
+                            }
+                        }
+                    }, {
+                        header: { text: "Years of live lost per Person 1" },
+                        cells: { html: function (d) { return (d3.format(',')((getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                        sort: function (d) { return getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                        vis: 'color',
+                        vis_options: {
+                            styles: {
+                                'range': YLLPerPersonColorRange,
+                                'domain': YLLPerPersonColorDomain,
+                            }
+                        }
+                    }, {
+                        header: { text: "Years of live lost per Person change" },
+                        cells: { html: function (d) { return d3.format('.2%')((getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                        sort: function (d) { return (getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                        vis: 'color',
+                        vis_options: {
+                            styles: {
+                                'domain': YLLPerPersonChangeColorDomain,
+                                'range': YLLPerPersonChangeColorRange,
                             }
                         }
                     },
-                    cell_options: {
-                        styles: {
-                            // 'text-align': 'right',
-                            "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
-                        }
+                ]
+                // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
+                // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
+                // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
+                // lets the user indicate when that needs to be done.
+                function redraw() {
+                    for (var _i = 0, charts_redraw = charts; _i < charts_redraw.length; _i++) {
+                        var chart = charts_redraw[_i];
+                        chart.redraw();
+                    }
+                }
+                function redrawDcAndC3() {
+                    dc.redrawAll();
+                    redraw();
+                }
+                function restyle() {
+                    for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
+                        var chart = charts_restyle[_i];
+                        chart.restyle();
+                    }
+                }
+
+                function createDataTable({
+                    anchorId,
+                    data,
+                    filter_dimensions = [],
+                    initialSortColumn,
+                    columns,
+                    customOptions = {},
+                    selectable = 'multi',
+                }) {
+                    var tableOptions = {
+                        anchor: anchorId,
+                        data: data,
+                        sortable: true,
+                        width: '100%',
+                        columns: columns,
+                        sort_column: initialSortColumn,
+                        selectable: selectable,
+                        row_options: {
+                            events: {
+                                mouseenter: function () {
+                                    this.classList.add('hover');
+                                },
+                                mouseleave: function () {
+                                    this.classList.remove('hover');
+                                }
+                            }
+                        },
+                        cell_options: {
+                            styles: {
+                                // 'text-align': 'right',
+                                "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
+                            }
+                        },
+                        handlers: {
+                            'select': function (selections) {
+                                selectedKeys = selections.map(function (d) { return d.categorical_value; })
+                                currentFilters[0][data[0]["categorical_variable"]] = selectedKeys.slice()
+                                currentFilters[1][data[0]["categorical_variable"]] = selectedKeys.slice()
+                                updateFiltering(filter_dimensions, currentFilters[0][data[0]["categorical_variable"]]);
+                            }
+                        },
+                        ...customOptions
+                    };
+
+                    var newTable = new c3.Table(tableOptions);
+                    charts.push(newTable);
+                }
+
+
+                function createInfosToLookUp(categorical_values, categorical_variable_name) {
+                    cat_value_array = Array.from(categorical_values)
+                    return cat_value_array.map(item => ({
+                        categorical_value: item,
+                        categorical_variable: categorical_variable_name
+                    }));
+                }
+
+                createDataTable({
+                    anchorId: '#gdb_region_name_table',
+                    data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['region_name'], CFDDict0['population']['d']['region_name'], CFDDict1['gbd']['d']['region_name'], CFDDict1['population']['d']['region_name']],
+                    initialSortColumn: "Population",
+                    columns: [
+                        {
+                            header: { text: "Region" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; }
+                            },
+                            sort: function (d) { return d.categorical_value; }
+                        },
+                    ].concat(deepClone(common_columns))
+                });
+
+                createDataTable({
+                    anchorId: '#gdb_sub_region_name_table',
+                    data: createInfosToLookUp(cat_vars_and_values["sub_region_name"], "sub_region_name"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['sub_region_name'], CFDDict0['population']['d']['sub_region_name'], CFDDict1['gbd']['d']['sub_region_name'], CFDDict1['population']['d']['sub_region_name']],
+                    initialSortColumn: "Population",
+                    columns: [
+                        {
+                            header: { text: "Sub Region" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; }
+                            },
+                            sort: function (d) { return d.categorical_value; }
+                        },
+                    ].concat(deepClone(common_columns))
+                });
+
+
+                // console.log("aggDict0['gbd']['location_name']:", aggDict0['gbd']['location_name'])
+                // console.log("createInfosToLookUp(aggDict0['gbd']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
+                createDataTable({
+                    anchorId: '#gdb_location_name_table',
+                    data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
+                    initialSortColumn: "Population",
+                    customOptions: {
+                        "limit_rows": 10,
+                        "pagination": true,
+                        "page": 1,
                     },
-                    handlers: {
-                        'select': function (selections) {
-                            selectedKeys = selections.map(function (d) { return d.categorical_value; })
-                            currentFilters[0][data[0]["categorical_variable"]] = selectedKeys.slice()
-                            currentFilters[1][data[0]["categorical_variable"]] = selectedKeys.slice()
-                            updateFiltering(filter_dimensions, currentFilters[0][data[0]["categorical_variable"]]);
+                    searchable: true,
+                    columns: [
+                        {
+                            header: { text: "Country" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; }
+                            },
+                            sort: function (d) { return d.categorical_value; }
+                        },
+                    ].concat(deepClone(common_columns))
+                });
+
+                createDataTable({
+                    anchorId: '#gdb_sex_name_table',
+                    data: createInfosToLookUp(cat_vars_and_values["sex_name"], "sex_name"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
+                    initialSortColumn: "Sex",
+                    columns: [
+                        {
+                            header: { text: "Sex" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; }
+                            },
+                            sort: function (d) { return d.categorical_value; }
+                        },
+                    ].concat(deepClone(common_columns))
+                });
+
+                createDataTable({
+                    anchorId: '#gdb_age_cluster_name_sorted_table',
+                    data: createInfosToLookUp(cat_vars_and_values["age_cluster_name_sorted"], "age_cluster_name_sorted"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['age_cluster_name_sorted'], CFDDict0['population']['d']['age_cluster_name_sorted'], CFDDict1['gbd']['d']['age_cluster_name_sorted'], CFDDict1['population']['d']['age_cluster_name_sorted']],
+                    initialSortColumn: "Age cluster",
+                    columns: [
+                        {
+                            header: { text: "Age cluster" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; }
+                            },
+                            sort: function (d) { return d.categorical_value; }
+                        },
+                    ].concat(deepClone(common_columns))
+                });
+
+                createDataTable({
+                    anchorId: '#gdb_age_group_name_sorted_table',
+                    data: createInfosToLookUp(cat_vars_and_values["age_group_name_sorted"], "age_group_name_sorted"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
+                    initialSortColumn: "Age group",
+                    columns: [
+                        {
+                            header: { text: "Age group" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; }
+                            },
+                            sort: function (d) { return d.categorical_value; }
+                        },
+                    ].concat(deepClone(common_columns))
+                });
+
+                createDataTable({
+                    anchorId: '#gdb_l1_cause_table',
+                    data: createInfosToLookUp(cat_vars_and_values["l1_cause_name"], "l1_cause_name"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'], CFDDict1['gbd']['d']['l1_cause_name']],
+                    initialSortColumn: "Years of live lost",
+                    columns: [
+                        {
+                            header: { text: "L1 cause" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; },
+                            },
+                            sort: function (d) { return d.categorical_value; },
                         }
-                    },
-                    ...customOptions
+                    ].concat(deepClone(common_columns).slice(2))
+                });
+
+                createDataTable({
+                    anchorId: '#gdb_l2_cause_table',
+                    data: createInfosToLookUp(cat_vars_and_values["l2_cause_name"], "l2_cause_name"),
+                    filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'], CFDDict1['gbd']['d']['l2_cause_name']],
+                    initialSortColumn: "Years of live lost",
+                    columns: [
+                        {
+                            header: { text: "L2 cause" },
+                            cells: {
+                                text: function (d) { return d.categorical_value; },
+                            },
+                            sort: function (d) { return d.categorical_value; },
+                        }
+                    ].concat(deepClone(common_columns).slice(2)),
+                    customOptions: {
+                        // Any region-specific options can go here
+                    }
+                });
+
+                updateLoadingMessage(`before actual rendering : ${Math.round(performance.now())}ms`);
+                // #########################################################################################
+                // ### Initial Rendering
+                // Perform the initial `render()`
+                dc.renderAll();
+                for (var _i = 0, charts_1 = charts; _i < charts_1.length; _i++) {
+                    var chart = charts_1[_i];
+                    chart.render();
+                }
+                updateFilterBanner();                             // *** NEW show empty banner
+                // **Resize** charts if the window is resized.
+                window.onresize = function () {
+                    for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
+                        var chart = charts_4[_i];
+                        chart.resize();
+                    }
                 };
-
-                var newTable = new c3.Table(tableOptions);
-                charts.push(newTable);
+                updateLoadingMessage(`end of render function at : ${Math.round(performance.now())}ms`);
+                d3.selectAll('#waiting').remove();
             }
-
-
-            function createInfosToLookUp(categorical_values, categorical_variable_name) {
-                cat_value_array = Array.from(categorical_values)
-                return cat_value_array.map(item => ({
-                    categorical_value: item,
-                    categorical_variable: categorical_variable_name
-                }));
-            }
-
-            createDataTable({
-                anchorId: '#gdb_region_name_table',
-                data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['region_name'], CFDDict0['population']['d']['region_name'], CFDDict1['gbd']['d']['region_name'], CFDDict1['population']['d']['region_name']],
-                initialSortColumn: "Population",
-                columns: [
-                    {
-                        header: { text: "Region" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; }
-                        },
-                        sort: function (d) { return d.categorical_value; }
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
-            createDataTable({
-                anchorId: '#gdb_sub_region_name_table',
-                data: createInfosToLookUp(cat_vars_and_values["sub_region_name"], "sub_region_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['sub_region_name'], CFDDict0['population']['d']['sub_region_name'], CFDDict1['gbd']['d']['sub_region_name'], CFDDict1['population']['d']['sub_region_name']],
-                initialSortColumn: "Population",
-                columns: [
-                    {
-                        header: { text: "Sub Region" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; }
-                        },
-                        sort: function (d) { return d.categorical_value; }
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
-
-            // console.log("aggDict0['gbd']['location_name']:", aggDict0['gbd']['location_name'])
-            // console.log("createInfosToLookUp(aggDict0['gbd']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
-            createDataTable({
-                anchorId: '#gdb_location_name_table',
-                data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
-                initialSortColumn: "Population",
-                customOptions: {
-                    "limit_rows": 10,
-                    "pagination": true,
-                    "page": 1,
-                },
-                searchable: true,
-                columns: [
-                    {
-                        header: { text: "Country" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; }
-                        },
-                        sort: function (d) { return d.categorical_value; }
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
-            createDataTable({
-                anchorId: '#gdb_sex_name_table',
-                data: createInfosToLookUp(cat_vars_and_values["sex_name"], "sex_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
-                initialSortColumn: "Sex",
-                columns: [
-                    {
-                        header: { text: "Sex" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; }
-                        },
-                        sort: function (d) { return d.categorical_value; }
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
-            createDataTable({
-                anchorId: '#gdb_age_cluster_name_sorted_table',
-                data: createInfosToLookUp(cat_vars_and_values["age_cluster_name_sorted"], "age_cluster_name_sorted"),
-                filter_dimensions: [CFDDict0['gbd']['d']['age_cluster_name_sorted'], CFDDict0['population']['d']['age_cluster_name_sorted'], CFDDict1['gbd']['d']['age_cluster_name_sorted'], CFDDict1['population']['d']['age_cluster_name_sorted']],
-                initialSortColumn: "Age cluster",
-                columns: [
-                    {
-                        header: { text: "Age cluster" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; }
-                        },
-                        sort: function (d) { return d.categorical_value; }
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
-            createDataTable({
-                anchorId: '#gdb_age_group_name_sorted_table',
-                data: createInfosToLookUp(cat_vars_and_values["age_group_name_sorted"], "age_group_name_sorted"),
-                filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
-                initialSortColumn: "Age group",
-                columns: [
-                    {
-                        header: { text: "Age group" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; }
-                        },
-                        sort: function (d) { return d.categorical_value; }
-                    },
-                ].concat(deepClone(common_columns))
-            });
-
-            createDataTable({
-                anchorId: '#gdb_l1_cause_table',
-                data: createInfosToLookUp(cat_vars_and_values["l1_cause_name"], "l1_cause_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'], CFDDict1['gbd']['d']['l1_cause_name']],
-                initialSortColumn: "Years of live lost",
-                columns: [
-                    {
-                        header: { text: "L1 cause" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; },
-                        },
-                        sort: function (d) { return d.categorical_value; },
-                    }
-                ].concat(deepClone(common_columns).slice(2))
-            });
-
-            createDataTable({
-                anchorId: '#gdb_l2_cause_table',
-                data: createInfosToLookUp(cat_vars_and_values["l2_cause_name"], "l2_cause_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'], CFDDict1['gbd']['d']['l2_cause_name']],
-                initialSortColumn: "Years of live lost",
-                columns: [
-                    {
-                        header: { text: "L2 cause" },
-                        cells: {
-                            text: function (d) { return d.categorical_value; },
-                        },
-                        sort: function (d) { return d.categorical_value; },
-                    }
-                ].concat(deepClone(common_columns).slice(2)),
-                customOptions: {
-                    // Any region-specific options can go here
-                }
-            });
-
-            updateLoadingMessage(`before actual rendering : ${Math.round(performance.now())}ms`);
             // #########################################################################################
-            // ### Initial Rendering
-            // Perform the initial `render()`
-            dc.renderAll();
-            for (var _i = 0, charts_1 = charts; _i < charts_1.length; _i++) {
-                var chart = charts_1[_i];
-                chart.render();
-            }
-            updateFilterBanner();                             // *** NEW show empty banner
-            // **Resize** charts if the window is resized.
-            window.onresize = function () {
-                for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
-                    var chart = charts_4[_i];
-                    chart.resize();
-                }
-            };
-            updateLoadingMessage(`end of render function at : ${Math.round(performance.now())}ms`);
-            d3.selectAll('#waiting').remove();
-        }
-        // #########################################################################################
-        // # Start Here
-        // The loading and rendering are initiated here..  It calls the `download_data()` function to
-        // download the data which returns a Promise.  We setup a _then_ callback function to be
-        // called when all of the data is loaded and promised.  This callback function calls which ends up
-        // calling the `render()` function.
-        download_data().then(function () { setTimeout(render, 0); });
+            // # Start Here
+            // The loading and rendering are initiated here..  It calls the `download_data()` function to
+            // download the data which returns a Promise.  We setup a _then_ callback function to be
+            // called when all of the data is loaded and promised.  This callback function calls which ends up
+            // calling the `render()` function.
+            download_data().then(function () { setTimeout(render, 0); });
         // The reason to have setTimeout call the render function instead of calling it directly is
         // just a trick to help with debugging in the browser when using promises.  The callback function
         // for a promise is called, which catches all exceptions to be used to call an error callback.
@@ -1292,6 +1296,7 @@
         // passed to the promise error handler and instead can be caught and handeled as normal in a
         // debugger.  In production code you could use this instead:
         //     download_data().then(render)
-</script>
+    </script>
 </body>
+
 </html>
