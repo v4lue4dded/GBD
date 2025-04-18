@@ -3,293 +3,274 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Generating Combination &amp; Hash Lookup (PostgreSQL Spacing)</title>
+    <title>GBD Cache‑Filter JSON Lookup</title>
+    <!-- md5.js polyfill (unchanged) -->
     <script src="lib/myHelperFunctions/md5.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            margin: 1rem auto;
+            max-width: 960px;
+            padding: 0 1rem;
+        }
+
+        fieldset {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: .5rem;
+        }
+
+        select,
+        button {
+            padding: .4rem .6rem;
+            font-size: 1rem;
+        }
+
+        pre {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            white-space: pre-wrap;
+            border-radius: .5rem;
+            background: #fafafa;
+        }
+    </style>
     <script>
-        ////////////////////////////////////////////////////////////////////////////////
-        // We will load these from the external JSON:
-        ////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////
+        // GLOBAL CONSTANTS & STATE                                //
+        //////////////////////////////////////////////////////////////
+
+        /**
+         * Dimension order *exactly* as used when building the identifying_string
+         * in the PostgreSQL pipeline above.  It differs by table_type.
+         */
+        const COL_ORDER_DICT = {
+            population: [
+                "year",
+                "sex_name",
+                "region_name",
+                "sub_region_name",
+                "location_name",
+                "age_cluster_name_sorted",
+                "age_group_name_sorted"
+            ],
+            long: [
+                "year",
+                "sex_name",
+                "region_name",
+                "sub_region_name",
+                "location_name",
+                "age_cluster_name_sorted",
+                "age_group_name_sorted",
+                "l1_cause_name",
+                "l2_cause_name"
+            ]
+        };
+
+        // Loaded asynchronously so we can populate the dropdowns with readable labels.
         let decodingDict = null;
 
-        // The exact order in which we build the string matters for MD5 hashing.
-        // Adjust if your PostgreSQL code uses a different order of keys!
-        const COL_ORDER = [
-            "year",
-            "region_name",
-            "sub_region_name",
-            "location_name",
-            "age_group_name_sorted",
-            "age_cluster_name_sorted",
-            "sex_name",
-            "l1_cause_name",
-            "l2_cause_name"
-        ];
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // 1) Asynchronously load the decoding dictionary from external JSON.
-        //    Then build the dropdowns and set up the page.
-        ////////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////////
-        // 1) Asynchronously load the decoding dictionary from external JSON.
-        //    Then build the dropdowns and set up the page.
-        ////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////
+        // 1) Load decoding dictionary → populate selects            //
+        //////////////////////////////////////////////////////////////
         async function loadDecodingDict() {
             try {
-                // NOTE: Adjust this path if your file is served elsewhere:
-                // e.g., "data_doc/df_measure_narrow_import_dict.json"
-                const response = await fetch("data_doc/df_measure_narrow_import_dict.json");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+                // ‑‑ Adjust this path if you keep the dict elsewhere
+                const resp = await fetch("data_doc/df_measure_narrow_import_dict.json");
+                if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+                const data = await resp.json();
                 decodingDict = data.decoding_dict;
-                console.log(decodingDict);
-                // Now that decodingDict is loaded, build the dropdowns.
                 buildDropdowns();
             } catch (err) {
-                console.error("Error loading decoding dictionary:", err);
-                // Show error to the user:
-                const msg = document.getElementById("initError");
-                if (msg) {
-                    msg.textContent = "Failed to load decoding dictionary JSON: " + err;
-                }
+                console.error(err);
+                document.getElementById("initError").textContent = `Failed to load decoding dictionary: ${err.message}`;
             }
         }
 
-        ////////////////////////////////////////////////////////////////////////////////
-        // 2) Build the form on page once we have decodingDict
-        ////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////
+        // 2) Build the form once decodingDict is present           //
+        //////////////////////////////////////////////////////////////
         function buildDropdowns() {
+            // We list every possible column so the UI doesn’t change when the table_type switch.
             const columns = [
                 "year",
+                "sex_name",
                 "region_name",
                 "sub_region_name",
                 "location_name",
                 "age_group_name_sorted",
                 "age_cluster_name_sorted",
-                "sex_name",
                 "l1_cause_name",
                 "l2_cause_name"
             ];
 
-            // For each column, populate its <select> with the dictionary values
             columns.forEach(col => {
-                const selectEl = document.getElementById(col);
-                if (!selectEl) return;
+                const sel = document.getElementById(col);
+                if (!sel) return;
 
-                // Create a placeholder option
-                const AllOpt = document.createElement("option");
-                AllOpt.value = "All";
-                AllOpt.textContent = "All";
-                selectEl.appendChild(AllOpt);
-                // Add one <option> per decoded value
-                if (decodingDict[col]) {
+                // «All» mirrors the COALESCE('All') used in SQL roll‑up tables
+                sel.appendChild(new Option("All", "All"));
+
+                if (decodingDict?.[col]) {
                     for (const key in decodingDict[col]) {
-                        const opt = document.createElement("option");
-                        opt.value = decodingDict[col][key];  // e.g. "China" or "2000"
-                        opt.textContent = decodingDict[col][key];
-                        selectEl.appendChild(opt);
+                        const label = decodingDict[col][key];
+                        sel.appendChild(new Option(label, label));
                     }
                 }
-                const blankOpt = document.createElement("option");
-                blankOpt.value = "";
-                blankOpt.textContent = "-- no selection --";
-                selectEl.appendChild(blankOpt);
+                sel.appendChild(new Option("-- no selection --", ""));
+            });
+        }
 
+        //////////////////////////////////////////////////////////////
+        // 3) Helpers                                               //
+        //////////////////////////////////////////////////////////////
 
+        /**
+         * Build the identifying_string exactly like the SQL:
+         *   '<col>: ' || value  — joined with ' | '
+         * Any missing/blank values become the literal string "All" so the hash matches.
+         */
+        function buildIdentifyingString(obj, colOrder) {
+            return colOrder
+                .map(col => `${col}: ${obj[col] || "All"}`)
+                .join(" | ");
+        }
+
+        //////////////////////////////////////////////////////////////
+        // 4) Main lookup                                           //
+        //////////////////////////////////////////////////////////////
+        async function onLookup() {
+            const tableType = document.getElementById("tableType").value.trim();
+            if (!tableType) {
+                alert("Please choose a table type.");
+                return;
+            }
+
+            const colOrder = COL_ORDER_DICT[tableType];
+            if (!colOrder) {
+                alert(`Unsupported table type '${tableType}'.`);
+                return;
+            }
+
+            // Gather user input for all potential columns
+            const inputObj = {};
+            [
+                "year",
+                "sex_name",
+                "region_name",
+                "sub_region_name",
+                "location_name",
+                "age_group_name_sorted",
+                "age_cluster_name_sorted",
+                "l1_cause_name",
+                "l2_cause_name"
+            ].forEach(col => {
+                inputObj[col] = document.getElementById(col).value.trim();
             });
 
-            // Also build pivotCol dropdown
-            const pivotColSelect = document.getElementById("pivotCol");
-            if (pivotColSelect) {
-                const pivotBlank = document.createElement("option");
-                pivotBlank.value = "";
-                pivotBlank.textContent = "-- select pivot column --";
-                pivotColSelect.appendChild(pivotBlank);
+            // ── Build string & hash ────────────────────────────────
+            const identifyingString = buildIdentifyingString(inputObj, colOrder);
+            const fullHash = md5(identifyingString);
+            const partialHash = fullHash.slice(0, 3); // SQL substr(…,0,4)
 
-                // Each possible column (that might appear in the final JSON)
-                COL_ORDER.forEach(col => {
-                    const opt = document.createElement("option");
-                    opt.value = col;
-                    opt.textContent = col;
-                    pivotColSelect.appendChild(opt);
-                });
+            // Debug output
+            document.getElementById("jsonString").textContent = identifyingString;
+            document.getElementById("hashInfo").textContent = `Full hash: ${fullHash}\nPartial hash: ${partialHash}`;
+
+            // ── Fetch matching chunk file ──────────────────────────
+            const url = `data_doc/cachefilter_${tableType}/${partialHash}.json`;
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+                const text = await resp.text();
+                let json;
+                try {
+                    json = JSON.parse(text);
+                } catch (parseErr) {
+                    throw new Error(`File did not contain valid JSON. Raw data: \n${text}`);
+                }
+
+                const record = json[fullHash];
+                if (!record) {
+                    throw new Error(`Hash ${fullHash} not found inside ${partialHash}.json`);
+                }
+                document.getElementById("result").textContent = JSON.stringify(record, null, 2);
+            } catch (err) {
+                document.getElementById("result").textContent = `Error:\n${err.message}`;
             }
         }
-        function createIdentifyingString(obj, pivotCol, colOrder) {
-            let pairs = [];
-            for (const col of colOrder) {
-                // Skip pivot column
-                if (col === pivotCol) continue;
-                // If user left it blank, skip
-                if (!obj[col]) continue;
 
-                // Force everything as a string with quotes.
-                pairs.push(`"${col}" : "${obj[col]}"`);
-            }
-            return `{${pairs.join(", ")}}`;
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-        // 4) The main logic after we pick the dropdown values:
-        //    - Build the custom JSON string
-        //    - MD5-hash it
-        //    - Fetch the partial-hash file
-        //    - Display the result
-        ////////////////////////////////////////////////////////////////////////////////
-        function onLookup() {
-            if (!decodingDict) {
-                document.getElementById("result").textContent =
-                    "Decoding dictionary not loaded yet. Please wait.";
-                return;
-            }
-
-            // 4a) Gather user selections
-            const tableType = document.getElementById("tableType").value.trim();
-            const pivotCol = document.getElementById("pivotCol").value.trim();
-
-            if (!tableType || !pivotCol) {
-                document.getElementById("result").textContent =
-                    "Please pick a Table Type and a Pivot Column.";
-                return;
-            }
-
-            // Build an object of the user-chosen values
-            const inputObj = {
-                year: document.getElementById("year").value.trim(),
-                region_name: document.getElementById("region_name").value.trim(),
-                sub_region_name: document.getElementById("sub_region_name").value.trim(),
-                location_name: document.getElementById("location_name").value.trim(),
-                age_group_name_sorted: document.getElementById("age_group_name_sorted").value.trim(),
-                age_cluster_name_sorted: document.getElementById("age_cluster_name_sorted").value.trim(),
-                sex_name: document.getElementById("sex_name").value.trim(),
-                l1_cause_name: document.getElementById("l1_cause_name").value.trim(),
-                l2_cause_name: document.getElementById("l2_cause_name").value.trim()
-            };
-
-            // 4b) Build the "PostgreSQL style" JSON string with spacing
-            const indentifyingString = createIdentifyingString(inputObj, pivotCol, COL_ORDER);
-
-            // Show for debugging
-            document.getElementById("jsonString").textContent = indentifyingString;
-
-            // 4c) Compute the MD5 (from the md5.js library)
-            const fullHash = md5(indentifyingString);
-            const partialHash = fullHash.slice(0, 3);
-
-            // Show the computed hashes
-            document.getElementById("hashInfo").textContent =
-                `Full Hash: ${fullHash}\nPartial Hash: ${partialHash}`;
-
-            // 4d) Construct the fetch URL
-            const fetchUrl = `data_doc/cachefilter_${tableType}/${pivotCol}/${partialHash}.json`;
-
-            // 4e) Fetch from the partial-hash JSON
-            fetch(fetchUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Fetch error: ${response.status} ${response.statusText}\nURL: ${fetchUrl}`);
-                    }
-                    return response.text();
-                })
-                .then(text => {
-                    let parsed;
-                    try {
-                        parsed = JSON.parse(text);
-                    } catch (err) {
-                        throw new Error("Failed to parse JSON. Raw content:\n\n" + text);
-                    }
-                    const subObject = parsed[fullHash];
-                    if (!subObject) {
-                        throw new Error(`No entry for hash ${fullHash} in file ${partialHash}.json`);
-                    }
-                    document.getElementById("result").textContent = JSON.stringify(subObject, null, 2);
-                })
-                .catch(err => {
-                    document.getElementById("result").textContent = "Error:\n" + err.message;
-                });
-        }
-
-        // --------------------------------------------------------------------
-        // We call 'loadDecodingDict()' when the page finishes loading.
-        // --------------------------------------------------------------------
-        window.onload = loadDecodingDict;
+        // Kick‑off when DOM ready
+        window.addEventListener("DOMContentLoaded", loadDecodingDict);
     </script>
 </head>
 
 <body>
-    <h1>Generating Combination &amp; Hash Lookup (PostgreSQL-Style Spacing)</h1>
+    <h1>GBD Cache‑Filter JSON Lookup</h1>
 
-    <div id="initError" style="color: red;"></div>
+    <div id="initError" style="color:crimson"></div>
 
     <p>
-        1) Once the decoding dictionary JSON is loaded, select your values in each dropdown.<br />
-        2) Choose which column is the <strong>pivot column</strong> (omitted).<br />
-        3) Choose a <strong>table type</strong>.<br />
-        4) Click <em>“Generate Hash &amp; Lookup”</em>.<br />
-        This constructs a JSON string with spaces (<code>"key" : "val"</code>),
-        matching your PostgreSQL format, then MD5-hashes it.
+        1) Select your <strong>Table Type</strong> and dimension values (leave blank for "All").<br>
+        2) Click <em>“Generate&nbsp;Hash &amp;&nbsp;Lookup”</em> to reproduce the MD5 lookup the database uses.<br>
+        The tool forms the exact identifying string (e.g. <code>year: 2020 | sex_name: Male | …</code>)
+        and downloads the relevant <code>*.json</code> chunk.
     </p>
 
     <!-- Table Type -->
-    <label>Table Type:</label><br />
+    <label>Table Type:</label><br>
     <select id="tableType">
         <option value="">-- choose a table type --</option>
         <option value="population">population</option>
         <option value="long">long</option>
-        <!-- add more if needed -->
     </select>
-    <br /><br />
 
-    <!-- Pivot Column -->
-    <label>Pivot Column:</label><br />
-    <select id="pivotCol"></select>
-    <br /><br />
+    <br><br>
 
-    <!-- All columns (populated after decodingDict loads) -->
-    <fieldset style="width: 600px;">
-        <legend>Select Values</legend>
+    <!-- All columns (populated once decodingDict loads) -->
+    <fieldset>
+        <legend>Select Dimension Values</legend>
 
-        <label for="year">year:</label><br />
-        <select id="year"></select><br /><br />
+        <label for="year">year:</label><br>
+        <select id="year"></select><br><br>
 
-        <label for="region_name">region_name:</label><br />
-        <select id="region_name"></select><br /><br />
+        <label for="sex_name">sex_name:</label><br>
+        <select id="sex_name"></select><br><br>
 
-        <label for="sub_region_name">sub_region_name:</label><br />
-        <select id="sub_region_name"></select><br /><br />
+        <label for="region_name">region_name:</label><br>
+        <select id="region_name"></select><br><br>
 
-        <label for="location_name">location_name:</label><br />
-        <select id="location_name"></select><br /><br />
+        <label for="sub_region_name">sub_region_name:</label><br>
+        <select id="sub_region_name"></select><br><br>
 
-        <label for="age_group_name_sorted">age_group_name_sorted:</label><br />
-        <select id="age_group_name_sorted"></select><br /><br />
+        <label for="location_name">location_name:</label><br>
+        <select id="location_name"></select><br><br>
 
-        <label for="age_cluster_name_sorted">age_cluster_name_sorted:</label><br />
-        <select id="age_cluster_name_sorted"></select><br /><br />
+        <label for="age_group_name_sorted">age_group_name_sorted:</label><br>
+        <select id="age_group_name_sorted"></select><br><br>
 
-        <label for="sex_name">sex_name:</label><br />
-        <select id="sex_name"></select><br /><br />
+        <label for="age_cluster_name_sorted">age_cluster_name_sorted:</label><br>
+        <select id="age_cluster_name_sorted"></select><br><br>
 
-        <label for="l1_cause_name">l1_cause_name:</label><br />
-        <select id="l1_cause_name"></select><br /><br />
+        <label for="l1_cause_name">l1_cause_name:</label><br>
+        <select id="l1_cause_name"></select><br><br>
 
-        <label for="l2_cause_name">l2_cause_name:</label><br />
-        <select id="l2_cause_name"></select><br /><br />
+        <label for="l2_cause_name">l2_cause_name:</label><br>
+        <select id="l2_cause_name"></select><br><br>
     </fieldset>
 
-    <br />
-    <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
+    <br>
+    <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
 
     <h2>Debug Info</h2>
-    <p><strong>Exact JSON String that is hashed</strong> (with PostgreSQL-like spacing):</p>
-    <pre id="jsonString" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
+    <p><strong>Identifying String (exact text hashed)</strong>:</p>
+    <pre id="jsonString"></pre>
 
-    <p><strong>Computed Hash Info</strong>:</p>
-    <pre id="hashInfo" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
+    <p><strong>Computed Hashes</strong>:</p>
+    <pre id="hashInfo"></pre>
 
     <h2>Lookup Result</h2>
-    <pre id="result" style="border:1px solid #ccc; padding:10px; white-space:pre-wrap;"></pre>
+    <pre id="result"></pre>
 </body>
 
 </html>
