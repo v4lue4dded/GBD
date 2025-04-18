@@ -363,19 +363,22 @@
 
             /* ── the three JSONs you asked about ────────────────────────── */
             var p4 = d3JsonPromise("data_doc/gbd_dim_distinct_values.json")
-                .then(function (d) { dim_distinct_values = d;
-                    console.log("dim_distinct_values:",dim_distinct_values)
-                 });
+                .then(function (d) {
+                    dim_distinct_values = d;
+                    console.log("dim_distinct_values:", dim_distinct_values)
+                });
 
             var p5 = d3JsonPromise("data_doc/gbd_rollup_higher_values.json")
-                .then(function (d) { rollup_higher_values = d;
-                    console.log("rollup_higher_values:",rollup_higher_values)
-                 });
+                .then(function (d) {
+                    rollup_higher_values = d;
+                    console.log("rollup_higher_values:", rollup_higher_values)
+                });
 
             var p6 = d3JsonPromise("data_doc/gbd_setup_info.json")
-                .then(function (d) { setup_info = d;
-                    console.log("setup_info:",setup_info)
-                 });
+                .then(function (d) {
+                    setup_info = d;
+                    console.log("setup_info:", setup_info)
+                });
 
             /* wait for everything, then reveal the UI */
             return Promise.all([p1, p2, p3, p4, p5, p6])
