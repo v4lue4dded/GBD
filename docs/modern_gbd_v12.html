@@ -33,6 +33,9 @@
     <script src="lib/chartCollectionCode/js/c3-table.js"></script>
     <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
     <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
+    <script src="lib/myHelperFunctions/md5.js"></script>
+    <script src="lib/myHelperFunctions/helperFunctionsGuidedSearch.js"></script>
+
 
     <!-- Styles -->
     <style>
@@ -612,6 +615,18 @@
             const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
+
+
+            async function guidedSearchRange(
+                fileUrl, searchHash,
+                minByte, maxByte,
+                minHash, maxHash,
+                rangeSize
+            ) 
+            
+            guidedSearchRange()
+            const getValNew0 = (dataSource, dimension, searchKey, valueCol) => 
+
 
 
             var validYears = Array.from(cat_vars_and_values["year"])

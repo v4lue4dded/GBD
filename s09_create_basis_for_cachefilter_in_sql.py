@@ -2,12 +2,17 @@ import my_config as config
 from sqlalchemy import text
 import json
 import pandas as pd
+from os.path import join as opj
 
-# Database connection
+
+# ── database connection ────────────────────────────────────────────────────────
 engine = config.engine
 con = engine.connect()
 
-with open("gbd_setup.json", "r") as fh:
+data_directory = opj(config.REPO_DIRECTORY, "docs","data_doc")
+
+# ── setup definitions ───────────────────────────────────────────────────────────
+with open(opj(data_directory,"gbd_setup.json"), "r") as fh:
     setup_dict = json.load(fh)
 
 table_types = setup_dict["table_types"]
@@ -15,6 +20,9 @@ rollup_cols_dict = setup_dict["rollup_cols_dict"]
 dimension_cols_ordered_dict = setup_dict["dimension_cols_ordered_dict"]
 aggregated_cols_dict = setup_dict["aggregated_cols_dict"]
 
+# ==============================================================================
+# 1.  CREATE ROLLUP + CACHEFILTER TABLES (unchanged from previous version)
+# ==============================================================================
 for table_type in table_types:
     source_table1 = f"gbd.db04_modelling.export_{table_type}"
     target_table1 = f"gbd.db04_modelling.export_{table_type}_rollup"
@@ -87,6 +95,9 @@ for table_type in table_types:
     print(create_cachefilter_sql)
     # con.execute(text(create_cachefilter_sql))
 
+# ==============================================================================
+# 2.  HIERARCHICAL (n:1) ROLL‑UP METADATA (unchanged)
+# ==============================================================================
 metadata_dict = {}
 
 for table_type in table_types:
@@ -94,7 +105,7 @@ for table_type in table_types:
 
     for rollup_list in rollup_cols_dict[table_type]:
         if len(rollup_list) < 2:
-            continue  # skip single-col groups like ["year"]
+            continue  # skip single‑col groups like ["year"]
 
         for lvl in range(1, len(rollup_list)):
             lower_col = rollup_list[lvl]
@@ -122,19 +133,46 @@ for table_type in table_types:
                     f"\nViolation detected for: {table_type}.{lower_col}"
                     + "Rows with multiple parent mappings:\n"
                     + violating_rows.to_string(index=False)
-                    + f"\n{table_type}.{lower_col} has non-unique mappings to parents. "
+                    + f"\n{table_type}.{lower_col} has non‑unique mappings to parents. "
                 )
 
-                raise ValueError()
+                raise ValueError(error_string)
 
             # ── build nested mapping ────────────────────────────────────────
             clean_mapping = {row[lower_col]: {col: row[col] for col in higher_cols} for _, row in df.iterrows()}
 
             metadata_dict.setdefault(table_type, {}).setdefault(lower_col, {}).update(clean_mapping)
 
-# ── save to file ──────────────────────────────────────────────────────────────
-with open("gbd_rollup_metadata.json", "w", encoding="utf-8") as fh:
+# save hierarchical metadata
+with open(opj(data_directory,"gbd_rollup_metadata.json"), "w", encoding="utf-8") as fh:
     json.dump(metadata_dict, fh, indent=2, ensure_ascii=False)
 
+# ==============================================================================
+# 3.  DISTINCT‑VALUE METADATA FOR EVERY DIMENSION COLUMN (with null‑check)
+# ==============================================================================
+
+distinct_values_dict = {}
+
+for table_type in table_types:
+    source_table = f"gbd.db04_modelling.export_{table_type}"
+    dim_cols = dimension_cols_ordered_dict[table_type]
+
+    for col in dim_cols:
+        sql = f"SELECT DISTINCT {col}::varchar AS val FROM {source_table}"
+        df_vals = pd.read_sql(sql, con)
+
+        # Assert no NULLs present
+        if df_vals["val"].isna().any():
+            raise ValueError(f"Null value detected in column '{col}' of table type '{table_type}'")
+
+        values = sorted(df_vals["val"].astype(str).tolist())
+
+        distinct_values_dict.setdefault(table_type, {})[col] = values
+
+# save distinct‑values metadata
+with open(opj(data_directory,"gbd_dim_distinct_values.json"), "w", encoding="utf-8") as fh:
+    json.dump(distinct_values_dict, fh, indent=2, ensure_ascii=False)
+
+# ── tidy up ────────────────────────────────────────────────────────────────────
 con.close()
-print("All tables created successfully.")
+print("All tables and metadata created successfully (distinct values validated).")
