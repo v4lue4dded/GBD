@@ -142,10 +142,25 @@
             overflow: hidden;
             /* keeps all content neatly contained */
         }
+
+        /* -------- banner styles -------- */            /* *** NEW */
+        #filter-banner {                                 /* *** NEW */
+            background: #ffffe0;                         /* *** NEW */
+            padding: 6px 10px;                           /* *** NEW */
+            border-bottom: 1px solid #ccc;               /* *** NEW */
+            font-size: .9em;                             /* *** NEW */
+            position: sticky;                            /* *** NEW */
+            top: 0;                                      /* *** NEW */
+            z-index: 1000;                               /* *** NEW */
+        }                                                /* *** NEW */
+        #filter-banner span {                            /* *** NEW */
+            margin-right: 12px;                          /* *** NEW */
+        }                                                /* *** NEW */
     </style>
 </head>
 
 <body>
+    <div id="filter-banner"></div> <!-- *** NEW banner container -->
     <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
     <main style="display:none">
         <div id="gbd_timeline"></div>
@@ -355,9 +370,11 @@
          * @param {Object} dataSourceDict - Dictionary of raw data arrays with their names as keys.
          * @param {Array} dimensionNames - List of dimension names to create.
          * @param {*} specialKey - A placeholder value to use for excluded dimensions.
+         * @param {number} [datasetIndex=0] - Index (0 or 1) to tag dimensions by dataset. // *** NEW
          * @returns {Object} - An object containing crossfilter instances and dimensions for each dataset.
          */
-        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey) {
+        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey, datasetIndex) { // *** MOD
+            datasetIndex = datasetIndex || 0;                                                   // *** NEW
             // Initialize an empty object to store crossfilters and dimensions
             var result = {};
 
@@ -388,6 +405,9 @@
                                 return specialKey;
                             });
                         }
+                        /* --- attach metadata for banner --- */     // *** NEW
+                        dimensions[dimensionName]._filterName   = dimensionName; // *** NEW
+                        dimensions[dimensionName]._datasetIndex = datasetIndex;  // *** NEW
                     }
 
                     // Store the crossfilter instance and its dimensions in the result
@@ -499,6 +519,25 @@
                 'l1_cause_name',
                 'l2_cause_name'
             ];
+
+            /* ---------- banner tracking ---------- */                // *** NEW
+            var currentFilters = {0:{},1:{}};                           // *** NEW
+            function updateFilterBanner(){                              // *** NEW
+                var banner = document.getElementById('filter-banner');  // *** NEW
+                var html = '';                                          // *** NEW
+                [0,1].forEach(function(ds){                             // *** NEW
+                    html += '<div><strong>Dataset '+ds+'</strong>: ';   // *** NEW
+                    dimensionNames.forEach(function(dim){               // *** NEW
+                        var vals = currentFilters[ds][dim];             // *** NEW
+                        if(vals && vals.length){                        // *** NEW
+                            html += '<span><em>'+dim+'</em>: '+vals.join(", ")+'</span> '; // *** NEW
+                        }                                               // *** NEW
+                    });                                                 // *** NEW
+                    html += '</div>';                                   // *** NEW
+                });                                                     // *** NEW
+                banner.innerHTML = html || 'No filters active';         // *** NEW
+            }                                                           // *** NEW
+            /* ------------------------------------ */                  // *** NEW
                         
             // TODO: precalculate this
             // Object for collecting unique values
@@ -519,8 +558,6 @@
               }
             }
 
-
-            
             console.log("cat_vars_and_values:", cat_vars_and_values)
             aggColumns = {
                 'gbd': ['deaths_val', 'yll_val'],
@@ -547,7 +584,7 @@
                 return aggregationDict;
             }
 
-            function filterDimensions(dimensions, selectedKeys) {
+            function updateFiltering(dimensions, selectedKeys) {
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
                     dimensions.forEach(function (dimension) {
@@ -562,10 +599,12 @@
                     });
                 }
                 redrawDcAndC3();
+                updateFilterBanner();                                                             // *** NEW
             }
+
             updateLoadingMessage(`before setup dimensions : ${Math.round(performance.now())}ms`);
-            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
-            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey, 0); // *** MOD
+            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey, 1); // *** MOD
             updateLoadingMessage(`after CFDDict : ${Math.round(performance.now())}ms`);
             var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
             var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
@@ -634,12 +673,11 @@
                             "class": 'from_year'
                         },
                         handlers: {
-                            'drag': function (year) {
-                                year = snapToValidYear(year);
-                                this.data = [year];
-                                CFDDict0['gbd']['d']['year'].filter(year);
-                                CFDDict0['population']['d']['year'].filter(year);
-                                redrawDcAndC3();
+                            'drag': function (from_year) {
+                                from_year = snapToValidYear(from_year);
+                                this.data = [from_year];
+                                currentFilters[0]['year'] = [from_year].slice()
+                                updateFiltering([CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
                             },
                             'render': function () {
                                 this.handlers['drag'](this.data[0]);
@@ -654,12 +692,11 @@
                             "class": 'until_year'
                         },
                         handlers: {
-                            'drag': function (year) {
-                                year = snapToValidYear(year);
-                                this.data = [year];
-                                CFDDict1['gbd']['d']['year'].filter(year);
-                                CFDDict1['population']['d']['year'].filter(year);
-                                redrawDcAndC3();
+                            'drag': function (until_year) {
+                                until_year = snapToValidYear(until_year);
+                                this.data = [until_year];
+                                currentFilters[1]['year'] = [until_year].slice()
+                                updateFiltering([CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
                             },
                             // Filter the data based on the initial year selection
                             'render': function () {
@@ -801,9 +838,9 @@
                 .title(function (d) { return "Location: " + d.key + "\nYears of live lost per Person: " + d.value; })
                 .on('filtered', function (chart, filter) {
                     var selectedKeys = worldChart0.filters();
-                    console.log("aggDict0['gbd']['sub_region_name']", aggDict0['gbd']['sub_region_name'])
-                    console.log("aggDict0", aggDict0)
-                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
+                    currentFilters[0]['location_name'] = selectedKeys.slice()
+                    currentFilters[1]['location_name'] = selectedKeys.slice()
+                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
                 });
 
 
@@ -830,7 +867,9 @@
                 })
                 .on('filtered', function (chart, filter) {
                     var selectedKeys = worldChart1.filters();
-                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
+                    currentFilters[0]['location_name'] = selectedKeys.slice()
+                    currentFilters[1]['location_name'] = selectedKeys.slice()
+                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
                 });
 
 
@@ -857,7 +896,9 @@
                 })
                 .on('filtered', function (chart, filter) {
                     var selectedKeys = worldChartChange.filters();
-                    filterDimensions([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], selectedKeys);
+                    currentFilters[0]['location_name'] = selectedKeys.slice()
+                    currentFilters[1]['location_name'] = selectedKeys.slice()
+                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
                 });
 
 
@@ -1057,9 +1098,10 @@
                     },
                     handlers: {
                         'select': function (selections) {
-                            console.log("data", anchorId, data)
-                            filterDimensions(filter_dimensions, selections.map(function (d) { return d.categorical_value; }));
-                            redrawDcAndC3();
+                            selectedKeys = selections.map(function (d) { return d.categorical_value; })
+                            currentFilters[0][data[0]["categorical_variable"]] = selectedKeys.slice()
+                            currentFilters[1][data[0]["categorical_variable"]] = selectedKeys.slice()
+                            updateFiltering(filter_dimensions, currentFilters[0][data[0]["categorical_variable"]]);
                         }
                     },
                     ...customOptions
@@ -1227,6 +1269,7 @@
                 var chart = charts_1[_i];
                 chart.render();
             }
+            updateFilterBanner();                             // *** NEW show empty banner
             // **Resize** charts if the window is resized.
             window.onresize = function () {
                 for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
@@ -1256,5 +1299,4 @@
         //     download_data().then(render)
 </script>
 </body>
-
 </html>
