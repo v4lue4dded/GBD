@@ -12,7 +12,7 @@ con = engine.connect()
 data_directory = opj(config.REPO_DIRECTORY, "docs","data_doc")
 
 # ── setup definitions ───────────────────────────────────────────────────────────
-with open(opj(data_directory,"gbd_setup.json"), "r") as fh:
+with open(opj(data_directory,"gbd_setup_info.json"), "r") as fh:
     setup_dict = json.load(fh)
 
 table_types = setup_dict["table_types"]
@@ -56,7 +56,7 @@ for table_type in table_types:
 
     print(f"Creating rollup table: {target_table1}")
     print(create_rollup_sql)
-    # con.execute(text(create_rollup_sql))
+    con.execute(text(create_rollup_sql))
 
 for table_type in table_types:
     source_table2 = f"gbd.db04_modelling.export_{table_type}_rollup"
@@ -93,7 +93,7 @@ for table_type in table_types:
 
     print(f"Creating cachefilter table: {target_table2}")
     print(create_cachefilter_sql)
-    # con.execute(text(create_cachefilter_sql))
+    con.execute(text(create_cachefilter_sql))
 
 # ==============================================================================
 # 2.  HIERARCHICAL (n:1) ROLL‑UP METADATA (unchanged)
@@ -144,7 +144,7 @@ for table_type in table_types:
             metadata_dict.setdefault(table_type, {}).setdefault(lower_col, {}).update(clean_mapping)
 
 # save hierarchical metadata
-with open(opj(data_directory,"gbd_rollup_metadata.json"), "w", encoding="utf-8") as fh:
+with open(opj(data_directory,"gbd_rollup_higher_values.json"), "w", encoding="utf-8") as fh:
     json.dump(metadata_dict, fh, indent=2, ensure_ascii=False)
 
 # ==============================================================================
