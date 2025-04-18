@@ -374,12 +374,9 @@
          * @param {Object} dataSourceDict - Dictionary of raw data arrays with their names as keys.
          * @param {Array} dimensionNames - List of dimension names to create.
          * @param {*} specialKey - A placeholder value to use for excluded dimensions.
-         * @param {number} [datasetIndex=0] - Index (0 or 1) to tag dimensions by dataset. // *** NEW
          * @returns {Object} - An object containing crossfilter instances and dimensions for each dataset.
          */
-        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey, datasetIndex) { // *** MOD
-            datasetIndex = datasetIndex || 0;                                                   // *** NEW
-            // Initialize an empty object to store crossfilters and dimensions
+        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey) { // *** MOD
             var result = {};
 
             // Iterate over each dataset entry in the data dictionary
@@ -409,9 +406,6 @@
                                 return specialKey;
                             });
                         }
-                        /* --- attach metadata for banner --- */     // *** NEW
-                        dimensions[dimensionName]._filterName = dimensionName; // *** NEW
-                        dimensions[dimensionName]._datasetIndex = datasetIndex;  // *** NEW
                     }
 
                     // Store the crossfilter instance and its dimensions in the result
@@ -589,6 +583,7 @@
             }
 
             function updateFiltering(dimensions, selectedKeys) {
+                updateFilterBanner();
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
                     dimensions.forEach(function (dimension) {
@@ -603,12 +598,11 @@
                     });
                 }
                 redrawDcAndC3();
-                updateFilterBanner();                                                             // *** NEW
             }
 
             updateLoadingMessage(`before setup dimensions : ${Math.round(performance.now())}ms`);
-            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey, 0); // *** MOD
-            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey, 1); // *** MOD
+            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
             updateLoadingMessage(`after CFDDict : ${Math.round(performance.now())}ms`);
             var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
             var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
@@ -618,15 +612,15 @@
             updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
 
 
-            async function guidedSearchRange(
-                fileUrl, searchHash,
-                minByte, maxByte,
-                minHash, maxHash,
-                rangeSize
-            )
+            // async function guidedSearchRange(
+            //     fileUrl, searchHash,
+            //     minByte, maxByte,
+            //     minHash, maxHash,
+            //     rangeSize
+            // )
 
-            guidedSearchRange()
-            const getValNew0 = (dataSource, dimension, searchKey, valueCol) => 
+            // guidedSearchRange()
+            // const getValNew0 = (dataSource, dimension, searchKey, valueCol) => 
 
 
 
