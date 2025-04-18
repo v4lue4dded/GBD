@@ -77,7 +77,7 @@
             try {
                 // ‑‑ Adjust this path if you keep the dict elsewhere
                 const resp = await fetch("data_doc/df_measure_narrow_import_dict.json");
-                if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+                if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
                 const data = await resp.json();
                 decodingDict = data.decoding_dict;
                 buildDropdowns();
@@ -175,13 +175,13 @@
 
             // Debug output
             document.getElementById("jsonString").textContent = identifyingString;
-            document.getElementById("hashInfo").textContent = `Full hash: ${fullHash}\nPartial hash: ${partialHash}`;
+            document.getElementById("hashInfo").textContent = `Full hash: ${fullHash}\nPartial hash: ${partialHash}`;
 
             // ── Fetch matching chunk file ──────────────────────────
             const url = `data_doc/cachefilter_${tableType}/${partialHash}.json`;
             try {
                 const resp = await fetch(url);
-                if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+                if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
                 const text = await resp.text();
                 let json;
                 try {
@@ -211,14 +211,14 @@
     <div id="initError" style="color:crimson"></div>
 
     <p>
-        1) Select your <strong>Table Type</strong> and dimension values (leave blank for "All").<br>
-        2) Click <em>“Generate&nbsp;Hash &amp;&nbsp;Lookup”</em> to reproduce the MD5 lookup the database uses.<br>
-        The tool forms the exact identifying string (e.g. <code>year: 2020 | sex_name: Male | …</code>)
+        1) Select your <strong>Table Type</strong> and dimension values (leave blank for "All").<br>
+        2) Click <em>“Generate&nbsp;Hash &amp;&nbsp;Lookup”</em> to reproduce the MD5 lookup the database uses.<br>
+        The tool forms the exact identifying string (e.g. <code>year: 2020 | sex_name: Male | …</code>)
         and downloads the relevant <code>*.json</code> chunk.
     </p>
 
     <!-- Table Type -->
-    <label>Table Type:</label><br>
+    <label>Table Type:</label><br>
     <select id="tableType">
         <option value="">-- choose a table type --</option>
         <option value="population">population</option>
@@ -229,7 +229,7 @@
 
     <!-- All columns (populated once decodingDict loads) -->
     <fieldset>
-        <legend>Select Dimension Values</legend>
+        <legend>Select Dimension Values</legend>
 
         <label for="year">year:</label><br>
         <select id="year"></select><br><br>
@@ -260,7 +260,7 @@
     </fieldset>
 
     <br>
-    <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
+    <button onclick="onLookup()">Generate Hash &amp; Lookup</button>
 
     <h2>Debug Info</h2>
     <p><strong>Identifying String (exact text hashed)</strong>:</p>
