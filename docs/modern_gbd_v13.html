@@ -182,7 +182,7 @@
         <div id="gdb_l2_cause_table"></div>
     </main>
     <script>
-        var gbd_data = [];
+        var long_data = [];
         var population_data = [];
         var world_geojson = {};
         var dim_distinct_values = {};
@@ -331,7 +331,7 @@
 
             /* one promise for every independent fetch */
             var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
-                .then(function (decoded) { gbd_data = decoded; });
+                .then(function (decoded) { long_data = decoded; });
 
             var p2 = d3TsvPromise("data_doc/df_population.csv", function (row) {
                 return {
@@ -509,8 +509,8 @@
             // ### Prepare the data
             // Output the data set to the console if you want to take a look.
             updateLoadingMessage(`start of render function at : ${Math.round(performance.now())}ms`);
-            console.log("gbd_data:");
-            console.log(gbd_data);
+            console.log("long_data:");
+            console.log(long_data);
             console.log("population_data:");
             console.log(population_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
@@ -521,7 +521,7 @@
             // List of dimension names
             // Dictionary of crossfilters
             var dataSourceDict = {
-                gbd: gbd_data,
+                long: long_data,
                 population: population_data
             };
 
@@ -561,8 +561,8 @@
             // Object for collecting unique values
             const cat_vars_and_values = {};
             // Loop through the array of data
-            for (let i = 0; i < gbd_data.length; i++) {
-                const row = gbd_data[i];
+            for (let i = 0; i < long_data.length; i++) {
+                const row = long_data[i];
 
                 // For each dimension in dimensionNames
                 for (const dimName of dimensionNames) {
@@ -578,7 +578,7 @@
 
             console.log("cat_vars_and_values:", cat_vars_and_values)
             aggColumns = {
-                'gbd': ['deaths_val', 'yll_val'],
+                'long': ['deaths_val', 'yll_val'],
                 'population': ['pop_val']
             }
 
@@ -708,7 +708,7 @@
                                 from_year = snapToValidYear(from_year);
                                 this.data = [from_year];
                                 currentFilters[0]['year'] = [from_year].slice()
-                                updateFiltering([CFDDict0['gbd']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
+                                updateFiltering([CFDDict0['long']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
                             },
                             'render': function () {
                                 this.handlers['drag'](this.data[0]);
@@ -727,7 +727,7 @@
                                 until_year = snapToValidYear(until_year);
                                 this.data = [until_year];
                                 currentFilters[1]['year'] = [until_year].slice()
-                                updateFiltering([CFDDict1['gbd']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
+                                updateFiltering([CFDDict1['long']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
                             },
                             // Filter the data based on the initial year selection
                             'render': function () {
@@ -771,11 +771,11 @@
 
             // Usage examples
             var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
-            var locationNameDimGBDAgg0 = CFDDict0['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+            var locationNameDimGBDAgg0 = CFDDict0['long']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
             var YLLPerPerson0 = combineGroups(locationNameDimGBDAgg0, locationNameDimPopAgg0, ratio);
 
             var locationNameDimPopAgg1 = CFDDict1['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
-            var locationNameDimGBDAgg1 = CFDDict1['gbd']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+            var locationNameDimGBDAgg1 = CFDDict1['long']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
             var YLLPerPerson1 = combineGroups(locationNameDimGBDAgg1, locationNameDimPopAgg1, ratio);
 
             var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
@@ -850,7 +850,7 @@
                     var selectedKeys = worldChart0.filters();
                     currentFilters[0]['location_name'] = selectedKeys.slice()
                     currentFilters[1]['location_name'] = selectedKeys.slice()
-                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                    updateFiltering([CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
                 });
 
 
@@ -879,7 +879,7 @@
                     var selectedKeys = worldChart1.filters();
                     currentFilters[0]['location_name'] = selectedKeys.slice()
                     currentFilters[1]['location_name'] = selectedKeys.slice()
-                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                    updateFiltering([CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
                 });
 
 
@@ -908,7 +908,7 @@
                     var selectedKeys = worldChartChange.filters();
                     currentFilters[0]['location_name'] = selectedKeys.slice()
                     currentFilters[1]['location_name'] = selectedKeys.slice()
-                    updateFiltering([CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                    updateFiltering([CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
                 });
 
 
@@ -998,8 +998,8 @@
                     }
                 }, {
                     header: { text: "Deaths" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
-                    sort: function (d) { return round_z(getVal1("gbd", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1009,8 +1009,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost" },
-                    cells: { html: function (d) { return (bigNStyle(getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val"))); } },
-                    sort: function (d) { return round_z(getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val")); },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getVal1("long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                    sort: function (d) { return round_z(getVal1("long", d.categorical_variable, d.categorical_value, "yll_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1019,8 +1019,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person 0" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    cells: { html: function (d) { return (d3.format(',')((getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1030,8 +1030,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person 1" },
-                    cells: { html: function (d) { return (d3.format(',')((getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    cells: { html: function (d) { return (d3.format(',')((getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1041,8 +1041,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person change" },
-                    cells: { html: function (d) { return d3.format('.2%')((getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
-                    sort: function (d) { return (getVal1("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("gbd", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                    cells: { html: function (d) { return d3.format('.2%')((getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1133,7 +1133,7 @@
             createDataTable({
                 anchorId: '#gdb_region_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['region_name'], CFDDict0['population']['d']['region_name'], CFDDict1['gbd']['d']['region_name'], CFDDict1['population']['d']['region_name']],
+                filter_dimensions: [CFDDict0['long']['d']['region_name'], CFDDict0['population']['d']['region_name'], CFDDict1['long']['d']['region_name'], CFDDict1['population']['d']['region_name']],
                 initialSortColumn: "Population",
                 columns: [
                     {
@@ -1149,7 +1149,7 @@
             createDataTable({
                 anchorId: '#gdb_sub_region_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["sub_region_name"], "sub_region_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['sub_region_name'], CFDDict0['population']['d']['sub_region_name'], CFDDict1['gbd']['d']['sub_region_name'], CFDDict1['population']['d']['sub_region_name']],
+                filter_dimensions: [CFDDict0['long']['d']['sub_region_name'], CFDDict0['population']['d']['sub_region_name'], CFDDict1['long']['d']['sub_region_name'], CFDDict1['population']['d']['sub_region_name']],
                 initialSortColumn: "Population",
                 columns: [
                     {
@@ -1163,12 +1163,12 @@
             });
 
 
-            // console.log("aggDict0['gbd']['location_name']:", aggDict0['gbd']['location_name'])
-            // console.log("createInfosToLookUp(aggDict0['gbd']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
+            // console.log("aggDict0['long']['location_name']:", aggDict0['long']['location_name'])
+            // console.log("createInfosToLookUp(aggDict0['long']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
             createDataTable({
                 anchorId: '#gdb_location_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['gbd']['d']['location_name'], CFDDict1['population']['d']['location_name']],
+                filter_dimensions: [CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']],
                 initialSortColumn: "Population",
                 customOptions: {
                     "limit_rows": 10,
@@ -1190,7 +1190,7 @@
             createDataTable({
                 anchorId: '#gdb_sex_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["sex_name"], "sex_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['gbd']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
+                filter_dimensions: [CFDDict0['long']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['long']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
                 initialSortColumn: "Sex",
                 columns: [
                     {
@@ -1206,7 +1206,7 @@
             createDataTable({
                 anchorId: '#gdb_age_cluster_name_sorted_table',
                 data: createInfosToLookUp(cat_vars_and_values["age_cluster_name_sorted"], "age_cluster_name_sorted"),
-                filter_dimensions: [CFDDict0['gbd']['d']['age_cluster_name_sorted'], CFDDict0['population']['d']['age_cluster_name_sorted'], CFDDict1['gbd']['d']['age_cluster_name_sorted'], CFDDict1['population']['d']['age_cluster_name_sorted']],
+                filter_dimensions: [CFDDict0['long']['d']['age_cluster_name_sorted'], CFDDict0['population']['d']['age_cluster_name_sorted'], CFDDict1['long']['d']['age_cluster_name_sorted'], CFDDict1['population']['d']['age_cluster_name_sorted']],
                 initialSortColumn: "Age cluster",
                 columns: [
                     {
@@ -1222,7 +1222,7 @@
             createDataTable({
                 anchorId: '#gdb_age_group_name_sorted_table',
                 data: createInfosToLookUp(cat_vars_and_values["age_group_name_sorted"], "age_group_name_sorted"),
-                filter_dimensions: [CFDDict0['gbd']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['gbd']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
+                filter_dimensions: [CFDDict0['long']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['long']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
                 initialSortColumn: "Age group",
                 columns: [
                     {
@@ -1238,7 +1238,7 @@
             createDataTable({
                 anchorId: '#gdb_l1_cause_table',
                 data: createInfosToLookUp(cat_vars_and_values["l1_cause_name"], "l1_cause_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['l1_cause_name'], CFDDict1['gbd']['d']['l1_cause_name']],
+                filter_dimensions: [CFDDict0['long']['d']['l1_cause_name'], CFDDict1['long']['d']['l1_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
                     {
@@ -1254,7 +1254,7 @@
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
                 data: createInfosToLookUp(cat_vars_and_values["l2_cause_name"], "l2_cause_name"),
-                filter_dimensions: [CFDDict0['gbd']['d']['l2_cause_name'], CFDDict1['gbd']['d']['l2_cause_name']],
+                filter_dimensions: [CFDDict0['long']['d']['l2_cause_name'], CFDDict1['long']['d']['l2_cause_name']],
                 initialSortColumn: "Years of live lost",
                 columns: [
                     {
