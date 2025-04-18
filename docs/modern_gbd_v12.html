@@ -613,6 +613,7 @@
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
 
+
             var validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
             function snapToValidYear(year) {
@@ -749,17 +750,6 @@
 
             var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
 
-
-            console.log("YLLPerPersonChange      ", YLLPerPersonChange      );
-            console.log("YLLPerPersonChange.all()", YLLPerPersonChange.all());
-            console.log("YLLPerPerson0      ", YLLPerPerson0      );
-            console.log("YLLPerPerson0.all()", YLLPerPerson0.all());
-            console.log("YLLPerPerson1      ", YLLPerPerson1      );
-            console.log("YLLPerPerson1.all()", YLLPerPerson1.all());
-
-            console.log("YLLPerPersonChange      ", YLLPerPersonChange      );
-            console.log("YLLPerPersonChange.all()", YLLPerPersonChange.all());
-
             const WrappedYLLPerPerson0 = {
               all: function() {
                 return YLLPerPerson0.all();
@@ -775,10 +765,6 @@
                 return YLLPerPersonChange.all();
               }
             };
-
-            console.log("WrappedYLLPerPerson0.all()", WrappedYLLPerPerson0.all());
-            console.log("WrappedYLLPerPerson1.all()", WrappedYLLPerPerson1.all());
-            console.log("WrappedYLLPerPersonChange.all()", WrappedYLLPerPersonChange.all());
 
             var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
             var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
@@ -813,12 +799,6 @@
                 "#9E9E9E",
                 "#787878" 
             ];
-
-            console.log("CFDDict0['population']['d']['location_name']")
-            console.log(CFDDict0['population']['d']['location_name'])
-            console.log(".group()",CFDDict0['population']['d']['location_name'].group())
-            console.log(".groupAll()",CFDDict0['population']['d']['location_name'].groupAll())
-            console.log(".group().all()",CFDDict0['population']['d']['location_name'].group().all())
 
             //#endregion
             worldChart0
