@@ -188,6 +188,7 @@
         var dim_distinct_values = {};
         var rollup_higher_values = {};
         var setup_info = {};
+        var cachedHashes = {};
 
         function updateLoadingMessage(message) {
             var waitingDiv = document.getElementById('waiting');
@@ -541,24 +542,24 @@
                 'l2_cause_name'
             ];
 
-            /* ---------- banner tracking ---------- */                // *** NEW
-            var currentFilters = { 0: {}, 1: {} };                           // *** NEW
-            function updateFilterBanner() {                              // *** NEW
-                var banner = document.getElementById('filter-banner');  // *** NEW
-                var html = '';                                          // *** NEW
-                [0, 1].forEach(function (ds) {                             // *** NEW
-                    html += '<div><strong>Dataset ' + ds + '</strong>: ';   // *** NEW
-                    dimensionNames.forEach(function (dim) {               // *** NEW
-                        var vals = currentFilters[ds][dim];             // *** NEW
-                        if (vals && vals.length) {                        // *** NEW
-                            html += '<span><em>' + dim + '</em>: ' + vals.join(", ") + '</span> '; // *** NEW
-                        }                                               // *** NEW
-                    });                                                 // *** NEW
-                    html += '</div>';                                   // *** NEW
-                });                                                     // *** NEW
-                banner.innerHTML = html || 'No filters active';         // *** NEW
-            }                                                           // *** NEW
-            /* ------------------------------------ */                  // *** NEW
+            /* ---------- banner tracking ---------- */
+            var currentFilters = { 0: {}, 1: {} };
+            function updateFilterBanner() {
+                var banner = document.getElementById('filter-banner');
+                var html = '';
+                [0, 1].forEach(function (ds) {
+                    html += '<div><strong>Dataset ' + ds + '</strong>: ';
+                    dimensionNames.forEach(function (dim) {
+                        var vals = currentFilters[ds][dim];
+                        if (vals && vals.length) {
+                            html += '<span><em>' + dim + '</em>: ' + vals.join(", ") + '</span> ';
+                        }
+                    });
+                    html += '</div>';
+                });
+                banner.innerHTML = html || 'No filters active';
+            }
+            /* ------------------------------------ */
 
             // TODO: precalculate this
             // Object for collecting unique values
@@ -636,103 +637,85 @@
 
             console.log(currentFilters)
 
-
-            /* --------------------------------------------- */
-            /* Your helper – unchanged                       */
-            function buildIdentifyingString(obj, colOrder) {
-                return colOrder
-                    .map(col => `${col}: ${obj[col] || "All"}`)
-                    .join(" | ");
+            // Main function to get value
+            async function getValue(hash) {
+              if (!cachedHashes.hasOwnProperty(hash)) {
+                var dbValue = await fetchFromDatabase(hash);
+                cachedHashes[hash] = dbValue;
+              }
+              return cachedHashes[hash];
             }
-            /* --------------------------------------------- */
 
-            /**
-             * Expand a single filter object into every concrete combination.
-             * Empty or missing arrays are treated as the single value "All".
-             */
-            function expandOneFilter(filter, colOrder) {
-                const out = [];
+            function lookupValues(dimDistinct, filtersByIdx, colOrders) {
 
-                function recurse(idx, acc) {
-                    if (idx === colOrder.length) {
-                        out.push(acc);
-                        return;
-                    }
-                    const key = colOrder[idx];
-                    const slice = (Array.isArray(filter[key]) ? filter[key] : []);
-
-                    // nothing picked for this column → All
-                    if (!slice.length) {
-                        recurse(idx + 1, { ...acc, [key]: "All" });
-                        return;
-                    }
-
-                    // otherwise branch for every selected value
-                    slice.forEach(v => recurse(idx + 1, { ...acc, [key]: v }));
+                // helper – what should we take for every column that is *not* the one
+                // we are varying right now?
+                function baseValue(col, filterObj) {
+                    const arr = filterObj[col];
+                    return (Array.isArray(arr) && arr.length === 1) ? arr[0] : "All";
                 }
 
-                recurse(0, {});
-                return out;
+                const result = {};
+
+                /* for each dataset index 0 / 1 / … --------------------------------*/
+                Object.entries(filtersByIdx).forEach(([idx, filterObj]) => {
+
+                    const idxDict = {};
+
+                    /* for each table: population / long -----------------------------*/
+                    Object.entries(dimDistinct).forEach(([table, dims]) => {
+
+                        const tableDict = {};
+                        const colOrder = colOrders[table];        // specific order!
+
+                        /* for each dimension inside that table ------------------------*/
+                        Object.entries(dims).forEach(([dim, values]) => {
+
+                            const valDict = {};
+
+                            values.forEach(val => {
+                                const obj = {};
+                                
+                                colOrder.forEach(col => {
+                                    obj[col] = (col === dim)
+                                        ? val
+                                        : baseValue(col, filterObj);
+                                });
+
+                                 identifyingString = buildIdentifyingString(obj, colOrder);
+                                 identifyingHash = md5(identifyingString)
+                                 valDict[val] = {}
+                                 valDict["identifyingString"] = identifyingString
+                                 valDict["identifyingHash"] = identifyingHash
+                                 valDict["values"] = getValue(identifyingHash)
+                            });
+
+                            tableDict[dim] = valDict;
+                        });
+
+                        idxDict[table] = tableDict;
+                    });
+
+                    result[idx] = idxDict;
+                });
+
+                return result;
             }
 
-            /**
-             * Build identifying strings for ONE dimension set
-             * (e.g. dim_distinct_values.population or dim_distinct_values.long).
-             */
-            function buildIdsForOneDimSet(dimSet, currentFilters, colOrder) {
-                const ids = new Set();
+            console.log(`before identifiers : ${Math.round(performance.now())}ms`);
+            const identifiers = lookupValues(
+                dim_distinct_values,
+                currentFilters,
+                setup_info["dimension_cols_ordered_dict"]
+            );
+            console.log(`after identifiers : ${Math.round(performance.now())}ms`);
 
-                // 1️⃣ all combinations dictated by currentFilters
-                currentFilters.forEach(f =>
-                    expandOneFilter(f, colOrder)
-                        .forEach(o => ids.add(buildIdentifyingString(o, colOrder)))
-                );
-
-                // 2️⃣ explicit fully‑aggregated “All” line
-                const allObj = Object.fromEntries(colOrder.map(k => [k, "All"]));
-                ids.add(buildIdentifyingString(allObj, colOrder));
-
-                return [...ids];          // back to array – keeps insertion order
-            }
-
-            /**
-             * Convenience wrapper that runs the same logic for *every*
-             * top‑level entry in your `dim_distinct_values` dictionary.
-             */
-            function buildIdsForAllDimSets(dim_distinct_values, currentFilters, colOrder) {
-                return Object.fromEntries(
-                    Object.entries(dim_distinct_values).map(
-                        ([name, dimSet]) => [name, buildIdsForOneDimSet(dimSet, currentFilters, colOrder)]
-                    )
-                );
-            }
-
-            // Pick *one* column order and stick to it for hashing
-            const colOrderLong = [
-                "year",
-                "sex_name",
-                "region_name",
-                "sub_region_name",
-                "location_name",
-                "age_cluster_name_sorted",
-                "age_group_name_sorted",
-                "l1_cause_name",
-                "l2_cause_name"
-            ];
-
-            // identifiers.long is what you will hash later on
-            const identifiers = buildIdsForAllDimSets(dim_distinct_values, currentFilters[0], colOrderLong);
-            console.log(identifiers.long);
-
+            console.log("identifiers:", identifiers);
             /*
-            [
-              "year: 2000 | sex_name: All | region_name: All | sub_region_name: All | location_name: All | age_cluster_name_sorted: All | age_group_name_sorted: All | l1_cause_name: All | l2_cause_name: Enteric infections",
-              "year: 2019 | sex_name: All | region_name: All | sub_region_name: All | location_name: All | age_cluster_name_sorted: All | age_group_name_sorted: All | l1_cause_name: All | l2_cause_name: Enteric infections",
-              "year: All  | sex_name: All | region_name: All | sub_region_name: All | location_name: All | age_cluster_name_sorted: All | age_group_name_sorted: All | l1_cause_name: All | l2_cause_name: All"
-            ]
+            identifiers[0].long   -> array of strings for dataset 0
+            identifiers[1].long   -> array of strings for dataset 1
+            identifiers[0].population  … etc.
             */
-
-
 
             var validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
