@@ -66,7 +66,7 @@ for table_type in table_types:
         metadata[p_hash] = file_size
 
     # Export metadata.json
-    metadata_path = opj(export_dir, "metadata_file_sizes.json")
+    metadata_path = opj(export_dir, "file_sizes.json")
     with open(metadata_path, "w") as meta_file:
         json.dump(metadata, meta_file, indent=1)
 

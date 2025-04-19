@@ -188,6 +188,7 @@
         var dim_distinct_values = {};
         var rollup_higher_values = {};
         var setup_info = {};
+        var hashFileSizes = {};
         var cachedHashes = {};
 
         function updateLoadingMessage(message) {
@@ -381,8 +382,18 @@
                     console.log("setup_info:", setup_info)
                 });
 
+            var p7 = d3JsonPromise("data_doc/cachefilter_population/file_sizes.json")
+                .then(function (d) {
+                    hashFileSizes["population"] = d;
+                });
+
+            var p8 = d3JsonPromise("data_doc/cachefilter_long/file_sizes.json")
+                .then(function (d) {
+                    hashFileSizes["long"] = d;
+                });
+
             /* wait for everything, then reveal the UI */
-            return Promise.all([p1, p2, p3, p4, p5, p6])
+            return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8])
                 .then(function () {
                     d3.selectAll("main").style("display", "");
                 })
@@ -509,7 +520,7 @@
         // ###########################################################################
         // ## Create and Render the Charts
         // This function will create the various charts and tables for this example.
-        function render() {
+        async function render() {
             // ### Prepare the data
             // Output the data set to the console if you want to take a look.
             updateLoadingMessage(`start of render function at : ${Math.round(performance.now())}ms`);
@@ -638,79 +649,115 @@
             console.log(currentFilters)
 
             // Main function to get value
-            async function getValue(hash) {
-              if (!cachedHashes.hasOwnProperty(hash)) {
-                var dbValue = await fetchFromDatabase(hash);
-                cachedHashes[hash] = dbValue;
-              }
-              return cachedHashes[hash];
+            async function getValue(table, hash) {
+                if (!cachedHashes.hasOwnProperty(hash)) {
+                    const partialHash = hash.substring(0, 3);
+                    const fileUrl = `data_doc/cachefilter_${table}/${partialHash}.json`;
+                    const minByte = 0;
+                    const maxByte = hashFileSizes[table][partialHash];                        // actual file size
+                    const minHash = `${partialHash}00000000000000000000000000000`;
+                    const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
+                    const initialRangeSize = 5000;                         // e.g., 5 KB
+                    const dbValue = await guidedSearchRange(
+                        fileUrl,
+                        hash,
+                        minByte,
+                        maxByte,
+                        minHash,
+                        maxHash,
+                        initialRangeSize
+                    );
+                    cachedHashes[hash] = dbValue;
+                }
+                return cachedHashes[hash];
             }
 
-            function lookupValues(dimDistinct, filtersByIdx, colOrders) {
+            /**
+             * Build a 4‑level lookup but *resolve* every getValue() call.
+             * A tiny concurrency gate (maxParallel) prevents flooding the server.
+             */
+            async function lookupValues(dimDistinct, filtersByIdx, colOrders, maxParallel = 20) {
 
-                // helper – what should we take for every column that is *not* the one
-                // we are varying right now?
+                // helper – value for “other” columns
                 function baseValue(col, filterObj) {
                     const arr = filterObj[col];
                     return (Array.isArray(arr) && arr.length === 1) ? arr[0] : "All";
                 }
 
                 const result = {};
+                const inFlight = [];                    // promises currently running
 
-                /* for each dataset index 0 / 1 / … --------------------------------*/
-                Object.entries(filtersByIdx).forEach(([idx, filterObj]) => {
+                async function gate(p) {                // throttling helper
+                    inFlight.push(p);
+                    if (inFlight.length >= maxParallel) {
+                        await Promise.all(inFlight.splice(0, inFlight.length));  // wait & clear
+                    }
+                }
+
+                /* ----------------------------------------------------------- */
+                for (const [idx, filterObj] of Object.entries(filtersByIdx)) {
 
                     const idxDict = {};
 
-                    /* for each table: population / long -----------------------------*/
-                    Object.entries(dimDistinct).forEach(([table, dims]) => {
+                    for (const [table, dims] of Object.entries(dimDistinct)) {
 
                         const tableDict = {};
-                        const colOrder = colOrders[table];        // specific order!
+                        const colOrder = colOrders[table];
 
-                        /* for each dimension inside that table ------------------------*/
-                        Object.entries(dims).forEach(([dim, values]) => {
+                        for (const [dim, values] of Object.entries(dims)) {
 
                             const valDict = {};
 
-                            values.forEach(val => {
+                            for (const val of values) {
+
                                 const obj = {};
-                                
                                 colOrder.forEach(col => {
-                                    obj[col] = (col === dim)
-                                        ? val
-                                        : baseValue(col, filterObj);
+                                    obj[col] = (col === dim) ? val : baseValue(col, filterObj);
                                 });
 
-                                 identifyingString = buildIdentifyingString(obj, colOrder);
-                                 identifyingHash = md5(identifyingString)
-                                 valDict[val] = {}
-                                 valDict["identifyingString"] = identifyingString
-                                 valDict["identifyingHash"] = identifyingHash
-                                 valDict["values"] = getValue(identifyingHash)
-                            });
+                                const identifyingString = buildIdentifyingString(obj, colOrder);
+                                const identifyingHash = md5(identifyingString);
+
+                                // schedule the fetch but *do not wait* yet
+                                const fetchP = getValue(table, identifyingHash)
+                                    .then(aggregatedValues => {
+                                        valDict[val] = {
+                                            identifyingString,
+                                            identifyingHash,
+                                            values: aggregatedValues
+                                        };
+                                    });
+
+                                // add to throttle gate
+                                await gate(fetchP);
+                            }
 
                             tableDict[dim] = valDict;
-                        });
+                        }
 
                         idxDict[table] = tableDict;
-                    });
+                    }
 
                     result[idx] = idxDict;
-                });
+                }
 
+                // wait for any still‑running requests
+                await Promise.all(inFlight);
                 return result;
             }
 
-            console.log(`before identifiers : ${Math.round(performance.now())}ms`);
-            const identifiers = lookupValues(
+            console.time("lookup");
+            const lookedUpValues = await lookupValues(
                 dim_distinct_values,
                 currentFilters,
-                setup_info["dimension_cols_ordered_dict"]
+                setup_info.dimension_cols_ordered_dict,
+                20          // max 20 concurrent range requests
             );
-            console.log(`after identifiers : ${Math.round(performance.now())}ms`);
+            console.timeEnd("lookup");
+            console.log("lookedUpValues:", lookedUpValues);
 
-            console.log("identifiers:", identifiers);
+
+            console.log("lookedUpValues:", lookedUpValues);
             /*
             identifiers[0].long   -> array of strings for dataset 0
             identifiers[1].long   -> array of strings for dataset 1
