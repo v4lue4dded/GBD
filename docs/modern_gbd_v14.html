@@ -34,6 +34,7 @@
     <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
     <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
     <script src="lib/myHelperFunctions/md5.js"></script>
+    <script src="lib/myHelperFunctions/helperFunctionsGeneral.js"></script>
     <script src="lib/myHelperFunctions/helperFunctionsGuidedSearch.js"></script>
 
 
@@ -190,6 +191,7 @@
         var setup_info = {};
         var hashFileSizes = {};
         var cachedHashes = {};
+        var lookedUpValues = {};
 
         function updateLoadingMessage(message) {
             var waitingDiv = document.getElementById('waiting');
@@ -617,8 +619,27 @@
                 return aggregationDict;
             }
 
-            function updateFiltering(dimensions, selectedKeys) {
+
+            async function updateFiltering(dimensions, selectedKeys) {
                 updateFilterBanner();
+
+                lookup_string = "lookup" + getRandomString()
+                console.time(lookup_string);
+                lookedUpValues = await lookupValues(
+                    dim_distinct_values,
+                    currentFilters,
+                    setup_info.dimension_cols_ordered_dict,
+                    20          // max 20 concurrent range requests
+                );
+                console.log("lookedUpValues:", lookedUpValues);
+                console.timeEnd(lookup_string);
+                console.log(lookedUpValues[0]);
+                console.log(lookedUpValues[0]["population"]);
+                console.log(lookedUpValues[0]["population"]["region_name"]);
+                console.log(lookedUpValues[0]["population"]["region_name"]["Europe"]);
+                console.log(lookedUpValues[0]["population"]["region_name"]["Europe"]["values"]);
+                console.log(lookedUpValues[0]["population"]["region_name"]["Europe"]["values"]["data"]);
+                console.log(lookedUpValues[0]["population"]["region_name"]["Europe"]["values"]["data"]["pop_val"]);
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
                     dimensions.forEach(function (dimension) {
@@ -648,121 +669,108 @@
 
             console.log(currentFilters)
 
-            // Main function to get value
-            async function getValue(table, hash) {
+            async function getValNew0(dataSource, dimension, searchKey, valueCol) {
+                return await lookedUpValues[0][dataSource][dimension][searchKey]["values"]["data"][valueCol]};
+            async function getValNew1(dataSource, dimension, searchKey, valueCol) {return await lookedUpValues[1][dataSource][dimension][searchKey]["values"]["data"][valueCol]};
+
+            async function getHashValue(table, hash) {
                 if (!cachedHashes.hasOwnProperty(hash)) {
                     const partialHash = hash.substring(0, 3);
                     const fileUrl = `data_doc/cachefilter_${table}/${partialHash}.json`;
                     const minByte = 0;
-                    const maxByte = hashFileSizes[table][partialHash];                        // actual file size
+                    const maxByte = hashFileSizes[table][partialHash];
                     const minHash = `${partialHash}00000000000000000000000000000`;
                     const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
-                    const initialRangeSize = 5000;                         // e.g., 5 KB
-                    const dbValue = await guidedSearchRange(
-                        fileUrl,
-                        hash,
-                        minByte,
-                        maxByte,
-                        minHash,
-                        maxHash,
-                        initialRangeSize
+                    const initialRange = 5_000;       // 5 KB
+
+                    // store **one** in‑flight promise per hash so concurrent requests co‑alesce
+                    cachedHashes[hash] = guidedSearchRange(
+                        fileUrl, hash,
+                        minByte, maxByte,
+                        minHash, maxHash,
+                        initialRange
                     );
-                    cachedHashes[hash] = dbValue;
                 }
-                return cachedHashes[hash];
+
+                // ensure the cache always ends up with the resolved value, not a promise
+                if (cachedHashes[hash] instanceof Promise) {
+                    cachedHashes[hash] = await cachedHashes[hash];
+                }
+                return cachedHashes[hash];            // ← always the fully‑resolved object
             }
 
-            /**
-             * Build a 4‑level lookup but *resolve* every getValue() call.
-             * A tiny concurrency gate (maxParallel) prevents flooding the server.
-             */
             async function lookupValues(dimDistinct, filtersByIdx, colOrders, maxParallel = 20) {
 
-                // helper – value for “other” columns
-                function baseValue(col, filterObj) {
-                    const arr = filterObj[col];
-                    return (Array.isArray(arr) && arr.length === 1) ? arr[0] : "All";
-                }
-
                 const result = {};
-                const inFlight = [];                    // promises currently running
+                const inFlight = [];
 
-                async function gate(p) {                // throttling helper
+                /* throttling helper */
+                const gate = async p => {
                     inFlight.push(p);
                     if (inFlight.length >= maxParallel) {
-                        await Promise.all(inFlight.splice(0, inFlight.length));  // wait & clear
+                        await Promise.all(inFlight.splice(0, inFlight.length));
                     }
-                }
+                };
 
-                /* ----------------------------------------------------------- */
+                /* helper for the “All / single value” fill‑in */
+                const baseValue = (col, filterObj) => {
+                    const arr = filterObj[col];
+                    return Array.isArray(arr) && arr.length === 1 ? arr[0] : "All";
+                };
+
+                /* ---------------------------------------------------------------------- */
                 for (const [idx, filterObj] of Object.entries(filtersByIdx)) {
-
                     const idxDict = {};
 
                     for (const [table, dims] of Object.entries(dimDistinct)) {
-
                         const tableDict = {};
                         const colOrder = colOrders[table];
 
                         for (const [dim, values] of Object.entries(dims)) {
-
                             const valDict = {};
 
                             for (const val of values) {
-
+                                /* build hash */
                                 const obj = {};
                                 colOrder.forEach(col => {
-                                    obj[col] = (col === dim) ? val : baseValue(col, filterObj);
+                                    obj[col] = col === dim ? val : baseValue(col, filterObj);
                                 });
-
                                 const identifyingString = buildIdentifyingString(obj, colOrder);
                                 const identifyingHash = md5(identifyingString);
 
-                                // schedule the fetch but *do not wait* yet
-                                const fetchP = getValue(table, identifyingHash)
-                                    .then(aggregatedValues => {
-                                        valDict[val] = {
-                                            identifyingString,
-                                            identifyingHash,
-                                            values: aggregatedValues
-                                        };
-                                    });
+                                /* fetch & store – but only after the data is READY */
+                                const fetchP = (async () => {
+                                    const aggregatedValues = await getHashValue(table, identifyingHash);
+                                    valDict[val] = {
+                                        identifyingString,
+                                        identifyingHash,
+                                        values: aggregatedValues          // ← **no promises here**
+                                    };
+                                })();
 
-                                // add to throttle gate
                                 await gate(fetchP);
                             }
-
                             tableDict[dim] = valDict;
                         }
-
                         idxDict[table] = tableDict;
                     }
-
                     result[idx] = idxDict;
                 }
 
-                // wait for any still‑running requests
-                await Promise.all(inFlight);
-                return result;
+                await Promise.all(inFlight);          // wait for any left‑over tasks
+                return result;                        // ← fully‑resolved
             }
 
-            console.time("lookup");
-            const lookedUpValues = await lookupValues(
+            lookup_string = "lookup" + getRandomString()
+            console.time(lookup_string);
+            lookedUpValues = await lookupValues(
                 dim_distinct_values,
                 currentFilters,
                 setup_info.dimension_cols_ordered_dict,
                 20          // max 20 concurrent range requests
             );
-            console.timeEnd("lookup");
-            console.log("lookedUpValues:", lookedUpValues);
-
-
-            console.log("lookedUpValues:", lookedUpValues);
-            /*
-            identifiers[0].long   -> array of strings for dataset 0
-            identifiers[1].long   -> array of strings for dataset 1
-            identifiers[0].population  … etc.
-            */
+            console.log("lookedUpValues:", lookedUpValues)
+            console.timeEnd(lookup_string);
 
             var validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
@@ -1110,6 +1118,25 @@
                         }
                     },
                     sort: function (d) { return round_z(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Population 2" },
+                    // cells: {
+                    //     html: function (d) { // continue here
+                    //         return (bigNStyle(lookedUpValues[0]["population"][d.categorical_variable][d.categorical_value]["values"]["data"]["pop_val"])) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                    //     }
+                    // },
+                    cells: {
+                        html: function (d) {
+                            return (bigNStyle((getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")))) + ' → ' + (bigNStyle(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                        }
+                    },
+                    sort: function (d) { return round_z(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
