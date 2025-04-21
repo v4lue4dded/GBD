@@ -40,7 +40,9 @@ function deepClone(item) {
 
 
 function setDifference(a, b) {
-    return new Set([...a].filter(x => !b.has(x)));
+    aSet = new Set([...a])
+    bSet = new Set([...b])
+    return new Set([...aSet].filter(x => !bSet.has(x)));
 }
 
 

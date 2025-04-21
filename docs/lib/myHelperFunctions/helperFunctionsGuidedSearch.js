@@ -158,28 +158,26 @@ async function guidedSearchRange(
 }
 
 
-async function getHashValue(hashFileSizes, hash) {
-    if (!cachedHashes.hasOwnProperty(hash)) {
-        const partialHash = hash.substring(0, 3);
-        const fileUrl = `data_doc/cachefilter_hash_db/${partialHash}.json`;
-        const minByte = 0;
-        const maxByte = hashFileSizes[partialHash];
-        const minHash = `${partialHash}00000000000000000000000000000`;
-        const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
-        const initialRange = 5_000;       // 5 KB
+async function searchHashValue(hashFileSizes, hash) {
+    const partialHash = hash.substring(0, 3);
+    const fileUrl = `data_doc/cachefilter_hash_db/${partialHash}.json`;
+    const minByte = 0;
+    const maxByte = hashFileSizes[partialHash];
+    const minHash = `${partialHash}00000000000000000000000000000`;
+    const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
+    const initialRange = 5_000;       // 5 KB
 
-        // store **one** in‑flight promise per hash so concurrent requests co‑alesce
-        cachedHashes[hash] = guidedSearchRange(
-            fileUrl, hash,
-            minByte, maxByte,
-            minHash, maxHash,
-            initialRange
-        );
-    }
+    // store **one** in‑flight promise per hash so concurrent requests co‑alesce
+    searchResult = guidedSearchRange(
+        fileUrl, hash,
+        minByte, maxByte,
+        minHash, maxHash,
+        initialRange
+    );
 
     // ensure the cache always ends up with the resolved value, not a promise
-    if (cachedHashes[hash] instanceof Promise) {
-        cachedHashes[hash] = await cachedHashes[hash];
+    if (searchResult instanceof Promise) {
+        searchResult = await searchResult;
     }
-    return cachedHashes[hash];            // ← always the fully‑resolved object
+    return searchResult;            // ← always the fully‑resolved object
 }
