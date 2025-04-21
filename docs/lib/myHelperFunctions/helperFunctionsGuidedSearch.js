@@ -1,6 +1,6 @@
-function buildIdentifyingString(obj, colOrder) {
+function buildIdentifyingString(obj, colOrder, allValue) {
     return colOrder
-        .map(col => `${col}: ${obj[col] || "All"}`)
+        .map(col => `${col}: ${obj[col] || allValue}`)
         .join(" | ");
 }
 
@@ -154,4 +154,31 @@ async function guidedSearchRange(
     }
 
     return null;
+}
+
+
+async function getHashValue(hashFileSizes, table_name, hash) {
+    if (!cachedHashes.hasOwnProperty(hash)) {
+        const partialHash = hash.substring(0, 3);
+        const fileUrl = `data_doc/cachefilter_${table_name}/${partialHash}.json`;
+        const minByte = 0;
+        const maxByte = hashFileSizes[table_name][partialHash];
+        const minHash = `${partialHash}00000000000000000000000000000`;
+        const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
+        const initialRange = 5_000;       // 5 KB
+
+        // store **one** in‑flight promise per hash so concurrent requests co‑alesce
+        cachedHashes[hash] = guidedSearchRange(
+            fileUrl, hash,
+            minByte, maxByte,
+            minHash, maxHash,
+            initialRange
+        );
+    }
+
+    // ensure the cache always ends up with the resolved value, not a promise
+    if (cachedHashes[hash] instanceof Promise) {
+        cachedHashes[hash] = await cachedHashes[hash];
+    }
+    return cachedHashes[hash];            // ← always the fully‑resolved object
 }
