@@ -672,34 +672,32 @@
             console.log("hashFileSizes:", hashFileSizes);
             console.timeEnd(lookup_string);
 
-            var results = [];
+            const results = {};
+
             for (const [table, hashSet] of Object.entries(hashSets)) {
-                const BATCH_SIZE = 100;
-                const overallStart = performance.now();
-                const hashesToSearch = [...hashSet]
-                for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
-                    const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
-                    // launch at most 100 guided searches in parallel
-                    console.log("batch:", batch);
-                    const batchResults = await Promise.all(
-                        batch.map(async (hash, i) => {
-                            const founddata = await getHashValue(
-                                hashFileSizes, hash
-                            );
-                            aggResult = founddata ?? default_agg_values[table]
-                            resultDict = {}
-                            resultDict[hash] = aggResult
-                            return resultDict;
-                        })
-                    );
-                    console.log("batchResults:", batchResults);
+              const BATCH_SIZE = 100;
+              const hashesToSearch = [...hashSet];
 
-                    results.push(...batchResults);
+              for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
+                const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
+                console.log("batch:", batch);
+
+                const batchResults = await Promise.all(
+                  batch.map(async (hash) => {
+                    const founddata = await getHashValue(hashFileSizes, hash);
+                    const aggResult = founddata ?? default_agg_values[table];
+                    return { hash, aggResult };
+                  })
+                );
+
+                // Merge into results object
+                for (const { hash, aggResult } of batchResults) {
+                  results[hash] = aggResult;
                 }
-
+              }
             }
 
-            console.log(results)
+            console.log(results);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -118,7 +118,8 @@ async function guidedSearchRange(
     // Direct match?
     for (const [h, obj] of sortedEntries) {
         if (h === searchHash) {
-            return { hash: h, data: obj };
+            obj["hash"] = h
+            return obj;
         }
     }
 
