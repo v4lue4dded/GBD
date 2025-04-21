@@ -181,3 +181,94 @@ async function searchHashValue(hashFileSizes, hash) {
     }
     return searchResult;            // ← always the fully‑resolved object
 }
+
+function generateHashes(dim_distinct_values, currentFilters, colOrderList, allValue) {
+    const resultTree = {};
+    const hashSet = new Set()
+    for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
+        const colResult = {};
+        for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
+            const identifiyingDict = deepClone(currentFilters);
+            identifiyingDict[col] = value
+            const identifyingString = buildIdentifyingString(identifiyingDict, colOrderList, allValue);
+            const identifyingHash = md5(identifyingString);
+            hashSet.add(identifyingHash)
+            const valResult = {
+                identifyingString,
+                identifyingHash,
+            };
+            colResult[value] = valResult
+        }
+        resultTree[col] = colResult
+    }
+    return { "resultTree": resultTree, "hashSet": hashSet };
+}
+
+function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info) {
+    const hashTree = {};
+    const hashSets = { long: new Set(), population: new Set() };
+
+    for (const set of tableSets) {
+        hashTree[set] = {};
+        for (const table of tables) {
+            const { resultTree, hashSet } = generateHashes(
+                dim_distinct_values[table],
+                currentFilters[set][table],
+                setup_info.dimension_cols_ordered_dict[table],
+                "All"
+            );
+
+            hashTree[set][table] = deepClone(resultTree);
+
+            for (const hash of hashSet) {
+                hashSets[table].add(hash);
+            }
+        }
+    }
+
+    return { hashTree, hashSets };
+}
+
+
+async function fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values) {
+    const results = {};
+    console.log("cachedHashes:", cachedHashes);
+
+    for (const [table, hashSet] of Object.entries(hashSets)) {
+        const BATCH_SIZE = 100;
+        const hashesToSearch = [...setDifference(hashSet, Object.keys(cachedHashes))];
+        console.log("hashesToSearch:", hashesToSearch);
+
+        for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
+            const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
+            const batchResults = await Promise.all(
+                batch.map(async (hash) => {
+                    const founddata = await searchHashValue(hashFileSizes, hash);
+                    const aggResult = founddata ?? default_agg_values[table];
+                    return { hash, aggResult };
+                })
+            );
+
+            for (const { hash, aggResult } of batchResults) {
+                results[hash] = aggResult;
+            }
+        }
+    }
+    cachedHashes = mergeUniqueObjects(cachedHashes, results);
+    return cachedHashes;
+}
+
+function addDataToTree(hashTree, cachedHashes, hashName) {
+    if (typeof hashTree !== 'object' || hashTree === null) return hashTree;
+    const result = {};
+    for (const key in hashTree) {
+        if (key === hashName) {
+            result["cachedData"] = cachedHashes[hashTree[key]];
+        } else if (typeof hashTree[key] === 'object' && hashTree[key] !== null) {
+            result[key] = addDataToTree(hashTree[key], cachedHashes, hashName);
+        } else {
+            result[key] = hashTree[key];
+        }
+    }
+    return result;
+}
