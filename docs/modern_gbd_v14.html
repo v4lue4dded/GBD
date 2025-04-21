@@ -345,7 +345,7 @@
 
             var p2 = d3TsvPromise("data_doc/df_population.csv", function (row) {
                 return {
-                    year: +row.year,
+                    year: row.year,
                     location_name: row.location_name,
                     region_name: row.region_name,
                     sub_region_name: row.sub_region_name,
