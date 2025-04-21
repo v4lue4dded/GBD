@@ -385,14 +385,14 @@
                     console.log("setup_info:", setup_info)
                 });
 
-            var p7 = d3JsonPromise("data_doc/cachefilter_population/file_sizes.json")
+            var p7 = d3JsonPromise("data_doc/cachefilter_hash_db/file_sizes.json")
                 .then(function (d) {
-                    hashFileSizes["population"] = d;
+                    hashFileSizes = d;
                 });
 
-            var p8 = d3JsonPromise("data_doc/cachefilter_long/file_sizes.json")
+            var p8 = d3JsonPromise("data_doc/gbd_default_agg_values.json")
                 .then(function (d) {
-                    hashFileSizes["long"] = d;
+                    default_agg_values = d;
                 });
 
             /* wait for everything, then reveal the UI */
@@ -616,6 +616,9 @@
             const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
             updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
 
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             function generateHashes(dim_distinct_values, currentFilters, colOrderList, allValue) {
                 const resultTree = {};
                 const hashSet = new Set()
@@ -666,7 +669,41 @@
             }
             console.log("hashTree:", hashTree);
             console.log("hashSets:", hashSets);
+            console.log("hashFileSizes:", hashFileSizes);
             console.timeEnd(lookup_string);
+
+            var results = [];
+            for (const [table, hashSet] of Object.entries(hashSets)) {
+                const BATCH_SIZE = 100;
+                const overallStart = performance.now();
+                const hashesToSearch = [...hashSet]
+                for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
+                    const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
+                    // launch at most 100 guided searches in parallel
+                    console.log("batch:", batch);
+                    const batchResults = await Promise.all(
+                        batch.map(async (hash, i) => {
+                            const founddata = await getHashValue(
+                                hashFileSizes, hash
+                            );
+                            aggResult = founddata ?? default_agg_values[table]
+                            resultDict = {}
+                            resultDict[hash] = aggResult
+                            return resultDict;
+                        })
+                    );
+                    console.log("batchResults:", batchResults);
+
+                    results.push(...batchResults);
+                }
+
+            }
+
+            console.log(results)
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
             var validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset

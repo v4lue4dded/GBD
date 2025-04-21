@@ -1,0 +1,15 @@
+{
+    "long": {
+        "yll_val": 0,
+        "yll_lower": 0,
+        "yll_upper": 0,
+        "deaths_val": 0,
+        "deaths_lower": 0,
+        "deaths_upper": 0
+    },
+    "population": {
+        "pop_val": 0,
+        "pop_lower": 0,
+        "pop_upper": 0
+    }
+}

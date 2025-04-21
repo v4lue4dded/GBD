@@ -157,12 +157,12 @@ async function guidedSearchRange(
 }
 
 
-async function getHashValue(hashFileSizes, table_name, hash) {
+async function getHashValue(hashFileSizes, hash) {
     if (!cachedHashes.hasOwnProperty(hash)) {
         const partialHash = hash.substring(0, 3);
-        const fileUrl = `data_doc/cachefilter_${table_name}/${partialHash}.json`;
+        const fileUrl = `data_doc/cachefilter_hash_db/${partialHash}.json`;
         const minByte = 0;
-        const maxByte = hashFileSizes[table_name][partialHash];
+        const maxByte = hashFileSizes[partialHash];
         const minHash = `${partialHash}00000000000000000000000000000`;
         const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
         const initialRange = 5_000;       // 5 KB
