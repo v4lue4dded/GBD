@@ -295,7 +295,7 @@
                 const decodedChunks = await Promise.all(decodePromises);
 
                 updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
-                let combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
+                const combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
                 updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
                 return combinedData; // Return the combined decoded data
             } catch (error) {
@@ -629,15 +629,14 @@
                 const resultTree = {};
                 const hashSet = new Set()
                 for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
-                    colResult = {}
+                    const colResult = {};
                     for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
-                        valResult = {}
-                        identifiyingDict = deepClone(currentFilters)
+                        const identifiyingDict = deepClone(currentFilters);
                         identifiyingDict[col] = value
                         const identifyingString = buildIdentifyingString(identifiyingDict, colOrderList, allValue);
                         const identifyingHash = md5(identifyingString);
                         hashSet.add(identifyingHash)
-                        valResult = {
+                        const valResult = {
                             identifyingString,
                             identifyingHash,
                         };
@@ -870,13 +869,13 @@
                 }
             };
 
-            var worldChart0 = dc.geoChoroplethChart("#gbd_map0");
-            var worldChart1 = dc.geoChoroplethChart("#gbd_map1");
-            var worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
-            let YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
-            let YLLPerPersonChangeColorDomain = [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
+            const worldChart0 = dc.geoChoroplethChart("#gbd_map0");
+            const worldChart1 = dc.geoChoroplethChart("#gbd_map1");
+            const worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
+            const YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            const YLLPerPersonChangeColorDomain = [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
 
-            let YLLPerPersonColorRange = [
+            const YLLPerPersonColorRange = [
                 "#3399FF",  // Lighter Vivid Blue
                 "#66B2FF",  // Lighter Blue-Green
                 "#70C5C9",  // Lighter Pale Turquoise
@@ -890,7 +889,7 @@
                 "#A0A0A0"   // Lighter Darker Gray
             ];
 
-            let YLLPerPersonChangeColorRange = [
+            const YLLPerPersonChangeColorRange = [
                 "#0072E5",
                 "#3399EA",
                 "#47B4B8",
@@ -1201,7 +1200,7 @@
                     },
                     handlers: {
                         'select': function (selections) {
-                            selectedKeys = selections.map(function (d) { return d.categorical_value; })
+                            const selectedKeys = selections.map(function (d) { return d.categorical_value; })
                             currentFilters[0][data[0]["categorical_variable"]] = selectedKeys.slice()
                             currentFilters[1][data[0]["categorical_variable"]] = selectedKeys.slice()
                             updateFiltering(filter_dimensions, currentFilters[0][data[0]["categorical_variable"]]);
@@ -1216,7 +1215,7 @@
 
 
             function createInfosToLookUp(categorical_values, categorical_variable_name) {
-                cat_value_array = Array.from(categorical_values)
+                const cat_value_array = Array.from(categorical_values)
                 return cat_value_array.map(item => ({
                     categorical_value: item,
                     categorical_variable: categorical_variable_name
