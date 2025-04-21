@@ -194,6 +194,7 @@
         var rollup_higher_values = {};
         var setup_info = {};
         var hashFileSizes = {};
+        var default_agg_values = {}
         var cachedHashes = {};
         var generatedHashes = {};
 
@@ -216,7 +217,7 @@
 
                 const { columns, data } = jsonData;
                 console.time("data_map")
-                result = data.map(row => {
+                const result = data.map(row => {
                     const rowObj = {};
                     row.forEach((value, index) => {
                         rowObj[columns[index]] = value;
@@ -397,6 +398,7 @@
             var p8 = d3JsonPromise("data_doc/gbd_default_agg_values.json")
                 .then(function (d) {
                     default_agg_values = d;
+                    console.log("default_agg_values:", default_agg_values)
                 });
 
             /* wait for everything, then reveal the UI */
@@ -565,7 +567,7 @@
             }
 
             console.log("cat_vars_and_values:", cat_vars_and_values)
-            aggColumns = {
+            const aggColumns = {
                 'long': ['deaths_val', 'yll_val'],
                 'population': ['pop_val']
             }
@@ -671,7 +673,7 @@
                 return { hashTree, hashSets };
             }
 
-            lookup_string = "lookup" + getRandomString()
+            const lookup_string = "lookup" + getRandomString()
             console.time(lookup_string);
 
             const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info)
