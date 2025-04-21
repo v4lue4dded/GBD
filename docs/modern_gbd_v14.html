@@ -339,8 +339,8 @@
             updateLoadingMessage("download_data started at: " + Math.round(performance.now()) + " ms");
 
             /* one promise for every independent fetch */
-            var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
-                // var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+            // var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+            var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
                 .then(function (decoded) { long_data = decoded; });
 
             var p2 = d3TsvPromise("data_doc/df_population.csv", function (row) {
@@ -529,7 +529,7 @@
             ];
 
             /* ---------- banner tracking ---------- */
-            var currentFilters = { 0: { "long": {}, "population": {} }, 1: { "long": {}, "population": {} } };
+            var currentFilters = { 0: {}, 1: {} };
             function updateFilterBanner() {
                 var banner = document.getElementById('filter-banner');
                 var html = '';
@@ -594,6 +594,7 @@
 
             async function updateFiltering(dimensions, selectedKeys) {
                 updateFilterBanner();
+                console.log("currentFilters:",currentFilters);
                 const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info)
                 cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
                 const valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
@@ -632,6 +633,7 @@
             const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info)
             cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
             const valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
+            console.log("valueTree:", valueTree);
             console.timeEnd(lookup_string);
 
             const getValNew0 = (dataSource, dimension, searchKey, valueCol) => valueTree[0][dataSource][dimension][searchKey]["cachedData"][valueCol]
@@ -705,7 +707,7 @@
                             'drag': function (from_year) {
                                 from_year = snapToValidYear(from_year);
                                 this.data = [from_year];
-                                currentFilters[0]['year'] = [from_year].slice()
+                                currentFilters[0]['year'] = [from_year].slice() //probably needs .toString()
                                 updateFiltering([CFDDict0['long']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
                             },
                             'render': function () {
@@ -724,7 +726,7 @@
                             'drag': function (until_year) {
                                 until_year = snapToValidYear(until_year);
                                 this.data = [until_year];
-                                currentFilters[1]['year'] = [until_year].slice()
+                                currentFilters[1]['year'] = [until_year].slice() //probably needs .toString()
                                 updateFiltering([CFDDict1['long']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
                             },
                             // Filter the data based on the initial year selection
@@ -995,25 +997,20 @@
                         }
                     }
                 }, {
-                    //     header: { text: "Population 2" },
-                    //     // cells: {
-                    //     //     html: function (d) { // continue here
-                    //     //         return (bigNStyle(generatedHashes[0]["population"][d.categorical_variable][d.categorical_value]["values"]["data"]["pop_val"])) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")));
-                    //     //     }
-                    //     // },
-                    //     cells: {
-                    //         html: function (d) {
-                    //             return (bigNStyle((getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")))) + ' → ' + (bigNStyle(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")));
-                    //         }
-                    //     },
-                    //     sort: function (d) { return round_z(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
-                    //     vis: 'bar',
-                    //     vis_options: {
-                    //         styles: {
-                    //             'background-color': 'lightgreen'
-                    //         }
-                    //     }
-                    // }, {
+                    header: { text: "Population 2" },
+                    cells: {
+                        html: function (d) {
+                            return (bigNStyle(getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                        }
+                    },
+                    sort: function (d) { return round_z(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
                     header: { text: "Deaths" },
                     cells: { html: function (d) { return (bigNStyle(getVal0("long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
                     sort: function (d) { return round_z(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val")); },

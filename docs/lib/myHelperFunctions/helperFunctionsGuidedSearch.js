@@ -182,14 +182,16 @@ async function searchHashValue(hashFileSizes, hash) {
     return searchResult;            // ← always the fully‑resolved object
 }
 
-function generateHashes(dim_distinct_values, currentFilters, colOrderList, allValue) {
+function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList, allValue) {
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
-            const identifiyingDict = deepClone(currentFilters);
-            identifiyingDict[col] = value
+            const identifiyingDict = deepClone(currentFiltersSubset);
+            // console.log("currentFiltersSubset:", currentFiltersSubset);
+            // console.log("identifiyingDict:", identifiyingDict);
+            identifiyingDict[col] = [value]
             const identifyingString = buildIdentifyingString(identifiyingDict, colOrderList, allValue);
             const identifyingHash = md5(identifyingString);
             hashSet.add(identifyingHash)
@@ -208,12 +210,15 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
     const hashTree = {};
     const hashSets = { long: new Set(), population: new Set() };
 
+    console.log("currentFilters:", currentFilters);
     for (const set of tableSets) {
+        console.log("set:", set);
         hashTree[set] = {};
         for (const table of tables) {
+            console.log("table:", table);
             const { resultTree, hashSet } = generateHashes(
                 dim_distinct_values[table],
-                currentFilters[set][table],
+                currentFilters[set],
                 setup_info.dimension_cols_ordered_dict[table],
                 "All"
             );
