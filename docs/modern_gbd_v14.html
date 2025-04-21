@@ -718,14 +718,14 @@
 
 
 
-            var validYears = Array.from(cat_vars_and_values["year"])
+            const validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
             function snapToValidYear(year) {
                 return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
             }
 
-            var charts = [];
-            var timeline;
+            const charts = [];
+            let timeline;
             charts.push(timeline = new c3.Plot({
                 anchor: '#gbd_timeline',
                 height: 600,
