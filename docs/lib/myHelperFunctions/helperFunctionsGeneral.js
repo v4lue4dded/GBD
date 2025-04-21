@@ -37,3 +37,32 @@ function deepClone(item) {
         return item;
     }
 }
+
+
+function setDifference(a, b) {
+    return new Set([...a].filter(x => !b.has(x)));
+}
+
+
+function mergeUniqueObjects(...objects) {
+    //   const a = { x: 1, y: 2 };
+    //   const b = { z: 3 };
+    //   const c = { a: 4, b: 5 };
+
+    //   const combined = mergeUniqueObjects(a, b, c);
+    //   console.log(combined); // { x: 1, y: 2, z: 3, a: 4, b: 5 }
+
+    const result = {};
+
+    for (const obj of objects) {
+        for (const [key, value] of Object.entries(obj)) {
+            if (key in result) {
+                throw new Error(`Duplicate key found: "${key}"`);
+            }
+            result[key] = value;
+        }
+    }
+
+    return result;
+}
+
