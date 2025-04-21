@@ -189,10 +189,11 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
             const identifiyingDict = deepClone(currentFiltersSubset);
-            // console.log("currentFiltersSubset:", currentFiltersSubset);
-            // console.log("identifiyingDict:", identifiyingDict);
+            console.log("currentFiltersSubset:", currentFiltersSubset);
+            console.log("identifiyingDict:", identifiyingDict);
             identifiyingDict[col] = [value]
             const identifyingString = buildIdentifyingString(identifiyingDict, colOrderList, allValue);
+            console.log("identifyingString:", identifyingString);
             const identifyingHash = md5(identifyingString);
             hashSet.add(identifyingHash)
             const valResult = {

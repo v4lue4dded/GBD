@@ -597,7 +597,8 @@
                 console.log("currentFilters:",currentFilters);
                 const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info)
                 cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
-                const valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
+                valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
+                console.log("valueTree:", valueTree);
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
                     dimensions.forEach(function (dimension) {
@@ -632,7 +633,7 @@
             console.time(lookup_string);
             const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info)
             cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
-            const valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
+            let valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
             console.log("valueTree:", valueTree);
             console.timeEnd(lookup_string);
 
