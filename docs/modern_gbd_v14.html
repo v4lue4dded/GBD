@@ -183,6 +183,8 @@
         <div id="gdb_l2_cause_table"></div>
     </main>
     <script>
+        "use strict";
+
         const tableSets = [0, 1];
         const tables = ["long", "population"];
         var long_data = [];
@@ -678,32 +680,36 @@
             console.log("hashFileSizes:", hashFileSizes);
             console.timeEnd(lookup_string);
 
-            const results = {};
-            console.log("cachedHashes:", cachedHashes);
+            async function fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values) {
+                const results = {};
+                console.log("cachedHashes:", cachedHashes);
 
-            for (const [table, hashSet] of Object.entries(hashSets)) {
-                const BATCH_SIZE = 100;
-                const hashesToSearch = [...setDifference(hashSet, Object.keys(cachedHashes))];
-                console.log("hashesToSearch:", hashesToSearch);
-                for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
-                    const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
-                    const batchResults = await Promise.all(
-                        batch.map(async (hash) => {
-                            const founddata = await searchHashValue(hashFileSizes, hash);
-                            const aggResult = founddata ?? default_agg_values[table];
-                            return { hash, aggResult };
-                        })
-                    );
-                    // Merge into results object
-                    for (const { hash, aggResult } of batchResults) {
-                        results[hash] = aggResult;
+                for (const [table, hashSet] of Object.entries(hashSets)) {
+                    const BATCH_SIZE = 100;
+                    const hashesToSearch = [...setDifference(hashSet, Object.keys(cachedHashes))];
+                    console.log("hashesToSearch:", hashesToSearch);
+
+                    for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
+                        const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
+                        const batchResults = await Promise.all(
+                            batch.map(async (hash) => {
+                                const founddata = await searchHashValue(hashFileSizes, hash);
+                                const aggResult = founddata ?? default_agg_values[table];
+                                return { hash, aggResult };
+                            })
+                        );
+
+                        for (const { hash, aggResult } of batchResults) {
+                            results[hash] = aggResult;
+                        }
                     }
                 }
+                cachedHashes = mergeUniqueObjects(cachedHashes, results);
+                return cachedHashes;
             }
 
-            console.log("cachedHashes:", cachedHashes);
-            console.log("results:", results);
-            cachedHashes = mergeUniqueObjects(cachedHashes, results)
+            cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
+
             console.log("cachedHashes:", cachedHashes);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
