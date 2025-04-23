@@ -182,23 +182,44 @@ async function searchHashValue(hashFileSizes, hash) {
     return searchResult;            // ← always the fully‑resolved object
 }
 
-function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList, allValue) {
+function enrichFilters(dataDict, filterDict) {
+    const enriched = { ...filterDict };
+  
+    for (const [filterKey, filterValue] of Object.entries(filterDict)) {
+      const lookupTable = dataDict[filterKey];
+      if (!lookupTable) continue;
+  
+      const mapping = lookupTable[filterValue];
+      if (!mapping) continue;
+  
+      for (const [higherKey, higherValue] of Object.entries(mapping)) {
+        if (!(enriched?[higherKey])) {
+          enriched[higherKey] = higherValue;
+        }
+      }
+    }
+  
+    return enriched;
+  }
+  
+
+function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList, allValue, rollup_higher_values_filtered) {
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
             const identifiyingDict = deepClone(currentFiltersSubset);
-            console.log("currentFiltersSubset:", currentFiltersSubset);
-            console.log("identifiyingDict:", identifiyingDict);
             identifiyingDict[col] = [value]
-            const identifyingString = buildIdentifyingString(identifiyingDict, colOrderList, allValue);
-            console.log("identifyingString:", identifyingString);
+            const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)
+            const identifyingString = buildIdentifyingString(identifiyingDictRollupEnriched, colOrderList, allValue);
             const identifyingHash = md5(identifyingString);
             hashSet.add(identifyingHash)
             const valResult = {
                 identifyingString,
                 identifyingHash,
+                identifiyingDict,
+                identifiyingDictRollupEnriched,
             };
             colResult[value] = valResult
         }
@@ -207,7 +228,7 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
     return { "resultTree": resultTree, "hashSet": hashSet };
 }
 
-function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info) {
+function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values) {
     const hashTree = {};
     const hashSets = { long: new Set(), population: new Set() };
 
@@ -221,7 +242,8 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
                 dim_distinct_values[table],
                 currentFilters[set],
                 setup_info.dimension_cols_ordered_dict[table],
-                "All"
+                "All",
+                rollup_higher_values[table]
             );
 
             hashTree[set][table] = deepClone(resultTree);
