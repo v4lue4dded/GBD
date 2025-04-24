@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cartesian Product Test</title>
+</head>
+<body>
+  <h2>Cartesian Product Result</h2>
+  <pre id="output"></pre>
+
+  <script>
+    function cartesianProduct(dimensions) {
+      const entries = Object.entries(dimensions).filter(([_, values]) => Array.isArray(values) && values.length > 0);
+      if (entries.length === 0) return [];
+
+      return entries.reduce((acc, [key, values]) => {
+        const temp = [];
+        for (const combo of acc) {
+          for (const value of values) {
+            temp.push({ ...combo, [key]: value });
+          }
+        }
+        return temp;
+      }, [{}]);
+    }
+
+    const filters = {
+      year: ["2010"],
+      location_name: ["Germany"],
+      sex: ["male"],
+      age_group_name_sorted: ["40 to 44"]
+    };
+
+    const result = cartesianProduct(filters);
+    document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+  </script>
+</body>
+</html>

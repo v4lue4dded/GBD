@@ -311,9 +311,9 @@
             const locationNamesNotInFeatures = new Set([...locationNames].filter(x => !featureNames.has(x)));
             const featureNamesNotInLocations = new Set([...featureNames].filter(x => !locationNames.has(x)));
             // create prompt for llm to gnereate match to update geojson_to_gbd_name_mapping.json
-            console.log("Please match featureNamesNotInLocations as key in json to locationNamesNotInFeatures as value in json (only if there is a match don't even add key for those without match):");
-            console.log("locationNamesNotInFeatures:", locationNamesNotInFeatures);
-            console.log("featureNamesNotInLocations:", featureNamesNotInLocations);
+            // console.log("Please match featureNamesNotInLocations as key in json to locationNamesNotInFeatures as value in json (only if there is a match don't even add key for those without match):");
+            // console.log("locationNamesNotInFeatures:", locationNamesNotInFeatures);
+            // console.log("featureNamesNotInLocations:", featureNamesNotInLocations);
         }
         /* ───────────────────────── helpers (v3 style) ────────────────────────── */
         function d3JsonPromise(url) {
@@ -375,19 +375,19 @@
             var p4 = d3JsonPromise("data_doc/gbd_dim_distinct_values.json")
                 .then(function (d) {
                     dim_distinct_values = d;
-                    console.log("dim_distinct_values:", dim_distinct_values)
+                    // console.log("dim_distinct_values:", dim_distinct_values)
                 });
 
             var p5 = d3JsonPromise("data_doc/gbd_rollup_higher_values.json")
                 .then(function (d) {
                     rollup_higher_values = d;
-                    console.log("rollup_higher_values:", rollup_higher_values)
+                    // console.log("rollup_higher_values:", rollup_higher_values)
                 });
 
             var p6 = d3JsonPromise("data_doc/gbd_setup_info.json")
                 .then(function (d) {
                     setup_info = d;
-                    console.log("setup_info:", setup_info)
+                    // console.log("setup_info:", setup_info)
                 });
 
             var p7 = d3JsonPromise("data_doc/cachefilter_hash_db/file_sizes.json")
@@ -398,7 +398,7 @@
             var p8 = d3JsonPromise("data_doc/gbd_default_agg_values.json")
                 .then(function (d) {
                     default_agg_values = d;
-                    console.log("default_agg_values:", default_agg_values)
+                    // console.log("default_agg_values:", default_agg_values)
                 });
 
             /* wait for everything, then reveal the UI */
@@ -499,9 +499,9 @@
             // ### Prepare the data
             // Output the data set to the console if you want to take a look.
             updateLoadingMessage(`start of render function at : ${Math.round(performance.now())}ms`);
-            console.log("long_data:");
+            // console.log("long_data:");
             console.log(long_data);
-            console.log("population_data:");
+            // console.log("population_data:");
             console.log(population_data);
             // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
             updateLoadingMessage(`logging done : ${Math.round(performance.now())}ms`);
@@ -566,7 +566,7 @@
                 }
             }
 
-            console.log("cat_vars_and_values:", cat_vars_and_values)
+            // console.log("cat_vars_and_values:", cat_vars_and_values)
             const aggColumns = {
                 'long': ['deaths_val', 'yll_val'],
                 'population': ['pop_val']
@@ -594,11 +594,13 @@
 
             async function updateFiltering(dimensions, selectedKeys) {
                 updateFilterBanner();
-                console.log("currentFilters:",currentFilters);
+                // console.log("currentFilters:",currentFilters);
                 const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values)
                 cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
                 valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
-                console.log("valueTree:", valueTree);
+                // // console.log("valueTree2:", valueTree);
+                aggTree = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData")
+                // // console.log("aggTree:", aggTree);
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
                     dimensions.forEach(function (dimension) {
@@ -628,17 +630,21 @@
 
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            console.log("test-1")
 
             const lookup_string = "lookup" + getRandomString()
             console.time(lookup_string);
             const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values)
             cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
-            let valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
+            let valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash');
             console.log("valueTree:", valueTree);
+            const colAggDef = {"pop_val": "sum", "pop_lower": "sum", "pop_upper": "sum", "yll_val": "sum", "yll_lower": "sum", "yll_upper": "sum", "deaths_val": "sum", "deaths_lower": "sum", "deaths_upper": "sum"}
+            let aggTree = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
+            console.log("aggTree:", aggTree);
             console.timeEnd(lookup_string);
 
-            const getValNew0 = (dataSource, dimension, searchKey, valueCol) => valueTree[0][dataSource][dimension][searchKey]["cachedData"][valueCol]
-            const getValNew1 = (dataSource, dimension, searchKey, valueCol) => valueTree[1][dataSource][dimension][searchKey]["cachedData"][valueCol]
+            const getValNew0 = (dataSource, dimension, searchKey, valueCol) => aggTree[0][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
+            const getValNew1 = (dataSource, dimension, searchKey, valueCol) => aggTree[1][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
 
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -998,20 +1004,6 @@
                         }
                     }
                 }, {
-                    header: { text: "Population 2" },
-                    cells: {
-                        html: function (d) {
-                            return (bigNStyle(getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")));
-                        }
-                    },
-                    sort: function (d) { return round_z(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
-                    vis: 'bar',
-                    vis_options: {
-                        styles: {
-                            'background-color': 'lightgreen'
-                        }
-                    }
-                }, {
                     header: { text: "Deaths" },
                     cells: { html: function (d) { return (bigNStyle(getVal0("long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
                     sort: function (d) { return round_z(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val")); },
@@ -1058,6 +1050,74 @@
                     header: { text: "Years of live lost per Person change" },
                     cells: { html: function (d) { return d3.format('.2%')((getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
                     sort: function (d) { return (getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': YLLPerPersonChangeColorDomain,
+                            'range': YLLPerPersonChangeColorRange,
+                        }
+                    }
+                }, {
+                    header: { text: "Population v2" },
+                    cells: {
+                        html: function (d) {
+                            return (bigNStyle(getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                        }
+                    },
+                    sort: function (d) { return round_z(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Deaths v2" },
+                    cells: { html: function (d) { return (bigNStyle(getValNew0("long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getValNew1("long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getValNew1("long", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost v2" },
+                    cells: { html: function (d) { return (bigNStyle(getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                    sort: function (d) { return round_z(getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person 0 v2" },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': YLLPerPersonColorRange,
+                            'domain': YLLPerPersonColorDomain,
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person 1 v2" },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': YLLPerPersonColorRange,
+                            'domain': YLLPerPersonColorDomain,
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person change v2" },
+                    cells: { html: function (d) { return d3.format('.2%')((getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1178,8 +1238,8 @@
             });
 
 
-            // console.log("aggDict0['long']['location_name']:", aggDict0['long']['location_name'])
-            // console.log("createInfosToLookUp(aggDict0['long']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
+            // // console.log("aggDict0['long']['location_name']:", aggDict0['long']['location_name'])
+            // // console.log("createInfosToLookUp(aggDict0['long']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
             createDataTable({
                 anchorId: '#gdb_location_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
