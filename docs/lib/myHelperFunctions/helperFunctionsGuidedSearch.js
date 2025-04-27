@@ -311,16 +311,16 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
     const hashTree = {};
     const hashSets = {};
 
-    console.log("currentFilters:", currentFilters);
+    // console.log("currentFilters:", currentFilters);
     for (const set of tableSets) {
-        console.log("set:", set);
+        // console.log("set:", set);
         hashTree[set] = {};
         for (const table of tables) {
-            console.log("table:", table);
-            console.log("dim_distinct_values[table],:", dim_distinct_values[table],);
-            console.log("currentFilters[set],:", currentFilters[set],);
-            console.log("setup_info.dimension_cols_ordered_dict[table],:", setup_info.dimension_cols_ordered_dict[table],);
-            console.log("rollup_higher_values[table]:", rollup_higher_values[table]);
+            // console.log("table:", table);
+            // console.log("dim_distinct_values[table],:", dim_distinct_values[table],);
+            // console.log("currentFilters[set],:", currentFilters[set],);
+            // console.log("setup_info.dimension_cols_ordered_dict[table],:", setup_info.dimension_cols_ordered_dict[table],);
+            // console.log("rollup_higher_values[table]:", rollup_higher_values[table]);
             const { resultTree, hashSet } = generateHashes(
                 dim_distinct_values[table],
                 currentFilters[set],
@@ -328,8 +328,8 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
                 "All",
                 rollup_higher_values[table]
             );
-            console.log("resultTree:", resultTree);
-            console.log("hashSet:", hashSet);
+            // console.log("resultTree:", resultTree);
+            // console.log("hashSet:", hashSet);
             hashTree[set][table] = deepClone(resultTree);
             hashSets[table] = new Set();
 
@@ -376,6 +376,7 @@ function addDataToTree(hashTree, cachedHashes, hashName) {
     const result = {};
     for (const key in hashTree) {
         if (key === hashName) {
+            result[key] = hashTree[key];
             result["cachedData"] = cachedHashes[hashTree[key]];
         } else if (typeof hashTree[key] === 'object' && hashTree[key] !== null) {
             result[key] = addDataToTree(hashTree[key], cachedHashes, hashName);
@@ -385,3 +386,4 @@ function addDataToTree(hashTree, cachedHashes, hashName) {
     }
     return result;
 }
+

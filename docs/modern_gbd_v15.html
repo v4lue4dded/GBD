@@ -631,15 +631,15 @@
 
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            console.log("test-1")
-
             const lookup_string = "lookup" + getRandomString()
             console.time(lookup_string);
             const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values)
-            console.log("hashTree:", hashTree);
+            console.log("hashTree0:", hashTree);
             cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
+            console.log("hashTreeBug:", hashTree);
+            console.log("cachedHashesBug:", cachedHashes);
             let valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash');
-            console.log("valueTree:", valueTree);
+            console.log("valueTreeBug:", valueTree);
             const colAggDef = {"pop_val": "sum", "pop_lower": "sum", "pop_upper": "sum", "yll_val": "sum", "yll_lower": "sum", "yll_upper": "sum", "deaths_val": "sum", "deaths_lower": "sum", "deaths_upper": "sum"}
             let aggTree = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
             console.log("aggTree:", aggTree);
