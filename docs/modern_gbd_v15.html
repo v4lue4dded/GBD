@@ -656,17 +656,48 @@
                 default_agg_values
             ));
             console.log("aggTree:", aggTree);
-            console.log("cachedHashes:", cachedHashes);
-            console.log("cachedHashes after snapshot:", JSON.parse(JSON.stringify(cachedHashes)));
+            console.log("aggTree snapshot:", JSON.parse(JSON.stringify(aggTree)));
+
+            // const getValNew0 = (dataSource, dimension, searchKey, valueCol) => {
+            //     try {
+            //         return aggTree[0][dataSource][dimension][searchKey]
+            //             .aggregatedData[valueCol];
+            //     } catch (err) {
+            //         console.error('getValNew0 lookup failed', {
+            //             "aggTree": deepClone(aggTree),
+            //             dataSource,
+            //             dimension,
+            //             searchKey,
+            //             valueCol,
+            //             branch: (((aggTree[0] || {})[dataSource] || {})[dimension] || {})
+            //         }, err);
+            //         return undefined;
+            //     }
+            // };
+
+            // const getValNew1 = (dataSource, dimension, searchKey, valueCol) => {
+            //     try {
+            //         return aggTree[1][dataSource][dimension][searchKey]
+            //             .aggregatedData[valueCol];
+            //     } catch (err) {
+            //         console.error('getValNew1 lookup failed', {
+            //             "aggTree": deepClone(aggTree),
+            //             dataSource,
+            //             dimension,
+            //             searchKey,
+            //             valueCol,
+            //             branch: (((aggTree[1] || {})[dataSource] || {})[dimension] || {})
+            //         }, err);
+            //         return undefined;
+            //     }
+            // };
+
+            
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
             const getValNew0 = (dataSource, dimension, searchKey, valueCol) => aggTree[0][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
             const getValNew1 = (dataSource, dimension, searchKey, valueCol) => aggTree[1][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
-
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
             const validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
@@ -1144,6 +1175,7 @@
                     }
                 },
             ]
+
             // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
             // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
             // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
@@ -1221,7 +1253,7 @@
                     categorical_variable: categorical_variable_name
                 }));
             }
-            
+
             createDataTable({
                 anchorId: '#gdb_region_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),
@@ -1340,8 +1372,10 @@
                         },
                         sort: function (d) { return d.categorical_value; },
                     }
-                ].concat(deepClone(common_columns).slice(2))
+                ].concat(deepClone(common_columns).filter(col => !col.header.text.toLowerCase().includes("population")))
             });
+
+            console.log(deepClone(common_columns).filter(col => !col.header.text.toLowerCase().includes("population")))
 
             createDataTable({
                 anchorId: '#gdb_l2_cause_table',
@@ -1356,7 +1390,7 @@
                         },
                         sort: function (d) { return d.categorical_value; },
                     }
-                ].concat(deepClone(common_columns).slice(2)),
+                ].concat(deepClone(common_columns).filter(col => !col.header.text.toLowerCase().includes("population"))),
                 customOptions: {
                     // Any region-specific options can go here
                 }
