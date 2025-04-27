@@ -207,7 +207,7 @@ function enrichFilters(dataDict, filterDict) {
 
 function cartesianProduct(dimensions) {
     const entries = Object.entries(dimensions).filter(([_, values]) => Array.isArray(values) && values.length > 0);
-    if (entries.length === 0) return [];
+    if (entries.length === 0) return [{}];
 
     return entries.reduce((acc, [key, values]) => {
         const temp = [];
@@ -225,13 +225,19 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
+        console.log("col:", col);
+        console.log("values:", values);
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
+            console.log("value:", value);
+            console.log("currentFiltersSubset:", currentFiltersSubset);
             const currentFilterList = cartesianProduct(currentFiltersSubset)
             const ValResultList = [];
+            console.log("currentFilterList:", currentFilterList);
             for (const currentFilterItem of currentFilterList) {
+                console.log("currentFilterItem:", currentFilterItem);
                 const identifiyingDict = deepClone(currentFilterItem);
-                identifiyingDict[col] = [value]
+                identifiyingDict[col] = value
                 const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)
                 const identifyingString = buildIdentifyingString(identifiyingDictRollupEnriched, colOrderList, allValue);
                 const identifyingHash = md5(identifyingString);
@@ -243,6 +249,7 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
                     "identifiyingDictRollupEnriched": identifiyingDictRollupEnriched,
 
                 };
+                console.log("valResult:", valResult);
                 ValResultList.push(valResult)
             }
             colResult[value] = { "valueList": ValResultList }
@@ -310,6 +317,10 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
         hashTree[set] = {};
         for (const table of tables) {
             console.log("table:", table);
+            console.log("dim_distinct_values[table],:", dim_distinct_values[table],);
+            console.log("currentFilters[set],:", currentFilters[set],);
+            console.log("setup_info.dimension_cols_ordered_dict[table],:", setup_info.dimension_cols_ordered_dict[table],);
+            console.log("rollup_higher_values[table]:", rollup_higher_values[table]);
             const { resultTree, hashSet } = generateHashes(
                 dim_distinct_values[table],
                 currentFilters[set],
@@ -317,7 +328,8 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
                 "All",
                 rollup_higher_values[table]
             );
-
+            console.log("resultTree:", resultTree);
+            console.log("hashSet:", hashSet);
             hashTree[set][table] = deepClone(resultTree);
             hashSets[table] = new Set();
 

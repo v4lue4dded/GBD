@@ -644,6 +644,10 @@
             let aggTree = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
             console.log("aggTree:", aggTree);
             console.timeEnd(lookup_string);
+            // await sleep(1000000);
+    
+    
+
 
             const getValNew0 = (dataSource, dimension, searchKey, valueCol) => aggTree[0][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
             const getValNew1 = (dataSource, dimension, searchKey, valueCol) => aggTree[1][dataSource][dimension][searchKey]["aggregatedData"][valueCol]

@@ -68,3 +68,6 @@ function mergeUniqueObjects(...objects) {
     return result;
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
