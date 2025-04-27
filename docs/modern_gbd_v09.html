@@ -441,27 +441,8 @@
             return d3.format(',')(round_z(value));
         }
 
-        function deepClone(item) {
-            if (Array.isArray(item)) {
-                // Handle array
-                return item.map(deepClone);
-            } else if (typeof item === 'object' && item !== null) {
-                // Handle object
-                if (typeof item.clone === 'function') {
-                    // If the object has a custom clone method, use it.
-                    return item.clone();
-                } else {
-                    // Else, create a shallow copy and deep clone any properties
-                    const clone = {};
-                    for (const [key, value] of Object.entries(item)) {
-                        clone[key] = deepClone(value);
-                    }
-                    return clone;
-                }
-            } else {
-                // Primitive types can be returned directly
-                return item;
-            }
+        function deepClone(obj) {
+            structuredClone(obj)
         }
 
         // ###########################################################################

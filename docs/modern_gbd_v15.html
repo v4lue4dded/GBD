@@ -196,6 +196,7 @@
         var hashFileSizes = {};
         var default_agg_values = {}
         var cachedHashes = {};
+        var aggTree = {};
         var generatedHashes = {};
 
         function updateLoadingMessage(message) {
@@ -547,26 +548,7 @@
             }
             /* ------------------------------------ */
 
-            // TODO: precalculate this
-            // Object for collecting unique values
-            const cat_vars_and_values = {};
-            // Loop through the array of data
-            for (let i = 0; i < long_data.length; i++) {
-                const row = long_data[i];
-
-                // For each dimension in dimensionNames
-                for (const dimName of dimensionNames) {
-                    // If we haven't seen this dimension yet, initialize it to a Set
-                    if (!cat_vars_and_values[dimName]) {
-                        cat_vars_and_values[dimName] = new Set();
-                    }
-
-                    // Add this row's value for the dimension to the dimension's Set
-                    cat_vars_and_values[dimName].add(row[dimName]);
-                }
-            }
-
-            // console.log("cat_vars_and_values:", cat_vars_and_values)
+            const cat_vars_and_values = dim_distinct_values["long"]
             const aggColumns = {
                 'long': ['deaths_val', 'yll_val'],
                 'population': ['pop_val']
@@ -594,14 +576,17 @@
 
             async function updateFiltering(dimensions, selectedKeys) {
                 updateFilterBanner();
-                // console.log("currentFilters:",currentFilters);
-                const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values)
-                console.log("hashTree:", hashTree);
-                cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
-                valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash')
-                console.log("valueTree2:", valueTree);
-                aggTree = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData")
-                console.log("aggTree:", aggTree);
+                ({ aggTree, cachedHashes } = await processData(
+                    tableSets,
+                    tables,
+                    dim_distinct_values,
+                    currentFilters,
+                    setup_info,
+                    rollup_higher_values,
+                    cachedHashes,
+                    hashFileSizes,
+                    default_agg_values
+                ));
                 if (selectedKeys.length) {
                     // Apply filters to each dimension based on selections
                     dimensions.forEach(function (dimension) {
@@ -631,22 +616,48 @@
 
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            const lookup_string = "lookup" + getRandomString()
-            console.time(lookup_string);
-            const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values)
-            console.log("hashTree0:", hashTree);
-            cachedHashes = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values)
-            console.log("hashTreeBug:", hashTree);
-            console.log("cachedHashesBug:", cachedHashes);
-            let valueTree = addDataToTree(hashTree, cachedHashes, 'identifyingHash');
-            console.log("valueTreeBug:", valueTree);
-            const colAggDef = {"pop_val": "sum", "pop_lower": "sum", "pop_upper": "sum", "yll_val": "sum", "yll_lower": "sum", "yll_upper": "sum", "deaths_val": "sum", "deaths_lower": "sum", "deaths_upper": "sum"}
-            let aggTree = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
+
+            // Variable definitions
+            const colAggDef = {
+                "pop_val": "sum",
+                "pop_lower": "sum",
+                "pop_upper": "sum",
+                "yll_val": "sum",
+                "yll_lower": "sum",
+                "yll_upper": "sum",
+                "deaths_val": "sum",
+                "deaths_lower": "sum",
+                "deaths_upper": "sum"
+            };
+
+            // Main function
+            async function processData(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values, cachedHashes, hashFileSizes, default_agg_values) {
+                const lookup_string = "lookup" + getRandomString();
+                console.time(lookup_string);
+                const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values);
+                const cachedHashesUpdated = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values);
+                const valueTree = addDataToTree(hashTree, cachedHashesUpdated, 'identifyingHash');
+                const aggTreeUpdated = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
+                console.timeEnd(lookup_string);
+                return { aggTree: aggTreeUpdated, cachedHashes: cachedHashesUpdated };
+            }
+
+            console.log("cachedHashes:", cachedHashes);
+            console.log("cachedHashes before snapshot:", JSON.parse(JSON.stringify(cachedHashes)));
+            ({ aggTree, cachedHashes } = await processData(
+                tableSets,
+                tables,
+                dim_distinct_values,
+                currentFilters,
+                setup_info,
+                rollup_higher_values,
+                cachedHashes,
+                hashFileSizes,
+                default_agg_values
+            ));
             console.log("aggTree:", aggTree);
-            console.timeEnd(lookup_string);
-            // await sleep(1000000);
-    
-    
+            console.log("cachedHashes:", cachedHashes);
+            console.log("cachedHashes after snapshot:", JSON.parse(JSON.stringify(cachedHashes)));
 
 
             const getValNew0 = (dataSource, dimension, searchKey, valueCol) => aggTree[0][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
@@ -1210,7 +1221,7 @@
                     categorical_variable: categorical_variable_name
                 }));
             }
-
+            
             createDataTable({
                 anchorId: '#gdb_region_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),

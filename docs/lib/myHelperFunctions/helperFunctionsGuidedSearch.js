@@ -225,17 +225,17 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
-        console.log("col:", col);
-        console.log("values:", values);
+        // console.log("col:", col);
+        // console.log("values:", values);
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
-            console.log("value:", value);
-            console.log("currentFiltersSubset:", currentFiltersSubset);
+            // console.log("value:", value);
+            // console.log("currentFiltersSubset:", currentFiltersSubset);
             const currentFilterList = cartesianProduct(currentFiltersSubset)
             const ValResultList = [];
-            console.log("currentFilterList:", currentFilterList);
+            // console.log("currentFilterList:", currentFilterList);
             for (const currentFilterItem of currentFilterList) {
-                console.log("currentFilterItem:", currentFilterItem);
+                // console.log("currentFilterItem:", currentFilterItem);
                 const identifiyingDict = deepClone(currentFilterItem);
                 identifiyingDict[col] = value
                 const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)
@@ -249,7 +249,7 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
                     "identifiyingDictRollupEnriched": identifiyingDictRollupEnriched,
 
                 };
-                console.log("valResult:", valResult);
+                // console.log("valResult:", valResult);
                 ValResultList.push(valResult)
             }
             colResult[value] = { "valueList": ValResultList }
@@ -345,12 +345,12 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
 
 async function fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values) {
     const results = {};
-    console.log("cachedHashes:", cachedHashes);
+    // console.log("cachedHashes:", cachedHashes);
 
     for (const [table, hashSet] of Object.entries(hashSets)) {
         const BATCH_SIZE = 100;
         const hashesToSearch = [...setDifference(hashSet, Object.keys(cachedHashes))];
-        console.log("hashesToSearch:", hashesToSearch);
+        // console.log("hashesToSearch:", hashesToSearch);
 
         for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
             const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
