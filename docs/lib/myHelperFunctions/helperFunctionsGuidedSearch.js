@@ -228,7 +228,7 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
             const currentFilterList = cartesianProduct(currentFiltersSubset)
-            const ValResultList = [] ;
+            const ValResultList = [];
             for (const currentFilterItem of currentFilterList) {
                 const identifiyingDict = deepClone(currentFilterItem);
                 identifiyingDict[col] = [value]
@@ -237,14 +237,15 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
                 const identifyingHash = md5(identifyingString);
                 hashSet.add(identifyingHash)
                 const valResult = {
-                    identifyingString,
-                    identifyingHash,
-                    identifiyingDict,
-                    identifiyingDictRollupEnriched,
+                    "identifyingString": identifyingString,
+                    "identifyingHash": identifyingHash,
+                    "identifiyingDict": identifiyingDict,
+                    "identifiyingDictRollupEnriched": identifiyingDictRollupEnriched,
+
                 };
                 ValResultList.push(valResult)
             }
-            colResult[value] = {"valueList": ValResultList}
+            colResult[value] = { "valueList": ValResultList }
         }
         resultTree[col] = colResult
     }
@@ -253,57 +254,55 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
 
 function aggregateValuesInTree(valueTree, aggDict, valueName, aggName) {
     if (typeof valueTree !== 'object' || valueTree === null) return valueTree;
-  
+
     const result = Array.isArray(valueTree) ? [] : {};
-  
+
     for (const key in valueTree) {
-      const value = valueTree[key];
-  
-      // Handle the object that contains the list with cachedData
-      if (key === 'valueList' && typeof value === 'object') {
-        const aggregated = {};
-  
-        // Initialize all fields to 0
-        for (const field in aggDict) {
-          if (aggDict[field] === 'sum') {
-            aggregated[field] = 0;
-          }
-          // You can add support for other aggregation types here
-        }
-  
-        // Perform aggregation
-        for (const itemKey in value) {
-          const item = value[itemKey];
-          const data = item[valueName];
-          if (data) {
+        const value = valueTree[key];
+
+        // Handle the object that contains the list with cachedData
+        if (key === 'valueList' && typeof value === 'object') {
+            const aggregated = {};
+
+            // Initialize all fields to 0
             for (const field in aggDict) {
-              if (aggDict[field] === 'sum' && typeof data[field] === 'number') {
-                aggregated[field] += data[field];
-              }
-              console.log("aggregated[field]:",aggregated[field])
-              console.log("aggregated[field]:",aggregated[field])
+                if (aggDict[field] === 'sum') {
+                    aggregated[field] = 0;
+                }
+                // You can add support for other aggregation types here
             }
-          }
+
+            // Perform aggregation
+            for (const itemKey in value) {
+                const item = value[itemKey];
+                const data = item[valueName];
+                if (data) {
+                    for (const field in aggDict) {
+                        if (aggDict[field] === 'sum' && typeof data[field] === 'number') {
+                            aggregated[field] += data[field];
+                        }
+                    }
+                }
+            }
+
+            // Assign both the original list and the aggregated values
+            result[aggName] = aggregated;
+            result[key] = value;
+        } else if (typeof value === 'object' && value !== null) {
+            result[key] = aggregateValuesInTree(value, aggDict, valueName, aggName);
+        } else {
+            result[key] = value;
         }
-  
-        // Assign both the original list and the aggregated values
-        result[aggName] = aggregated;
-        result[key] = value;
-      } else if (typeof value === 'object' && value !== null) {
-        result[key] = aggregateValuesInTree(value, aggDict, valueName, aggName);
-      } else {
-        result[key] = value;
-      }
     }
-  
+
     return result;
-  }
-  
+}
+
 
 
 function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values) {
     const hashTree = {};
-    const hashSets = { long: new Set(), population: new Set() };
+    const hashSets = {};
 
     console.log("currentFilters:", currentFilters);
     for (const set of tableSets) {
@@ -320,6 +319,7 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
             );
 
             hashTree[set][table] = deepClone(resultTree);
+            hashSets[table] = new Set();
 
             for (const hash of hashSet) {
                 hashSets[table].add(hash);
