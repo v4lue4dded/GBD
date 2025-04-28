@@ -225,17 +225,17 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries({ ...dim_distinct_values, "all_col": ["All"] })) {
-        // console.log("col:", col);
-        // console.log("values:", values);
+        console.log("col:", col);
+        console.log("values:", values);
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
-            // console.log("value:", value);
-            // console.log("currentFiltersSubset:", currentFiltersSubset);
+            console.log("value:", value);
+            console.log("currentFiltersSubset:", currentFiltersSubset);
             const currentFilterList = cartesianProduct(currentFiltersSubset)
-            const ValResultList = [];
-            // console.log("currentFilterList:", currentFilterList);
+            const ValResultDict = {};
+            console.log("currentFilterList:", currentFilterList);
             for (const currentFilterItem of currentFilterList) {
-                // console.log("currentFilterItem:", currentFilterItem);
+                console.log("currentFilterItem:", currentFilterItem);
                 const identifiyingDict = deepClone(currentFilterItem);
                 identifiyingDict[col] = value
                 const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)
@@ -250,9 +250,9 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
 
                 };
                 // console.log("valResult:", valResult);
-                ValResultList.push(valResult)
+                ValResultDict[identifyingHash] = valResult
             }
-            colResult[value] = { "valueList": ValResultList }
+            colResult[value] = { "valueDict": ValResultDict }
         }
         resultTree[col] = colResult
     }
@@ -267,22 +267,19 @@ function aggregateValuesInTree(valueTree, aggDict, valueName, aggName) {
     for (const key in valueTree) {
         const value = valueTree[key];
 
-        // Handle the object that contains the list with cachedData
-        if (key === 'valueList' && typeof value === 'object') {
+        if (key === 'valueDict' && typeof value === 'object') {
             const aggregated = {};
 
-            // Initialize all fields to 0
             for (const field in aggDict) {
                 if (aggDict[field] === 'sum') {
                     aggregated[field] = 0;
                 }
-                // You can add support for other aggregation types here
             }
 
-            // Perform aggregation
             for (const itemKey in value) {
                 const item = value[itemKey];
                 const data = item[valueName];
+
                 if (data) {
                     for (const field in aggDict) {
                         if (aggDict[field] === 'sum' && typeof data[field] === 'number') {
@@ -292,7 +289,6 @@ function aggregateValuesInTree(valueTree, aggDict, valueName, aggName) {
                 }
             }
 
-            // Assign both the original list and the aggregated values
             result[aggName] = aggregated;
             result[key] = value;
         } else if (typeof value === 'object' && value !== null) {
@@ -301,10 +297,8 @@ function aggregateValuesInTree(valueTree, aggDict, valueName, aggName) {
             result[key] = value;
         }
     }
-
     return result;
 }
-
 
 
 function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values) {
