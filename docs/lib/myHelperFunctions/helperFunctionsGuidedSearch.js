@@ -224,7 +224,7 @@ function cartesianProduct(dimensions) {
 function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList, allValue, rollup_higher_values_filtered) {
     const resultTree = {};
     const hashSet = new Set()
-    for (const [col, values] of Object.entries(dim_distinct_values)) { // dims: {"year", "region_name"}
+    for (const [col, values] of Object.entries({ ...dim_distinct_values, "all_col": ["All"] })) {
         // console.log("col:", col);
         // console.log("values:", values);
         const colResult = {};

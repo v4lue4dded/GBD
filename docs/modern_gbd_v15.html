@@ -658,46 +658,26 @@
             console.log("aggTree:", aggTree);
             console.log("aggTree snapshot:", JSON.parse(JSON.stringify(aggTree)));
 
-            // const getValNew0 = (dataSource, dimension, searchKey, valueCol) => {
-            //     try {
-            //         return aggTree[0][dataSource][dimension][searchKey]
-            //             .aggregatedData[valueCol];
-            //     } catch (err) {
-            //         console.error('getValNew0 lookup failed', {
-            //             "aggTree": deepClone(aggTree),
-            //             dataSource,
-            //             dimension,
-            //             searchKey,
-            //             valueCol,
-            //             branch: (((aggTree[0] || {})[dataSource] || {})[dimension] || {})
-            //         }, err);
-            //         return undefined;
-            //     }
-            // };
+            const getValNew = (tableSet, table, dimension, searchKey, valueCol) => {
+                try {
+                    const tableBranch = aggTree[tableSet][table];
+                    const dimToUse = tableBranch[dimension] ? dimension : "all_col";
+                    const keyToUse = tableBranch[dimension] ? searchKey : "All";
+                    return tableBranch[dimToUse][keyToUse]["aggregatedData"][valueCol];
+                } catch (err) {
+                    console.error('lookup failed', {
+                        "aggTree": deepClone(aggTree),
+                        table,
+                        dimension,
+                        searchKey,
+                        valueCol,
+                        branch: (((aggTree[tableSet] || {})[table] || {})[dimension] || {})
+                    }, err);
+                    return undefined;
+                }
+            };
 
-            // const getValNew1 = (dataSource, dimension, searchKey, valueCol) => {
-            //     try {
-            //         return aggTree[1][dataSource][dimension][searchKey]
-            //             .aggregatedData[valueCol];
-            //     } catch (err) {
-            //         console.error('getValNew1 lookup failed', {
-            //             "aggTree": deepClone(aggTree),
-            //             dataSource,
-            //             dimension,
-            //             searchKey,
-            //             valueCol,
-            //             branch: (((aggTree[1] || {})[dataSource] || {})[dimension] || {})
-            //         }, err);
-            //         return undefined;
-            //     }
-            // };
-
-            
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-            const getValNew0 = (dataSource, dimension, searchKey, valueCol) => aggTree[0][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
-            const getValNew1 = (dataSource, dimension, searchKey, valueCol) => aggTree[1][dataSource][dimension][searchKey]["aggregatedData"][valueCol]
 
             const validYears = Array.from(cat_vars_and_values["year"])
             // Helper function to snap the year to the nearest valid year in the dataset
@@ -1109,10 +1089,10 @@
                     header: { text: "Population v2" },
                     cells: {
                         html: function (d) {
-                            return (bigNStyle(getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                            return (bigNStyle(getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")));
                         }
                     },
-                    sort: function (d) { return round_z(getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    sort: function (d) { return round_z(getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1121,8 +1101,8 @@
                     }
                 }, {
                     header: { text: "Deaths v2" },
-                    cells: { html: function (d) { return (bigNStyle(getValNew0("long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getValNew1("long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
-                    sort: function (d) { return round_z(getValNew1("long", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                    cells: { html: function (d) { return (bigNStyle(getValNew(0,"long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getValNew(1,"long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getValNew(1,"long", d.categorical_variable, d.categorical_value, "deaths_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1132,8 +1112,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost v2" },
-                    cells: { html: function (d) { return (bigNStyle(getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
-                    sort: function (d) { return round_z(getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val")); },
+                    cells: { html: function (d) { return (bigNStyle(getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                    sort: function (d) { return round_z(getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1142,8 +1122,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person 0 v2" },
-                    cells: { html: function (d) { return (d3.format(',')((getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1153,8 +1133,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person 1 v2" },
-                    cells: { html: function (d) { return (d3.format(',')((getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1164,8 +1144,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person change v2" },
-                    cells: { html: function (d) { return d3.format('.2%')((getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
-                    sort: function (d) { return (getValNew1("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew0("long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                    cells: { html: function (d) { return d3.format('.2%')((getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
                     vis: 'color',
                     vis_options: {
                         styles: {
