@@ -602,7 +602,10 @@
                         dimension.filterAll();
                     });
                 }
+                const redraw_string = "redraw" + getRandomString();
+                console.time(redraw_string);
                 redrawDcAndC3();
+                console.timeEnd(redraw_string);
             }
 
             updateLoadingMessage(`before setup dimensions : ${Math.round(performance.now())}ms`);
@@ -637,13 +640,13 @@
                 const lookup_string = "lookup" + getRandomString();
                 console.time(lookup_string);
                 const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values);
-                console.log("hashSets snapshot:", structuredClone(hashSets));
+                // console.log("hashSets snapshot:", structuredClone(hashSets));
                 const cachedHashesUpdated = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values);
                 const valueTree = addDataToTree(hashTree, cachedHashesUpdated, 'identifyingHash');
                 const aggTreeUpdated = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
                 console.timeEnd(lookup_string);
                 console.log("aggTreeUpdated snapshot:", structuredClone(aggTreeUpdated));
-                console.log("cachedHashesUpdated snapshot:", structuredClone(cachedHashesUpdated));
+                // console.log("cachedHashesUpdated snapshot:", structuredClone(cachedHashesUpdated));
                 return { aggTree: aggTreeUpdated, cachedHashes: cachedHashesUpdated };
             }
 

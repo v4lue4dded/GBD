@@ -225,17 +225,17 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries({ ...dim_distinct_values, "all_col": ["All"] })) {
-        console.log("col:", col);
-        console.log("values:", values);
+        // console.log("col:", col);
+        // console.log("values:", values);
         const colResult = {};
         for (const value of [...values, allValue]) { // values: {"2000", "2005", ..., "All"}
-            console.log("value:", value);
-            console.log("currentFiltersSubset:", currentFiltersSubset);
+            // console.log("value:", value);
+            // console.log("currentFiltersSubset:", currentFiltersSubset);
             const currentFilterList = cartesianProduct(currentFiltersSubset)
             const ValResultDict = {};
-            console.log("currentFilterList:", currentFilterList);
+            // console.log("currentFilterList:", currentFilterList);
             for (const currentFilterItem of currentFilterList) {
-                console.log("currentFilterItem:", currentFilterItem);
+                // console.log("currentFilterItem:", currentFilterItem);
                 const identifiyingDict = deepClone(currentFilterItem);
                 identifiyingDict[col] = value
                 const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)

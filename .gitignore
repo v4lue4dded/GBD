@@ -7,4 +7,3 @@ private
 *.pbix
 **/old/**
 *.pyc
-cachefilter*
