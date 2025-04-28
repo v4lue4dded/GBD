@@ -311,6 +311,10 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
     const hashTree = {};
     const hashSets = {};
 
+    for (const table of tables) {
+        hashSets[table] = new Set();
+    }
+
     // console.log("currentFilters:", currentFilters);
     for (const set of tableSets) {
         // console.log("set:", set);
@@ -331,7 +335,6 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
             // console.log("resultTree:", resultTree);
             // console.log("hashSet:", hashSet);
             hashTree[set][table] = deepClone(resultTree);
-            hashSets[table] = new Set();
 
             for (const hash of hashSet) {
                 hashSets[table].add(hash);

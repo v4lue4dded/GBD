@@ -173,6 +173,8 @@
         <div id="gbd_map0" class="map-container"></div>
         <div id="gbd_map1" class="map-container"></div>
         <div id="gbd_map_change" class="map-container"></div>
+        <div id="gdb_year_0"></div>
+        <div id="gdb_year_1"></div>
         <div id="gdb_region_name_table"></div>
         <div id="gdb_sub_region_name_table"></div>
         <div id="gdb_location_name_table"></div>
@@ -635,10 +637,13 @@
                 const lookup_string = "lookup" + getRandomString();
                 console.time(lookup_string);
                 const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values);
+                console.log("hashSets snapshot:", structuredClone(hashSets));
                 const cachedHashesUpdated = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values);
                 const valueTree = addDataToTree(hashTree, cachedHashesUpdated, 'identifyingHash');
                 const aggTreeUpdated = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
                 console.timeEnd(lookup_string);
+                console.log("aggTreeUpdated snapshot:", structuredClone(aggTreeUpdated));
+                console.log("cachedHashesUpdated snapshot:", structuredClone(cachedHashesUpdated));
                 return { aggTree: aggTreeUpdated, cachedHashes: cachedHashesUpdated };
             }
 
@@ -655,8 +660,6 @@
                 hashFileSizes,
                 default_agg_values
             ));
-            console.log("aggTree:", aggTree);
-            console.log("aggTree snapshot:", JSON.parse(JSON.stringify(aggTree)));
 
             const getValNew = (tableSet, table, dimension, searchKey, valueCol) => {
                 try {
@@ -678,14 +681,15 @@
             };
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            const charts = [];
 
             const validYears = Array.from(cat_vars_and_values["year"])
+            console.log(validYears)
             // Helper function to snap the year to the nearest valid year in the dataset
             function snapToValidYear(year) {
                 return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
             }
 
-            const charts = [];
             let timeline;
             charts.push(timeline = new c3.Plot({
                 anchor: '#gbd_timeline',
@@ -732,7 +736,7 @@
                         data: aggDict0['population']['year']
                     }),
                     new c3.Plot.Layer.Line.Vertical({
-                        data: [2000],
+                        data: ["2000"],
                         draggable: true,
                         options: {
                             title: "from Year",
@@ -751,7 +755,7 @@
                         }
                     }),
                     new c3.Plot.Layer.Line.Vertical({
-                        data: [2019],
+                        data: ["2019"],
                         draggable: true,
                         options: {
                             title: "until Year",
@@ -1269,6 +1273,7 @@
 
             // // console.log("aggDict0['long']['location_name']:", aggDict0['long']['location_name'])
             // // console.log("createInfosToLookUp(aggDict0['long']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
+
             createDataTable({
                 anchorId: '#gdb_location_name_table',
                 data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
