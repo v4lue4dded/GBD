@@ -130,7 +130,7 @@ async function guidedSearchRange(
 
     // If entire chunk is below
     if (chunkMaxHash < searchHash) {
-        const newMinByte = Math.floor(requestEnd + 1);
+        const newMinByte = Math.floor(bestGuessByte);
         const newMinHash = chunkMaxHash;
         const newRangeSize = Math.floor(rangeSize * 1.3);
         return await guidedSearchRange(
@@ -143,7 +143,7 @@ async function guidedSearchRange(
 
     // If entire chunk is above
     if (chunkMinHash > searchHash) {
-        const newMaxByte = Math.floor(requestStart - 1);
+        const newMaxByte = Math.floor(bestGuessByte);
         const newMaxHash = chunkMinHash;
         const newRangeSize = Math.floor(rangeSize * 1.3);
         return await guidedSearchRange(
