@@ -18,7 +18,7 @@ start_sql = f"""
 DROP TABLE IF EXISTS {prep_table} CASCADE;
 CREATE TABLE {prep_table} AS
 SELECT
-    substr(identifying_string_hash, 0, 4) AS partial_hash,
+    substr(identifying_string_hash, 0, 4) AS file_id,
     json_object_agg(
         identifying_string_hash,
         json_column
@@ -58,22 +58,22 @@ os.makedirs(export_dir, exist_ok=True)
 
 
 # 2) Determine all partial-hash prefixes for the relevant rows
-partial_hash_agg_query = f"""
+file_id_agg_query = f"""
     SELECT *
     FROM {prep_table}
-    ORDER BY partial_hash
+    ORDER BY file_id
 """
 
-df_partial_has_agg = pd.read_sql(partial_hash_agg_query, con=engine)
+df_partial_has_agg = pd.read_sql(file_id_agg_query, con=engine)
 metadata = {}
 
 for idx, row in df_partial_has_agg.iterrows():
     if idx % 10 == 0:
         print(idx)
-    p_hash = row["partial_hash"]
+    file_id = row["file_id"]
     chunk_json_string = row["chunk_json_string"]
     
-    filename = f"{p_hash}.json"
+    filename = f"{file_id}.json"
     filepath = opj(export_dir, filename)
 
     with open(filepath, "w") as f:
@@ -81,7 +81,7 @@ for idx, row in df_partial_has_agg.iterrows():
 
     # Record file size
     file_size = os.path.getsize(filepath)
-    metadata[p_hash] = file_size
+    metadata[file_id] = file_size
 
 # Export metadata.json
 metadata_path = opj(export_dir, "file_sizes.json")
