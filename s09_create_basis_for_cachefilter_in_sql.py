@@ -4,15 +4,14 @@ import json
 import pandas as pd
 from os.path import join as opj
 
-
 # ── database connection ────────────────────────────────────────────────────────
 engine = config.engine
 con = engine.connect()
 
-data_directory = opj(config.REPO_DIRECTORY, "docs","data_doc")
+data_directory = opj(config.REPO_DIRECTORY, "docs", "data_doc")
 
 # ── setup definitions ───────────────────────────────────────────────────────────
-with open(opj(data_directory,"gbd_setup_info.json"), "r") as fh:
+with open(opj(data_directory, "gbd_setup_info.json"), "r") as fh:
     setup_dict = json.load(fh)
 
 table_types = setup_dict["table_types"]
@@ -20,8 +19,10 @@ rollup_cols_dict = setup_dict["rollup_cols_dict"]
 dimension_cols_ordered_dict = setup_dict["dimension_cols_ordered_dict"]
 aggregated_cols_dict = setup_dict["aggregated_cols_dict"]
 
+priority_exclude_cols = {"year"}
+
 # ==============================================================================
-# 1.  CREATE ROLLUP + CACHEFILTER TABLES (unchanged from previous version)
+# 1.  CREATE ROLLUP + CACHEFILTER TABLES
 # ==============================================================================
 for table_type in table_types:
     source_table1 = f"gbd.db04_modelling.export_{table_type}"
@@ -33,9 +34,20 @@ for table_type in table_types:
 
     dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
     dim_select_str = ("\n" + " " * 7 + "   , ").join(dim_selects)
+
     agg_selects = [f"SUM({col}) AS {col}" for col in agg_cols]
     agg_selects.append("COUNT(*) AS anz")
     agg_select_str = ("\n" + " " * 7 + "   , ").join(agg_selects)
+
+    priority_parts = []
+    for group in rollup_col_lists:
+        filtered_group = [col for col in group if col not in priority_exclude_cols]
+        if len(filtered_group) > 0:
+            cond = " or ".join(f"{col}::varchar is not null" for col in filtered_group)
+            priority_parts.append(f"CASE WHEN {cond} THEN 1 ELSE 0 END")
+    priority_expr = ("\n" + " " * 7 + "   + ").join(priority_parts)
+    priority_select = f"{priority_expr}\n" + " " * 7 + "   AS priority"
+
     group_by_parts = []
     for group in rollup_col_lists:
         group_cols = ", ".join(f"{c}::varchar" for c in group)
@@ -48,6 +60,7 @@ for table_type in table_types:
         SELECT
             {dim_select_str}
           , {agg_select_str}
+          , {priority_select}
         FROM {source_table1}
         GROUP BY
             {group_by_str}
