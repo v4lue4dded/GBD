@@ -75,17 +75,11 @@ async function guidedSearchRange(
     minHash, maxHash,
     rangeSize
 ) {
-    if (searchHash < minHash || searchHash > maxHash) {
-        return null;
-    }
-    if (minByte > maxByte) {
-        return null;
-    }
+    if (searchHash < minHash || searchHash > maxHash) return null;
+    if (minByte > maxByte) return null;
 
-    // Approximate where to look by fraction
     let fraction = getWeight(searchHash, minHash, maxHash);
-    let bestGuessByte = minByte + fraction * (maxByte - minByte);
-    bestGuessByte = Math.floor(bestGuessByte);
+    let bestGuessByte = Math.floor(minByte + fraction * (maxByte - minByte));
 
     let requestStart = Math.max(bestGuessByte - 0.5 * rangeSize, minByte);
     let requestEnd = Math.min(bestGuessByte + 0.5 * rangeSize, maxByte);
@@ -94,63 +88,53 @@ async function guidedSearchRange(
     try {
         chunkText = await fetchRange(fileUrl, Math.floor(requestStart), Math.floor(requestEnd));
     } catch (err) {
-        throw err;  // or handle error
+        throw err;
     }
 
     const subObjects = parseChunkForSubObjects(chunkText);
     if (Object.keys(subObjects).length === 0) {
-        const newRangeSize = rangeSize * 2;
         return await guidedSearchRange(
             fileUrl, searchHash,
             Math.floor(requestEnd + 1),
             maxByte,
             minHash,
             maxHash,
-            newRangeSize
+            rangeSize * 2
         );
     }
 
-    // Sort the subObjects by hash
     const sortedEntries = Object.entries(subObjects).sort(([a], [b]) => a.localeCompare(b));
     const chunkMinHash = sortedEntries[0][0];
     const chunkMaxHash = sortedEntries[sortedEntries.length - 1][0];
 
-    // Direct match?
     for (const [h, obj] of sortedEntries) {
         if (h === searchHash) {
-            obj["hash"] = h
+            obj["hash"] = h;
             return obj;
         }
     }
 
-    // If chunkMinHash < searchHash < chunkMaxHash but not found => not present
-    if (chunkMinHash < searchHash && chunkMaxHash > searchHash) {
-        return null;
-    }
+    if (chunkMinHash < searchHash && chunkMaxHash > searchHash) return null;
 
-    // If entire chunk is below
     if (chunkMaxHash < searchHash) {
-        const newMinByte = Math.floor(bestGuessByte);
-        const newMinHash = chunkMaxHash;
-        const newRangeSize = Math.floor(rangeSize * 1.3);
         return await guidedSearchRange(
             fileUrl, searchHash,
-            newMinByte, maxByte,
-            newMinHash, maxHash,
-            newRangeSize
+            bestGuessByte,
+            maxByte,
+            chunkMaxHash,
+            maxHash,
+            Math.floor(rangeSize * 1.3)
         );
     }
 
-    // If entire chunk is above
     if (chunkMinHash > searchHash) {
-        const newMaxByte = Math.floor(bestGuessByte);
-        const newMaxHash = chunkMinHash;
-        const newRangeSize = Math.floor(rangeSize * 1.3);
         return await guidedSearchRange(
             fileUrl, searchHash,
-            minByte, newMaxByte,
-            minHash, newMaxHash,
-            newRangeSize
+            minByte,
+            bestGuessByte,
+            minHash,
+            chunkMinHash,
+            Math.floor(rangeSize * 1.3)
         );
     }
 
@@ -158,29 +142,24 @@ async function guidedSearchRange(
 }
 
 
-async function searchHashValue(hashFileSizes, hash) {
+function searchHashValue(hashFileSizes, hash) {
     const partialHash = hash.substring(0, 3);
     const fileUrl = `data_doc/cachefilter_hash_db/${partialHash}.json`;
     const minByte = 0;
     const maxByte = hashFileSizes[partialHash];
     const minHash = `${partialHash}00000000000000000000000000000`;
     const maxHash = `${partialHash}fffffffffffffffffffffffffffff`;
-    const initialRange = 5_000;       // 5 KB
+    const initialRange = 10_000;
 
-    // store **one** in‑flight promise per hash so concurrent requests co‑alesce
-    searchResult = guidedSearchRange(
+    return guidedSearchRange(
         fileUrl, hash,
         minByte, maxByte,
         minHash, maxHash,
         initialRange
     );
-
-    // ensure the cache always ends up with the resolved value, not a promise
-    if (searchResult instanceof Promise) {
-        searchResult = await searchResult;
-    }
-    return searchResult;            // ← always the fully‑resolved object
 }
+
+
 
 function enrichFilters(dataDict, filterDict) {
     const enriched = { ...filterDict };

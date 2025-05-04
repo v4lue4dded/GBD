@@ -1,0 +1,1429 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Global Burden of Disease Crossfilter</title>
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Dependencies -->
+    <!-- Version information:
+    dc version 2.2.2
+    d3 version 3.5.14
+    crossfilter version 1.4.8 
+    -->
+
+    <!-- crossfilter -->
+    <script type="text/javascript" src="lib/crossfilter/crossfilter.js"></script>
+
+    <!-- d3 -->
+    <script type="text/javascript" src="lib/d3/d3.js"></script>
+
+    <!-- dc -->
+    <link rel="stylesheet" href="lib/dc/dc.css" />
+    <script type="text/javascript" src="lib/dc/dc.js"></script>
+
+    <!-- promise -->
+    <script src="lib/promise/promise.js"></script>
+    <script src="lib/p_limit/yocto_queue.js"></script>
+    <script src="lib/p_limit/p_limit.js"></script>
+
+    <!-- c3 -->
+    <link rel="stylesheet" href="lib/chartCollectionCode/css/c3.css" />
+
+    <script src="lib/chartCollectionCode/js/c3.js"></script>
+    <script src="lib/chartCollectionCode/js/c3-table.js"></script>
+    <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
+    <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
+    <script src="lib/myHelperFunctions/md5.js"></script>
+    <script src="lib/myHelperFunctions/helperFunctionsGeneral.js"></script>
+    <script src="lib/myHelperFunctions/helperFunctionsGuidedSearch.js"></script>
+
+
+    <!-- Styles -->
+    <style>
+        body {
+            overflow-y: scroll;
+            font-family: sans-serif;
+        }
+
+        /* Table Styles */
+        table {
+            border-collapse: collapse;
+        }
+
+        .c3.table {
+            border: 1px solid black;
+            font-family: sans-serif;
+        }
+
+        .c3.table th {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            padding: 0.25em;
+            border: 1px solid black;
+            border-bottom: 2px solid black;
+            background-color: lightgray;
+        }
+
+        .c3.table caption {
+            border: 1px solid black;
+        }
+
+        .c3.table tr {
+            background-color: white;
+        }
+
+        .c3.table tr:nth-child(2n) {
+            background-color: whitesmoke;
+        }
+
+        .c3.table th.sorted {
+            background-color: steelblue;
+        }
+
+        .c3.table tr.selected {
+            background-image: linear-gradient(#ffeda0, #f9da4d);
+        }
+
+        .c3.table tr.deselected:not(:hover) {
+            opacity: 0.4;
+        }
+
+        .c3.table.selectable tr.hover {
+            background-color: wheat;
+        }
+
+        .c3.table td {
+            text-align: center;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            padding: 0.25em;
+        }
+
+        .c3.table td.sorted {
+            background-color: rgba(128, 128, 128, 0.1);
+        }
+
+        .c3.plot .layer.population_area_graph path {
+            opacity: 0;
+        }
+
+        .c3.plot .layer.population_line_graph path {
+            fill: lightgreen;
+            stroke: lightgreen;
+            stroke-width: 10;
+        }
+
+        .c3.plot .layer.from_year line {
+            stroke-width: 20px;
+            stroke: darkorchid;
+        }
+
+        .c3.plot .layer.until_year line {
+            stroke-width: 20px;
+            stroke: darkorchid;
+        }
+
+        .map-container {
+            position: relative;
+            width: 1000px;
+            /* or your specific width */
+            height: 400px;
+            /* or your specific height */
+        }
+
+        /* General styles for the legend */
+        .dc-legend {
+            position: absolute;
+            z-index: 10;
+            padding: 10px;
+            background-color: #fff;
+            /* white background for the legend */
+            border: 1px solid #ccc;
+            /* light grey border */
+            border-radius: 5px;
+            /* optional: rounded corners */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* optional: slight shadow for depth */
+            overflow: hidden;
+            /* keeps all content neatly contained */
+        }
+
+        /* -------- banner styles -------- */
+        #filter-banner {
+            background: #ffffe0;
+            padding: 6px 10px;
+            border-bottom: 1px solid #ccc;
+            font-size: .9em;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        #filter-banner span {
+            margin-right: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="filter-banner"></div> <!-- *** NEW banner container -->
+    <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
+    <main style="display:none">
+        <div id="gbd_timeline"></div>
+        <br>
+        <div id="gbd_map0" class="map-container"></div>
+        <div id="gbd_map1" class="map-container"></div>
+        <div id="gbd_map_change" class="map-container"></div>
+        <div id="gdb_year_0"></div>
+        <div id="gdb_year_1"></div>
+        <div id="gdb_region_name_table"></div>
+        <div id="gdb_sub_region_name_table"></div>
+        <div id="gdb_location_name_table"></div>
+        <div id="gdb_sex_name_table"></div>
+        <div id="gdb_age_cluster_name_sorted_table"></div>
+        <div id="gdb_age_group_name_sorted_table"></div>
+        <div id="gdb_l1_cause_table"></div>
+        <div id="gdb_l2_cause_table"></div>
+    </main>
+    <script>
+        "use strict";
+
+        const tableSets = [0, 1];
+        const tables = ["long", "population"];
+        var long_data = [];
+        var population_data = [];
+        var world_geojson = {};
+        var dim_distinct_values = {};
+        var rollup_higher_values = {};
+        var setup_info = {};
+        var hashFileSizes = {};
+        var default_agg_values = {}
+        var cachedHashes = {};
+        var aggTree = {};
+        var generatedHashes = {};
+
+        function updateLoadingMessage(message) {
+            var waitingDiv = document.getElementById('waiting');
+            waitingDiv.innerHTML += message + '<br><br>';
+        }
+        async function loadDataAndReconstruct(url) {
+            try {
+                updateLoadingMessage(`start json at: ${Math.round(performance.now())}ms`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok for ${url}`);
+                }
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new TypeError("The fetched document is not JSON");
+                }
+                const jsonData = await response.json();
+
+                const { columns, data } = jsonData;
+                console.time("data_map")
+                const result = data.map(row => {
+                    const rowObj = {};
+                    row.forEach((value, index) => {
+                        rowObj[columns[index]] = value;
+                    });
+                    return rowObj;
+                });
+                console.timeEnd("data_map")
+                return result
+            } catch (error) {
+                console.error("Error loading or parsing data:", error);
+                return []; // Optionally return null or undefined, depending on how you want to handle this case.
+            }
+        }
+
+        async function decodeData(combinedData, decodingDict) {
+            try {
+                // Decode each row in the combined data
+                const decodedData = combinedData.map(row => {
+                    const decodedRow = {};
+                    Object.entries(row).forEach(([key, value]) => {
+                        // If the column is in the decoding dictionary, replace the code with its original value
+                        if (key in decodingDict) {
+                            decodedRow[key] = decodingDict[key][value];
+                        } else {
+                            // If the column is not in the dictionary, just copy the value
+                            decodedRow[key] = value;
+                        }
+                    });
+                    return decodedRow;
+                });
+
+                return decodedData;
+            } catch (error) {
+                console.error("Error loading or applying decoding dictionary:", error);
+                return [];
+            }
+        }
+
+        // Function to load import info (chunk file names and decoding dictionary)
+        async function loadImportInfo(basePath, importInfoFile) {
+            try {
+                const importInfoUrl = `${basePath}${importInfoFile}`;
+                const response = await fetch(importInfoUrl);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok for ${importInfoUrl}`);
+                }
+                return await response.json(); // Contains both chunkFileNames and decodingDict
+            } catch (error) {
+                console.error("Error loading import info:", error);
+                return null; // Return null to indicate failure
+            }
+        }
+
+        async function loadAndDecodeAllData(basePath, importInfoFile) {
+            try {
+                const importInfo = await loadImportInfo(basePath, importInfoFile);
+                if (!importInfo) {
+                    throw new Error("Failed to load import info.");
+                }
+                const { chunk_file_names: chunkFileNames, decoding_dict: decodingDict } = importInfo;
+                updateLoadingMessage(`info read at: ${Math.round(performance.now())}ms`);
+
+                // Initiate all load and decode operations in parallel
+                const decodePromises = chunkFileNames.map(fileName => {
+                    const chunkPath = `${basePath}${fileName}`;
+                    return loadDataAndReconstruct(chunkPath)
+                        .then(chunkData => {
+                            // return chunkData; // if decoding not wanted
+                            return decodeData(chunkData, decodingDict);
+                        });
+                });
+                updateLoadingMessage(`requests sent read at: ${Math.round(performance.now())}ms`);
+
+                // Wait for all promises to resolve
+                const decodedChunks = await Promise.all(decodePromises);
+
+                updateLoadingMessage(`promises resolved at: ${Math.round(performance.now())}ms`);
+                const combinedData = [].concat(...decodedChunks); // Flatten the array of arrays if necessary
+                updateLoadingMessage(`data combined at: ${Math.round(performance.now())}ms`);
+                return combinedData; // Return the combined decoded data
+            } catch (error) {
+                console.error("Error in data loading and decoding workflow:", error);
+                return [];
+            }
+        }
+
+        function fixMissingNameMatch(data, geojson) {
+            const locationNames = new Set(data.map(d => d.location_name));
+            const featureNames = new Set(geojson.features.map(f => f.properties.nameMapped));
+
+            const locationNamesNotInFeatures = new Set([...locationNames].filter(x => !featureNames.has(x)));
+            const featureNamesNotInLocations = new Set([...featureNames].filter(x => !locationNames.has(x)));
+            // create prompt for llm to gnereate match to update geojson_to_gbd_name_mapping.json
+            // console.log("Please match featureNamesNotInLocations as key in json to locationNamesNotInFeatures as value in json (only if there is a match don't even add key for those without match):");
+            // console.log("locationNamesNotInFeatures:", locationNamesNotInFeatures);
+            // console.log("featureNamesNotInLocations:", featureNamesNotInLocations);
+        }
+        /* ───────────────────────── helpers (v3 style) ────────────────────────── */
+        function d3JsonPromise(url) {
+            return new Promise(function (resolve, reject) {
+                d3.json(url, function (error, data) {
+                    if (error) return reject(error);
+                    resolve(data);
+                });
+            });
+        }
+
+        function d3TsvPromise(url, row) {
+            return new Promise(function (resolve, reject) {
+                d3.tsv(url, row, function (error, data) {
+                    if (error) return reject(error);
+                    resolve(data);
+                });
+            });
+        }
+
+        /* ───────────────────────── main loader ────────────────────────── */
+        function download_data() {
+            updateLoadingMessage("download_data started at: " + Math.round(performance.now()) + " ms");
+
+            /* one promise for every independent fetch */
+            // var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_small_import_dict.json")
+            var p1 = loadAndDecodeAllData("data_doc/", "df_measure_narrow_import_dict.json")
+                .then(function (decoded) { long_data = decoded; });
+
+            var p2 = d3TsvPromise("data_doc/df_population.csv", function (row) {
+                return {
+                    year: row.year,
+                    location_name: row.location_name,
+                    region_name: row.region_name,
+                    sub_region_name: row.sub_region_name,
+                    age_group_name_sorted: row.age_group_name_sorted,
+                    age_cluster_name_sorted: row.age_cluster_name_sorted,
+                    sex_name: row.sex_name,
+                    pop_val: +row.pop_val,
+                    pop_upper: +row.pop_upper,
+                    pop_lower: +row.pop_lower,
+                    pop_present: +row.pop_present
+                };
+            }).then(function (data) { population_data = data; });
+
+            /* name map and geojson can download in parallel then be combined */
+            var p3 = Promise.all([
+                d3JsonPromise("lib/geoData/geojson_to_gbd_name_mapping.json"),
+                d3JsonPromise("lib/geoData/world.geojson")
+            ]).then(function ([nameMap, geo]) {
+                geo.features.forEach(function (f) {
+                    var orig = f.properties.name;
+                    f.properties.nameMapped = nameMap[orig] || orig;
+                });
+                world_geojson = geo;
+            });
+
+            /* ── the three JSONs you asked about ────────────────────────── */
+            var p4 = d3JsonPromise("data_doc/gbd_dim_distinct_values.json")
+                .then(function (d) {
+                    dim_distinct_values = d;
+                    // console.log("dim_distinct_values:", dim_distinct_values)
+                });
+
+            var p5 = d3JsonPromise("data_doc/gbd_rollup_higher_values.json")
+                .then(function (d) {
+                    rollup_higher_values = d;
+                    // console.log("rollup_higher_values:", rollup_higher_values)
+                });
+
+            var p6 = d3JsonPromise("data_doc/gbd_setup_info.json")
+                .then(function (d) {
+                    setup_info = d;
+                    // console.log("setup_info:", setup_info)
+                });
+
+            var p7 = d3JsonPromise("data_doc/cachefilter_hash_db/file_sizes.json")
+                .then(function (d) {
+                    hashFileSizes = d;
+                });
+
+            var p8 = d3JsonPromise("data_doc/gbd_default_agg_values.json")
+                .then(function (d) {
+                    default_agg_values = d;
+                    // console.log("default_agg_values:", default_agg_values)
+                });
+
+            /* wait for everything, then reveal the UI */
+            return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8])
+                .then(function () {
+                    d3.selectAll("main").style("display", "");
+                })
+                .catch(function (err) {
+                    console.error("Error loading data:", err);
+                    throw err;   // propagate to caller
+                });
+        }
+
+
+        /**
+         * Create dimensions for multiple datasets from raw data.
+         * @param {Object} dataSourceDict - Dictionary of raw data arrays with their names as keys.
+         * @param {Array} dimensionNames - List of dimension names to create.
+         * @param {*} specialKey - A placeholder value to use for excluded dimensions.
+         * @returns {Object} - An object containing crossfilter instances and dimensions for each dataset.
+         */
+        function createDimensionsForData(dataSourceDict, dimensionNames, specialKey) { // *** MOD
+            var result = {};
+
+            // Iterate over each dataset entry in the data dictionary
+            for (var dataType in dataSourceDict) {
+                if (dataSourceDict.hasOwnProperty(dataType)) {
+                    var rawData = dataSourceDict[dataType];
+                    // Create a Crossfilter instance from the raw data
+                    var crossfilterInstance = crossfilter(rawData);
+                    // Initialize a dictionary to store dimensions for the current crossfilter
+                    var dimensions = {};
+
+                    // Get the first record from the dataset to check available dimensions
+                    var firstRecord = rawData.length > 0 ? rawData[0] : null;
+
+                    // Iterate over each dimension name to create dimensions
+                    for (var i = 0; i < dimensionNames.length; i++) {
+                        var dimensionName = dimensionNames[i];
+
+                        if (firstRecord && firstRecord.hasOwnProperty(dimensionName)) {
+                            // If the dimension is available, create it normally
+                            dimensions[dimensionName] = crossfilterInstance.dimension(function (d) {
+                                return d[dimensionName];
+                            });
+                        } else {
+                            // If the dimension is not available, use the specialKey placeholder
+                            dimensions[dimensionName] = crossfilterInstance.dimension(function (d) {
+                                return specialKey;
+                            });
+                        }
+                    }
+
+                    // Store the crossfilter instance and its dimensions in the result
+                    result[dataType] = {
+                        cf: crossfilterInstance,
+                        d: dimensions
+                    };
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * Generates aggregation functions for the given columns.
+         * @param {Array} columns - List of columns to aggregate.
+         * @returns {Object} - An object containing add, remove, and initial functions for the specified columns.
+         */
+        function createAggFunctions(columns) {
+            return {
+                add: function (p, v) {
+                    columns.forEach(function (column) {
+                        p[column] += v[column];
+                    });
+                    return p;
+                },
+                remove: function (p, v) {
+                    columns.forEach(function (column) {
+                        p[column] -= v[column];
+                    });
+                    return p;
+                },
+                initial: function () {
+                    var initialObject = {};
+                    columns.forEach(function (column) {
+                        initialObject[column] = 0;
+                    });
+                    return initialObject;
+                }
+            };
+        }
+
+        // ###########################################################################
+        // ## Create and Render the Charts
+        // This function will create the various charts and tables for this example.
+        async function render() {
+            // ### Prepare the data
+            // Output the data set to the console if you want to take a look.
+            updateLoadingMessage(`start of render function at : ${Math.round(performance.now())}ms`);
+            // console.log("long_data:");
+            console.log(long_data);
+            // console.log("population_data:");
+            console.log(population_data);
+            // Setup the core metrics dataset with [**Crossfilter**](http://square.github.io/crossfilter/)
+            updateLoadingMessage(`logging done : ${Math.round(performance.now())}ms`);
+
+            var specialKey = "GKQ0W_specialKey_8G8OX"
+
+            // List of dimension names
+            // Dictionary of crossfilters
+            var dataSourceDict = {
+                long: long_data,
+                population: population_data
+            };
+
+            // List of dimension names
+            var dimensionNames = [
+                'year',
+                'region_name',
+                'sub_region_name',
+                'location_name',
+                'sex_name',
+                'age_cluster_name_sorted',
+                'age_group_name_sorted',
+                'l1_cause_name',
+                'l2_cause_name'
+            ];
+
+            /* ---------- banner tracking ---------- */
+            var currentFilters = { 0: {}, 1: {} };
+            function updateFilterBanner() {
+                var banner = document.getElementById('filter-banner');
+                var html = '';
+                [0, 1].forEach(function (ds) {
+                    html += '<div><strong>Dataset ' + ds + '</strong>: ';
+                    dimensionNames.forEach(function (dim) {
+                        var vals = currentFilters[ds][dim];
+                        if (vals && vals.length) {
+                            html += '<span><em>' + dim + '</em>: ' + vals.join(", ") + '</span> ';
+                        }
+                    });
+                    html += '</div>';
+                });
+                banner.innerHTML = html || 'No filters active';
+            }
+            /* ------------------------------------ */
+
+            const cat_vars_and_values = dim_distinct_values["long"]
+            const aggColumns = {
+                'long': ['deaths_val', 'yll_val'],
+                'population': ['pop_val']
+            }
+
+            // Create aggFunctions based on aggColumns
+            var aggFunctions = {};
+            for (var dataSource in aggColumns) {
+                if (aggColumns.hasOwnProperty(dataSource)) {
+                    aggFunctions[dataSource] = createAggFunctions(aggColumns[dataSource]);
+                }
+            }
+
+            function generateAggregationDict(CrossFilterDimesonsDict, aggregationFunctions) {
+                // Initialize an empty object to store the aggregated data
+                var aggregationDict = {};
+                for (var dataSource in CrossFilterDimesonsDict) {
+                    aggregationDict[dataSource] = {}
+                    for (var dimension in CrossFilterDimesonsDict[dataSource]['d']) {
+                        aggregationDict[dataSource][dimension] = CrossFilterDimesonsDict[dataSource]['d'][dimension].group().reduce(aggregationFunctions[dataSource].add, aggFunctions[dataSource].remove, aggFunctions[dataSource].initial).all();
+                    }
+                }
+                return aggregationDict;
+            }
+
+            async function updateFiltering(dimensions, selectedKeys) {
+                updateFilterBanner();
+                ({ aggTree, cachedHashes } = await processData(
+                    tableSets,
+                    tables,
+                    dim_distinct_values,
+                    currentFilters,
+                    setup_info,
+                    rollup_higher_values,
+                    cachedHashes,
+                    hashFileSizes,
+                    default_agg_values
+                ));
+                if (selectedKeys.length) {
+                    // Apply filters to each dimension based on selections
+                    dimensions.forEach(function (dimension) {
+                        dimension.filter(function (key) {
+                            return selectedKeys.includes(key);
+                        });
+                    });
+                } else {
+                    // Clear filters if no selections
+                    dimensions.forEach(function (dimension) {
+                        dimension.filterAll();
+                    });
+                }
+                const redraw_string = "redraw" + getRandomString();
+                console.time(redraw_string);
+                redrawDcAndC3();
+                console.timeEnd(redraw_string);
+            }
+
+            updateLoadingMessage(`before setup dimensions : ${Math.round(performance.now())}ms`);
+            var CFDDict0 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            var CFDDict1 = createDimensionsForData(dataSourceDict, dimensionNames, specialKey);
+            updateLoadingMessage(`after CFDDict : ${Math.round(performance.now())}ms`);
+            var aggDict0 = generateAggregationDict(CFDDict0, aggFunctions);
+            var aggDict1 = generateAggregationDict(CFDDict1, aggFunctions);
+            updateLoadingMessage(`after aggDict : ${Math.round(performance.now())}ms`);
+            const getVal0 = (dataSource, dimension, searchKey, valueCol) => aggDict0[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            const getVal1 = (dataSource, dimension, searchKey, valueCol) => aggDict1[dataSource][dimension].find(item => item.key === searchKey || item.key === specialKey)?.value[valueCol];
+            updateLoadingMessage(`after getVal : ${Math.round(performance.now())}ms`);
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // Variable definitions
+            const colAggDef = {
+                "pop_val": "sum",
+                "pop_lower": "sum",
+                "pop_upper": "sum",
+                "yll_val": "sum",
+                "yll_lower": "sum",
+                "yll_upper": "sum",
+                "deaths_val": "sum",
+                "deaths_lower": "sum",
+                "deaths_upper": "sum"
+            };
+
+            // Main function
+            async function processData(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values, cachedHashes, hashFileSizes, default_agg_values) {
+                const lookup_string = "lookup" + getRandomString();
+                console.time(lookup_string);
+                const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values);
+                // console.log("hashSets snapshot:", structuredClone(hashSets));
+                const cachedHashesUpdated = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values);
+                const valueTree = addDataToTree(hashTree, cachedHashesUpdated, 'identifyingHash');
+                const aggTreeUpdated = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
+                console.timeEnd(lookup_string);
+                console.log("aggTreeUpdated snapshot:", structuredClone(aggTreeUpdated));
+                // console.log("cachedHashesUpdated snapshot:", structuredClone(cachedHashesUpdated));
+                return { aggTree: aggTreeUpdated, cachedHashes: cachedHashesUpdated };
+            }
+
+            console.log("cachedHashes:", cachedHashes);
+            console.log("cachedHashes before snapshot:", JSON.parse(JSON.stringify(cachedHashes)));
+            ({ aggTree, cachedHashes } = await processData(
+                tableSets,
+                tables,
+                dim_distinct_values,
+                currentFilters,
+                setup_info,
+                rollup_higher_values,
+                cachedHashes,
+                hashFileSizes,
+                default_agg_values
+            ));
+
+            const getValNew = (tableSet, table, dimension, searchKey, valueCol) => {
+                try {
+                    const tableBranch = aggTree[tableSet][table];
+                    const dimToUse = tableBranch[dimension] ? dimension : "all_col";
+                    const keyToUse = tableBranch[dimension] ? searchKey : "All";
+                    return tableBranch[dimToUse][keyToUse]["aggregatedData"][valueCol];
+                } catch (err) {
+                    console.error('lookup failed', {
+                        "aggTree": deepClone(aggTree),
+                        table,
+                        dimension,
+                        searchKey,
+                        valueCol,
+                        branch: (((aggTree[tableSet] || {})[table] || {})[dimension] || {})
+                    }, err);
+                    return undefined;
+                }
+            };
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            const charts = [];
+
+            const validYears = Array.from(cat_vars_and_values["year"])
+            console.log(validYears)
+            // Helper function to snap the year to the nearest valid year in the dataset
+            function snapToValidYear(year) {
+                return validYears.reduce((prev, curr) => (Math.abs(curr - year) < Math.abs(prev - year) ? curr : prev));
+            }
+
+            let timeline;
+            charts.push(timeline = new c3.Plot({
+                anchor: '#gbd_timeline',
+                height: 600,
+                width: "100%",
+                h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
+                v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
+                // The **x** function uses the key directly, which represents the year from the year dimension.
+                x: function (d) { return d.key; },
+                // The default **y** function generates its value based on the population value.
+                y: function (d) { return d.value.pop_val; },
+                // Set margins on all sides of the chart to allow extra room for labels to fit.
+                margins: 50,
+                // Create **axes** for this plot.
+                axes: [
+                    new c3.Axis.X({
+                        label: "Year",
+                        grid: true,
+                        tick_label: d3.format('f')
+                    }),
+                    new c3.Axis.Y({
+                        label: "Population",
+                        grid: true,
+                        tick_label: d3.format(',')
+                    }),
+                ],
+                // Create the **layers** for this timeline.
+                layers: [
+                    new c3.Plot.Layer.Area({
+                        options: {
+                            title: "Population",
+                            "class": "population_area_graph"
+                        },
+                        data: aggDict0['population']['year'],
+                        v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
+                        y: function (d) { return d.value.pop_val; },
+                        interpolate: 'cardinal'
+                    }),
+                    new c3.Plot.Layer.Line({
+                        options: {
+                            title: "population",
+                            "class": 'population_line_graph'
+                        },
+                        data: aggDict0['population']['year']
+                    }),
+                    new c3.Plot.Layer.Line.Vertical({
+                        data: ["2000"],
+                        draggable: true,
+                        options: {
+                            title: "from Year",
+                            "class": 'from_year'
+                        },
+                        handlers: {
+                            'drag': function (from_year) {
+                                from_year = snapToValidYear(from_year);
+                                this.data = [from_year];
+                                currentFilters[0]['year'] = [from_year].slice() //probably needs .toString()
+                                updateFiltering([CFDDict0['long']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
+                            },
+                            'render': function () {
+                                this.handlers['drag'](this.data[0]);
+                            }
+                        }
+                    }),
+                    new c3.Plot.Layer.Line.Vertical({
+                        data: ["2019"],
+                        draggable: true,
+                        options: {
+                            title: "until Year",
+                            "class": 'until_year'
+                        },
+                        handlers: {
+                            'drag': function (until_year) {
+                                until_year = snapToValidYear(until_year);
+                                this.data = [until_year];
+                                currentFilters[1]['year'] = [until_year].slice() //probably needs .toString()
+                                updateFiltering([CFDDict1['long']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
+                            },
+                            // Filter the data based on the initial year selection
+                            'render': function () {
+                                this.handlers['drag'](this.data[0]);
+                            }
+                        }
+                    }),
+                ]
+            }));
+
+
+            function combineGroups(xGroup, yGroup, combineFunction) {
+                return {
+                    all: function () {
+                        var xData = xGroup.all();
+                        var yData = yGroup.all();
+                        var xMap = new Map(xData.map(d => [d.key, d.value]));
+                        var yMap = new Map(yData.map(d => [d.key, d.value]));
+                        var keys = new Set([...xMap.keys(), ...yMap.keys()]);
+                        var result = Array.from(keys).map(key => {
+                            var xValue = xMap.get(key) || 0;
+                            var yValue = yMap.get(key) || 0;
+                            return {
+                                key: key,
+                                value: combineFunction(xValue, yValue) // Use the custom function to combine values
+                            };
+                        });
+                        return result;
+                    }
+                };
+            }
+
+            // Function to calculate the ratio
+            function ratio(x, y) {
+                return y > 0 ? x / y : 0;
+            }
+            // Function to calculate the ratio
+            function ratio_m1(x, y) {
+                return y > 0 ? x / y - 1 : 0;
+            }
+
+            // Usage examples
+            var locationNameDimPopAgg0 = CFDDict0['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+            var locationNameDimGBDAgg0 = CFDDict0['long']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+            var YLLPerPerson0 = combineGroups(locationNameDimGBDAgg0, locationNameDimPopAgg0, ratio);
+
+            var locationNameDimPopAgg1 = CFDDict1['population']['d']['location_name'].group().reduceSum(function (d) { return d.pop_val; });
+            var locationNameDimGBDAgg1 = CFDDict1['long']['d']['location_name'].group().reduceSum(function (d) { return d.yll_val; });
+            var YLLPerPerson1 = combineGroups(locationNameDimGBDAgg1, locationNameDimPopAgg1, ratio);
+
+            var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
+
+            const WrappedYLLPerPerson0 = {
+                all: function () {
+                    return YLLPerPerson0.all();
+                }
+            };
+            const WrappedYLLPerPerson1 = {
+                all: function () {
+                    return YLLPerPerson1.all();
+                }
+            };
+            const WrappedYLLPerPersonChange = {
+                all: function () {
+                    return YLLPerPersonChange.all();
+                }
+            };
+
+            const worldChart0 = dc.geoChoroplethChart("#gbd_map0");
+            const worldChart1 = dc.geoChoroplethChart("#gbd_map1");
+            const worldChartChange = dc.geoChoroplethChart("#gbd_map_change");
+            const YLLPerPersonColorDomain = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+            const YLLPerPersonChangeColorDomain = [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5];
+
+            const YLLPerPersonColorRange = [
+                "#3399FF",  // Lighter Vivid Blue
+                "#66B2FF",  // Lighter Blue-Green
+                "#70C5C9",  // Lighter Pale Turquoise
+                "#9BD79D",  // Lighter Light Green
+                "#C8E88E",  // Lighter Olive Green
+                "#FFFFA6",  // Lightest Yellow (Middle Point)
+                "#F4DC98",  // Lighter Peach
+                "#F7BBA3",  // Lighter Soft Salmon
+                "#EB8680",  // Lighter Muted Coral
+                "#C0C0C0",  // Lighter Gray
+                "#A0A0A0"   // Lighter Darker Gray
+            ];
+
+            const YLLPerPersonChangeColorRange = [
+                "#0072E5",
+                "#3399EA",
+                "#47B4B8",
+                "#76C76E",
+                "#ABD459",
+                "#e0e043",
+                "#E3B95F",
+                "#E6917A",
+                "#DD4C5A",
+                "#9E9E9E",
+                "#787878"
+            ];
+
+            //#endregion
+            worldChart0
+                .width(1000)
+                .height(400)
+                .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .group(WrappedYLLPerPerson0)
+                .colors(d3.scale.linear().range(YLLPerPersonColorRange))
+                .colorDomain(YLLPerPersonColorDomain)
+                .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
+                .overlayGeoJson(world_geojson.features, "name", function (d) { return d.properties.nameMapped; })
+                .projection(d3.geo.equirectangular()
+                    .center([0, 5])
+                    .scale(140)
+                )
+                .valueAccessor(function (kv) { return kv.value; })
+                .title(function (d) { return "Location: " + d.key + "\nYears of live lost per Person: " + d.value; })
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChart0.filters();
+                    currentFilters[0]['location_name'] = selectedKeys.slice()
+                    currentFilters[1]['location_name'] = selectedKeys.slice()
+                    updateFiltering([CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                });
+
+
+            worldChart1
+                .width(1000)
+                .height(400)
+                .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .group(WrappedYLLPerPerson1)
+                .colors(d3.scale.linear().range(YLLPerPersonColorRange))
+                .colorDomain(YLLPerPersonColorDomain)
+                .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
+                .overlayGeoJson(world_geojson.features, "name", function (d) {
+                    return d.properties.nameMapped;
+                })
+                .projection(d3.geo.equirectangular()
+                    .center([0, 5])
+                    .scale(140)
+                )
+                .valueAccessor(function (kv) {
+                    return kv.value; // This will now reflect the ratio
+                })
+                .title(function (d) {
+                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                })
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChart1.filters();
+                    currentFilters[0]['location_name'] = selectedKeys.slice()
+                    currentFilters[1]['location_name'] = selectedKeys.slice()
+                    updateFiltering([CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                });
+
+
+            worldChartChange
+                .width(1000)
+                .height(400)
+                .dimension(CFDDict1['population']['d']['location_name'])
+                .group(WrappedYLLPerPersonChange)
+                .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
+                .colorDomain(YLLPerPersonChangeColorDomain)
+                .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
+                .overlayGeoJson(world_geojson.features, "name", function (d) {
+                    return d.properties.nameMapped;
+                })
+                .projection(d3.geo.equirectangular()
+                    .center([0, 5])
+                    .scale(140)
+                )
+                .valueAccessor(function (kv) {
+                    return kv.value;
+                })
+                .title(function (d) {
+                    return "Location: " + d.key + "\nYears of live lost per Person: " + d.value;
+                })
+                .on('filtered', function (chart, filter) {
+                    var selectedKeys = worldChartChange.filters();
+                    currentFilters[0]['location_name'] = selectedKeys.slice()
+                    currentFilters[1]['location_name'] = selectedKeys.slice()
+                    updateFiltering([CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']], currentFilters[0]['location_name']);
+                });
+
+
+
+            function addLegendToChart(chart, chartId, format = '') {
+                chart.on('pretransition', function (chart) {
+                    var legendWidth = 55;
+                    var legendHeight = 300; // Height of the gradient rectangle
+                    var totalSvgHeight = legendHeight + 10; // Extra space for axis labels
+                    var gradientId = 'gradient-' + chartId.replace('#', ''); // Unique gradient ID
+
+                    // Remove any existing legend
+                    d3.select(chartId + ' .dc-legend').remove();
+                    var legend = d3.select(chartId)
+                        .append('div')
+                        .attr('class', 'dc-legend')
+                        .style('position', 'absolute')
+                        .style('top', '20px') // Increased top padding
+                        .style('right', '0')
+                        .style('width', legendWidth + 'px')
+                        .style('height', totalSvgHeight + 'px');
+
+                    var svg = legend.append('svg')
+                        .attr('width', legendWidth)
+                        .attr('height', totalSvgHeight);
+
+                    var gradient = svg.append('defs')
+                        .append('linearGradient')
+                        .attr('id', gradientId)
+                        .attr('x1', '0%')
+                        .attr('y1', '100%')
+                        .attr('x2', '0%')
+                        .attr('y2', '0%');
+
+                    gradient.selectAll('stop')
+                        .data(chart.colors().range())
+                        .enter()
+                        .append('stop')
+                        .attr('offset', function (d, i) { return i / (chart.colors().range().length - 1); })
+                        .attr('stop-color', function (d) { return d; });
+
+                    svg.append('rect')
+                        .attr('width', 20)
+                        .attr('height', legendHeight)
+                        .attr('y', 5) // Shift the rectangle down by 5px
+                        .style('fill', 'url(#' + gradientId + ')');
+
+                    // Dynamic legend scale based on the chart's color domain
+                    var legendScale = d3.scale.linear()
+                        .domain([d3.min(chart.colorDomain()), d3.max(chart.colorDomain())])
+                        .range([legendHeight, 0]);
+
+                    var formatter = d3.format(format); // Create a formatter using the provided format string
+
+                    var legendAxis = d3.svg.axis()
+                        .scale(legendScale)
+                        .orient('right')
+                        .ticks(5)
+                        .tickFormat(formatter); // Apply the formatter to the axis
+
+                    svg.append('g')
+                        .attr('class', 'legend-axis')
+                        .attr('transform', 'translate(20, 5)')
+                        .call(legendAxis);
+                });
+            }
+
+            // Apply the legend addition function to each chart
+            addLegendToChart(worldChart0, '#gbd_map0', '.2f');
+            addLegendToChart(worldChart1, '#gbd_map1', '.2f');
+            addLegendToChart(worldChartChange, '#gbd_map_change', '.0%');
+
+            const common_columns = [
+                {
+                    header: { text: "Population" },
+                    cells: {
+                        html: function (d) {
+                            return (bigNStyle(getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")));
+                        }
+                    },
+                    sort: function (d) { return round_z(getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Deaths" },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getVal1("long", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost" },
+                    cells: { html: function (d) { return (bigNStyle(getVal0("long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getVal1("long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                    sort: function (d) { return round_z(getVal1("long", d.categorical_variable, d.categorical_value, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person 0" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': YLLPerPersonColorRange,
+                            'domain': YLLPerPersonColorDomain,
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person 1" },
+                    cells: { html: function (d) { return (d3.format(',')((getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': YLLPerPersonColorRange,
+                            'domain': YLLPerPersonColorDomain,
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person change" },
+                    cells: { html: function (d) { return d3.format('.2%')((getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getVal1("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal1("population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getVal0("long", d.categorical_variable, d.categorical_value, "yll_val") / getVal0("population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': YLLPerPersonChangeColorDomain,
+                            'range': YLLPerPersonChangeColorRange,
+                        }
+                    }
+                }, {
+                    header: { text: "Population v2" },
+                    cells: {
+                        html: function (d) {
+                            return (bigNStyle(getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")));
+                        }
+                    },
+                    sort: function (d) { return round_z(getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightgreen'
+                        }
+                    }
+                }, {
+                    header: { text: "Deaths v2" },
+                    cells: { html: function (d) { return (bigNStyle(getValNew(0,"long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getValNew(1,"long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getValNew(1,"long", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightsalmon',
+                            'text-align': 'right',
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost v2" },
+                    cells: { html: function (d) { return (bigNStyle(getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                    sort: function (d) { return round_z(getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val")); },
+                    vis: 'bar',
+                    vis_options: {
+                        styles: {
+                            'background-color': 'lightblue'
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person 0 v2" },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': YLLPerPersonColorRange,
+                            'domain': YLLPerPersonColorDomain,
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person 1 v2" },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'range': YLLPerPersonColorRange,
+                            'domain': YLLPerPersonColorDomain,
+                        }
+                    }
+                }, {
+                    header: { text: "Years of live lost per Person change v2" },
+                    cells: { html: function (d) { return d3.format('.2%')((getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                    vis: 'color',
+                    vis_options: {
+                        styles: {
+                            'domain': YLLPerPersonChangeColorDomain,
+                            'range': YLLPerPersonChangeColorRange,
+                        }
+                    }
+                },
+            ]
+
+            // Store an array of all the visualizations in this example.Create `redraw()` and `restyle()`
+            // functions to update all of the charts in this example when the dataset is updated via _Crossfilter_.
+            // C3 doesn't try to automatically update or resize charts because that can be expensive and so it
+            // lets the user indicate when that needs to be done.
+            function redraw() {
+                for (var _i = 0, charts_redraw = charts; _i < charts_redraw.length; _i++) {
+                    var chart = charts_redraw[_i];
+                    chart.redraw();
+                }
+            }
+            function redrawDcAndC3() {
+                dc.redrawAll();
+                redraw();
+            }
+            function restyle() {
+                for (var _i = 0, charts_restyle = charts; _i < charts_restyle.length; _i++) {
+                    var chart = charts_restyle[_i];
+                    chart.restyle();
+                }
+            }
+
+            function createDataTable({
+                anchorId,
+                data,
+                filter_dimensions = [],
+                initialSortColumn,
+                columns,
+                customOptions = {},
+                selectable = 'multi',
+            }) {
+                var tableOptions = {
+                    anchor: anchorId,
+                    data: data,
+                    sortable: true,
+                    width: '100%',
+                    columns: columns,
+                    sort_column: initialSortColumn,
+                    selectable: selectable,
+                    row_options: {
+                        events: {
+                            mouseenter: function () {
+                                this.classList.add('hover');
+                            },
+                            mouseleave: function () {
+                                this.classList.remove('hover');
+                            }
+                        }
+                    },
+                    cell_options: {
+                        styles: {
+                            // 'text-align': 'right',
+                            "width": ((1 / (common_columns.length + 1)) * 100).toFixed(2) + '%'
+                        }
+                    },
+                    handlers: {
+                        'select': function (selections) {
+                            const selectedKeys = selections.map(function (d) { return d.categorical_value; })
+                            currentFilters[0][data[0]["categorical_variable"]] = selectedKeys.slice()
+                            currentFilters[1][data[0]["categorical_variable"]] = selectedKeys.slice()
+                            updateFiltering(filter_dimensions, currentFilters[0][data[0]["categorical_variable"]]);
+                        }
+                    },
+                    ...customOptions
+                };
+
+                var newTable = new c3.Table(tableOptions);
+                charts.push(newTable);
+            }
+
+
+            function createInfosToLookUp(categorical_values, categorical_variable_name) {
+                const cat_value_array = Array.from(categorical_values)
+                return cat_value_array.map(item => ({
+                    categorical_value: item,
+                    categorical_variable: categorical_variable_name
+                }));
+            }
+
+            createDataTable({
+                anchorId: '#gdb_region_name_table',
+                data: createInfosToLookUp(cat_vars_and_values["region_name"], "region_name"),
+                filter_dimensions: [CFDDict0['long']['d']['region_name'], CFDDict0['population']['d']['region_name'], CFDDict1['long']['d']['region_name'], CFDDict1['population']['d']['region_name']],
+                initialSortColumn: "Population",
+                columns: [
+                    {
+                        header: { text: "Region" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; }
+                        },
+                        sort: function (d) { return d.categorical_value; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_sub_region_name_table',
+                data: createInfosToLookUp(cat_vars_and_values["sub_region_name"], "sub_region_name"),
+                filter_dimensions: [CFDDict0['long']['d']['sub_region_name'], CFDDict0['population']['d']['sub_region_name'], CFDDict1['long']['d']['sub_region_name'], CFDDict1['population']['d']['sub_region_name']],
+                initialSortColumn: "Population",
+                columns: [
+                    {
+                        header: { text: "Sub Region" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; }
+                        },
+                        sort: function (d) { return d.categorical_value; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+
+            // // console.log("aggDict0['long']['location_name']:", aggDict0['long']['location_name'])
+            // // console.log("createInfosToLookUp(aggDict0['long']['location_name'], 'location_name'):", createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"))
+
+            createDataTable({
+                anchorId: '#gdb_location_name_table',
+                data: createInfosToLookUp(cat_vars_and_values["location_name"], "location_name"),
+                filter_dimensions: [CFDDict0['long']['d']['location_name'], CFDDict0['population']['d']['location_name'], CFDDict1['long']['d']['location_name'], CFDDict1['population']['d']['location_name']],
+                initialSortColumn: "Population",
+                customOptions: {
+                    "limit_rows": 10,
+                    "pagination": true,
+                    "page": 1,
+                },
+                searchable: true,
+                columns: [
+                    {
+                        header: { text: "Country" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; }
+                        },
+                        sort: function (d) { return d.categorical_value; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_sex_name_table',
+                data: createInfosToLookUp(cat_vars_and_values["sex_name"], "sex_name"),
+                filter_dimensions: [CFDDict0['long']['d']['sex_name'], CFDDict0['population']['d']['sex_name'], CFDDict1['long']['d']['sex_name'], CFDDict1['population']['d']['sex_name']],
+                initialSortColumn: "Sex",
+                columns: [
+                    {
+                        header: { text: "Sex" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; }
+                        },
+                        sort: function (d) { return d.categorical_value; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_age_cluster_name_sorted_table',
+                data: createInfosToLookUp(cat_vars_and_values["age_cluster_name_sorted"], "age_cluster_name_sorted"),
+                filter_dimensions: [CFDDict0['long']['d']['age_cluster_name_sorted'], CFDDict0['population']['d']['age_cluster_name_sorted'], CFDDict1['long']['d']['age_cluster_name_sorted'], CFDDict1['population']['d']['age_cluster_name_sorted']],
+                initialSortColumn: "Age cluster",
+                columns: [
+                    {
+                        header: { text: "Age cluster" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; }
+                        },
+                        sort: function (d) { return d.categorical_value; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_age_group_name_sorted_table',
+                data: createInfosToLookUp(cat_vars_and_values["age_group_name_sorted"], "age_group_name_sorted"),
+                filter_dimensions: [CFDDict0['long']['d']['age_group_name_sorted'], CFDDict0['population']['d']['age_group_name_sorted'], CFDDict1['long']['d']['age_group_name_sorted'], CFDDict1['population']['d']['age_group_name_sorted']],
+                initialSortColumn: "Age group",
+                columns: [
+                    {
+                        header: { text: "Age group" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; }
+                        },
+                        sort: function (d) { return d.categorical_value; }
+                    },
+                ].concat(deepClone(common_columns))
+            });
+
+            createDataTable({
+                anchorId: '#gdb_l1_cause_table',
+                data: createInfosToLookUp(cat_vars_and_values["l1_cause_name"], "l1_cause_name"),
+                filter_dimensions: [CFDDict0['long']['d']['l1_cause_name'], CFDDict1['long']['d']['l1_cause_name']],
+                initialSortColumn: "Years of live lost",
+                columns: [
+                    {
+                        header: { text: "L1 cause" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; },
+                        },
+                        sort: function (d) { return d.categorical_value; },
+                    }
+                ].concat(deepClone(common_columns).filter(col => !col.header.text.toLowerCase().includes("population")))
+            });
+
+            console.log(deepClone(common_columns).filter(col => !col.header.text.toLowerCase().includes("population")))
+
+            createDataTable({
+                anchorId: '#gdb_l2_cause_table',
+                data: createInfosToLookUp(cat_vars_and_values["l2_cause_name"], "l2_cause_name"),
+                filter_dimensions: [CFDDict0['long']['d']['l2_cause_name'], CFDDict1['long']['d']['l2_cause_name']],
+                initialSortColumn: "Years of live lost",
+                columns: [
+                    {
+                        header: { text: "L2 cause" },
+                        cells: {
+                            text: function (d) { return d.categorical_value; },
+                        },
+                        sort: function (d) { return d.categorical_value; },
+                    }
+                ].concat(deepClone(common_columns).filter(col => !col.header.text.toLowerCase().includes("population"))),
+                customOptions: {
+                    // Any region-specific options can go here
+                }
+            });
+
+            updateLoadingMessage(`before actual rendering : ${Math.round(performance.now())}ms`);
+            // #########################################################################################
+            // ### Initial Rendering
+            // Perform the initial `render()`
+            dc.renderAll();
+            for (var _i = 0, charts_1 = charts; _i < charts_1.length; _i++) {
+                var chart = charts_1[_i];
+                chart.render();
+            }
+            updateFilterBanner();                             // *** NEW show empty banner
+            // **Resize** charts if the window is resized.
+            window.onresize = function () {
+                for (var _i = 0, charts_4 = charts; _i < charts_4.length; _i++) {
+                    var chart = charts_4[_i];
+                    chart.resize();
+                }
+            };
+            updateLoadingMessage(`end of render function at : ${Math.round(performance.now())}ms`);
+            d3.selectAll('#waiting').remove();
+        }
+        // #########################################################################################
+        // # Start Here
+        // The loading and rendering are initiated here..  It calls the `download_data()` function to
+        // download the data which returns a Promise.  We setup a _then_ callback function to be
+        // called when all of the data is loaded and promised.  This callback function calls which ends up
+        // calling the `render()` function.
+        download_data().then(function () { setTimeout(render, 0); });
+        // The reason to have setTimeout call the render function instead of calling it directly is
+        // just a trick to help with debugging in the browser when using promises.  The callback function
+        // for a promise is called, which catches all exceptions to be used to call an error callback.
+        // This is great except unhandled errors are then reported to the debugger later after we are already
+        // out of the context of the error.  So, you can't navigate the stack, view the contents of variables,
+        // etc.  By using setTimeout it will cause the callback to return immediatly and then the browser
+        // will call render itself.  Since this is done outside of the promise's scope, exceptions are not caught and
+        // passed to the promise error handler and instead can be caught and handeled as normal in a
+        // debugger.  In production code you could use this instead:
+        //     download_data().then(render)
+    </script>
+</body>
+
+</html>
