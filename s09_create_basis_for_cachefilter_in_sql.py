@@ -35,7 +35,7 @@ for table_type in table_types:
     dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
     dim_select_str = ("\n" + " " * 7 + "   , ").join(dim_selects)
 
-    agg_selects = [f"SUM({col}) AS {col}" for col in agg_cols]
+    agg_selects = [f"SUM(ROUND({col}::numeric,4)) AS {col}" for col in agg_cols]
     agg_selects.append("COUNT(*) AS anz")
     agg_select_str = ("\n" + " " * 7 + "   , ").join(agg_selects)
 
@@ -96,10 +96,11 @@ for table_type in table_types:
         )
         SELECT
             identifying_string,
+            priority,
             md5(identifying_string) AS identifying_string_hash,
             jsonb_build_object(
-                'identifying_string', identifying_string
-              , {aggregator_expr}
+               -- 'identifying_string', identifying_string, 
+                {aggregator_expr}
             ) AS json_column
         FROM combo
     """
