@@ -97,7 +97,7 @@ for table_type in table_types:
         SELECT
             identifying_string,
             priority,
-            md5(identifying_string) AS identifying_string_hash,
+            substr(encode(sha256(identifying_string::bytea), 'hex'),1,32) AS identifying_string_hash,
             jsonb_build_object(
                -- 'identifying_string', identifying_string, 
                 {aggregator_expr}

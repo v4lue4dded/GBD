@@ -33,7 +33,7 @@
     <script src="lib/chartCollectionCode/js/c3-table.js"></script>
     <script src="lib/chartCollectionCode/js/c3-plot.js"></script>
     <script src="lib/chartCollectionCode/js/c3-layers.js"></script>
-    <script src="lib/myHelperFunctions/md5.js"></script>
+    <script src="lib/myHelperFunctions/sha256.js"></script>
     <script src="lib/myHelperFunctions/helperFunctionsGeneral.js"></script>
     <script src="lib/myHelperFunctions/helperFunctionsGuidedSearch.js"></script>
 
@@ -436,6 +436,7 @@
                     cachedHashes[key] = value;
                 }
                 console.log("Background priority_2.json loaded and merged into cachedHashes");
+                console.log("cachedHashes has:", Object.keys(cachedHashes).length, "keys")
             } catch (err) {
                 console.error("Error loading priority_2.json in background:", err);
             }
@@ -666,7 +667,9 @@
                 console.time(lookup_string);
                 const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values);
                 // console.log("hashSets snapshot:", structuredClone(hashSets));
+                console.log("cachedHashes has:", Object.keys(cachedHashes).length, "keys")
                 const cachedHashesUpdated = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values);
+                console.log("cachedHashesUpdated has:", Object.keys(cachedHashesUpdated).length, "keys")
                 const valueTree = addDataToTree(hashTree, cachedHashesUpdated, 'identifyingHash');
                 const aggTreeUpdated = aggregateValuesInTree(valueTree, colAggDef, "cachedData", "aggregatedData");
                 console.timeEnd(lookup_string);

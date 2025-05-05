@@ -219,7 +219,7 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
                 identifiyingDict[col] = value
                 const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)
                 const identifyingString = buildIdentifyingString(identifiyingDictRollupEnriched, colOrderList, allValue);
-                const identifyingHash = md5(identifyingString);
+                const identifyingHash = sha256Hex32(identifyingString);
                 hashSet.add(identifyingHash)
                 const valResult = {
                     "identifyingString": identifyingString,
@@ -326,7 +326,7 @@ async function fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes,
     for (const [table, hashSet] of Object.entries(hashSets)) {
         const BATCH_SIZE = 100;
         const hashesToSearch = [...setDifference(hashSet, Object.keys(cachedHashes))];
-        // console.log("hashesToSearch:", hashesToSearch);
+        console.log("hashesToSearch:", hashesToSearch);
 
         for (let start = 0; start < hashesToSearch.length; start += BATCH_SIZE) {
             const batch = hashesToSearch.slice(start, start + BATCH_SIZE);
