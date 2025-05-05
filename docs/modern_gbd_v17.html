@@ -25,8 +25,6 @@
 
     <!-- promise -->
     <script src="lib/promise/promise.js"></script>
-    <script src="lib/p_limit/yocto_queue.js"></script>
-    <script src="lib/p_limit/p_limit.js"></script>
 
     <!-- c3 -->
     <link rel="stylesheet" href="lib/chartCollectionCode/css/c3.css" />
@@ -406,8 +404,15 @@
                     // console.log("default_agg_values:", default_agg_values)
                 });
 
+            var p9 = d3JsonPromise("data_doc/cachefilter_hash_db/priority_1.json")
+                .then(function (d) {
+                    for (const [key, value] of Object.entries(d)) {
+                        cachedHashes[key] = value;
+                    }
+                });
+
             /* wait for everything, then reveal the UI */
-            return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8])
+            return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9])
                 .then(function () {
                     d3.selectAll("main").style("display", "");
                 })
@@ -417,6 +422,24 @@
                 });
         }
 
+
+        // Background load of priority_2.json into cachedHashes
+        (async () => {
+            try {
+                const response = await fetch("data_doc/cachefilter_hash_db/priority_2.json");
+                if (!response.ok) {
+                    throw new Error("Failed to load priority_2.json");
+                }
+                const priority2Data = await response.json();
+
+                for (const [key, value] of Object.entries(priority2Data)) {
+                    cachedHashes[key] = value;
+                }
+                console.log("Background priority_2.json loaded and merged into cachedHashes");
+            } catch (err) {
+                console.error("Error loading priority_2.json in background:", err);
+            }
+        })();
 
         /**
          * Create dimensions for multiple datasets from raw data.
@@ -1098,10 +1121,10 @@
                     header: { text: "Population v2" },
                     cells: {
                         html: function (d) {
-                            return (bigNStyle(getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")));
+                            return (bigNStyle(getValNew(0, "population", d.categorical_variable, d.categorical_value, "pop_val"))) + ' → ' + (bigNStyle(getValNew(1, "population", d.categorical_variable, d.categorical_value, "pop_val")));
                         }
                     },
-                    sort: function (d) { return round_z(getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")); },
+                    sort: function (d) { return round_z(getValNew(1, "population", d.categorical_variable, d.categorical_value, "pop_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1110,8 +1133,8 @@
                     }
                 }, {
                     header: { text: "Deaths v2" },
-                    cells: { html: function (d) { return (bigNStyle(getValNew(0,"long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getValNew(1,"long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
-                    sort: function (d) { return round_z(getValNew(1,"long", d.categorical_variable, d.categorical_value, "deaths_val")); },
+                    cells: { html: function (d) { return (bigNStyle(getValNew(0, "long", d.categorical_variable, d.categorical_value, "deaths_val"))) + ' → ' + (bigNStyle(getValNew(1, "long", d.categorical_variable, d.categorical_value, "deaths_val"))); } },
+                    sort: function (d) { return round_z(getValNew(1, "long", d.categorical_variable, d.categorical_value, "deaths_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1121,8 +1144,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost v2" },
-                    cells: { html: function (d) { return (bigNStyle(getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
-                    sort: function (d) { return round_z(getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val")); },
+                    cells: { html: function (d) { return (bigNStyle(getValNew(0, "long", d.categorical_variable, d.categorical_value, "yll_val"))) + ' → ' + (bigNStyle(getValNew(1, "long", d.categorical_variable, d.categorical_value, "yll_val"))); } },
+                    sort: function (d) { return round_z(getValNew(1, "long", d.categorical_variable, d.categorical_value, "yll_val")); },
                     vis: 'bar',
                     vis_options: {
                         styles: {
@@ -1131,8 +1154,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person 0 v2" },
-                    cells: { html: function (d) { return (d3.format(',')((getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew(0, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0, "population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew(0, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0, "population", d.categorical_variable, d.categorical_value, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1142,8 +1165,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person 1 v2" },
-                    cells: { html: function (d) { return (d3.format(',')((getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
-                    sort: function (d) { return getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val"); },
+                    cells: { html: function (d) { return (d3.format(',')((getValNew(1, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1, "population", d.categorical_variable, d.categorical_value, "pop_val")).toFixed(3))); } },
+                    sort: function (d) { return getValNew(1, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1, "population", d.categorical_variable, d.categorical_value, "pop_val"); },
                     vis: 'color',
                     vis_options: {
                         styles: {
@@ -1153,8 +1176,8 @@
                     }
                 }, {
                     header: { text: "Years of live lost per Person change v2" },
-                    cells: { html: function (d) { return d3.format('.2%')((getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
-                    sort: function (d) { return (getValNew(1,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1,"population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0,"long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0,"population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
+                    cells: { html: function (d) { return d3.format('.2%')((getValNew(1, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1, "population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0, "population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.); } },
+                    sort: function (d) { return (getValNew(1, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(1, "population", d.categorical_variable, d.categorical_value, "pop_val")) * 1. / (getValNew(0, "long", d.categorical_variable, d.categorical_value, "yll_val") / getValNew(0, "population", d.categorical_variable, d.categorical_value, "pop_val")) - 1.; },
                     vis: 'color',
                     vis_options: {
                         styles: {
