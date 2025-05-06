@@ -163,6 +163,7 @@ function searchHashValue(hashFileSizes, hash) {
 
 function enrichFilters(dataDict, filterDict) {
     const enriched = { ...filterDict };
+    let possibleCombination = true
 
     for (const [filterKey, filterValue] of Object.entries(filterDict)) {
         const lookupTable = dataDict[filterKey];
@@ -178,10 +179,17 @@ function enrichFilters(dataDict, filterDict) {
             if (isMissingOrNone) {
                 enriched[higherKey] = higherValue;
             }
+            else {
+                if (currentValue === higherValue) {
+                }
+                else {
+                    possibleCombination = false
+                }
+            }
         }
     }
 
-    return enriched;
+    return { enriched, possibleCombination };
 }
 
 function cartesianProduct(dimensions) {
@@ -200,7 +208,7 @@ function cartesianProduct(dimensions) {
 }
 
 
-function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList, allValue, rollup_higher_values_filtered) {
+function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList, allValue, rollup_higher_values_filtered, defaultHash) {
     const resultTree = {};
     const hashSet = new Set()
     for (const [col, values] of Object.entries({ ...dim_distinct_values, "all_col": ["All"] })) {
@@ -215,19 +223,29 @@ function generateHashes(dim_distinct_values, currentFiltersSubset, colOrderList,
             // console.log("currentFilterList:", currentFilterList);
             for (const currentFilterItem of currentFilterList) {
                 // console.log("currentFilterItem:", currentFilterItem);
+                let valResult = {}
+                let identifyingHash = ""
                 const identifiyingDict = deepClone(currentFilterItem);
                 identifiyingDict[col] = value
-                const identifiyingDictRollupEnriched = enrichFilters(rollup_higher_values_filtered, identifiyingDict)
-                const identifyingString = buildIdentifyingString(identifiyingDictRollupEnriched, colOrderList, allValue);
-                const identifyingHash = sha256Hex32(identifyingString);
-                hashSet.add(identifyingHash)
-                const valResult = {
-                    "identifyingString": identifyingString,
-                    "identifyingHash": identifyingHash,
-                    "identifiyingDict": identifiyingDict,
-                    "identifiyingDictRollupEnriched": identifiyingDictRollupEnriched,
-
-                };
+                const { enriched: identifiyingDictRollupEnriched, possibleCombination } = enrichFilters(rollup_higher_values_filtered, identifiyingDict);
+                if (possibleCombination) {
+                    const identifyingString = buildIdentifyingString(identifiyingDictRollupEnriched, colOrderList, allValue);
+                    identifyingHash = sha256Hex32(identifyingString);
+                    hashSet.add(identifyingHash)
+                    valResult = {
+                        "identifyingString": identifyingString,
+                        "identifyingHash": identifyingHash,
+                        "identifiyingDict": identifiyingDict,
+                        "identifiyingDictRollupEnriched": identifiyingDictRollupEnriched,
+                        "possibleCombination": possibleCombination,
+                    };
+                } else {
+                    identifyingHash = defaultHash;
+                    valResult = {
+                        "possibleCombination": possibleCombination,
+                        "identifyingHash": identifyingHash,
+                    };
+                }
                 // console.log("valResult:", valResult);
                 ValResultDict[identifyingHash] = valResult
             }
@@ -280,7 +298,7 @@ function aggregateValuesInTree(valueTree, aggDict, valueName, aggName) {
 }
 
 
-function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values) {
+function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values, defaultHash) {
     const hashTree = {};
     const hashSets = {};
 
@@ -303,7 +321,8 @@ function buildHashStructures(tableSets, tables, dim_distinct_values, currentFilt
                 currentFilters[set],
                 setup_info.dimension_cols_ordered_dict[table],
                 "All",
-                rollup_higher_values[table]
+                rollup_higher_values[table],
+                defaultHash
             );
             // console.log("resultTree:", resultTree);
             // console.log("hashSet:", hashSet);

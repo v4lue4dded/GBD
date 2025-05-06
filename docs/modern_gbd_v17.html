@@ -200,6 +200,7 @@
         var cachedHashes = {};
         var aggTree = {};
         var generatedHashes = {};
+        const defaultHash = "00result_for_non_existing_data00"
 
         function updateLoadingMessage(message) {
             var waitingDiv = document.getElementById('waiting');
@@ -402,6 +403,7 @@
                 .then(function (d) {
                     default_agg_values = d;
                     // console.log("default_agg_values:", default_agg_values)
+                    cachedHashes[defaultHash] = default_agg_values;
                 });
 
             var p9 = d3JsonPromise("data_doc/cachefilter_hash_db/priority_1.json")
@@ -665,7 +667,7 @@
             async function processData(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values, cachedHashes, hashFileSizes, default_agg_values) {
                 const lookup_string = "lookup" + getRandomString();
                 console.time(lookup_string);
-                const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values);
+                const { hashTree, hashSets } = buildHashStructures(tableSets, tables, dim_distinct_values, currentFilters, setup_info, rollup_higher_values, defaultHash);
                 // console.log("hashSets snapshot:", structuredClone(hashSets));
                 console.log("cachedHashes has:", Object.keys(cachedHashes).length, "keys")
                 const cachedHashesUpdated = await fetchMissingHashesAndMerge(hashSets, cachedHashes, hashFileSizes, default_agg_values);
