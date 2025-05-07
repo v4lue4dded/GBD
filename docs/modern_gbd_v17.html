@@ -819,12 +819,23 @@
             // // const tableBranch = aggTree[tableSet][table];
             // // [dimToUse][keyToUse]["aggregatedData"][valueCol]
             // console.log("aggDict0 snapshot:", structuredClone(aggDict0));
+            // Preprocess the year data, excluding "All", and convert to array of { key: year, value: data } objects
+            const yearDataPop0 = Object.entries(aggTree[0]['population']['year'])
+                .filter(([key]) => key !== 'All')
+                .map(([key, d]) => ({ key: +key, value: d }));
+
+            // Chart definition
             charts.push(timeline = new c3.Plot({
                 anchor: '#gbd_timeline_v2',
                 height: 600,
                 width: "100%",
                 h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
-                v: d3.scale.linear().domain([0, d3.max(Object.entries(aggTree[0]['population']['year']).filter(([key]) => key !== 'All').map(([_, d]) => d.aggregatedData.pop_val))]),
+                v: d3.scale.linear().domain([
+                    0,
+                    d3.max(yearDataPop0, function (d) {
+                        return d.value.aggregatedData.pop_val;
+                    })
+                ]),
                 x: function (d) { return d.key; },
                 y: function (d) { return d.value.aggregatedData.pop_val; },
                 margins: 50,
@@ -846,16 +857,12 @@
                             title: "Population",
                             "class": "population_area_graph"
                         },
-                        data: Object.entries(aggTree[0]['population']['year'])
-                            .filter(([key]) => key !== 'All')
-                            .map(([key, d]) => ({ key: +key, value: d })),
+                        data: yearDataPop0,
                         v: d3.scale.linear().domain([
                             0,
-                            d3.max(
-                                Object.entries(aggTree[0]['population']['year'])
-                                    .filter(([key]) => key !== 'All')
-                                    .map(([_, d]) => d.aggregatedData.pop_val)
-                            )
+                            d3.max(yearDataPop0, function (d) {
+                                return d.value.aggregatedData.pop_val;
+                            })
                         ]),
                         y: function (d) { return d.value.aggregatedData.pop_val; },
                         interpolate: 'cardinal'
@@ -865,9 +872,7 @@
                             title: "population",
                             "class": 'population_line_graph'
                         },
-                        data: Object.entries(aggTree[0]['population']['year'])
-                            .filter(([key]) => key !== 'All')
-                            .map(([key, d]) => ({ key: +key, value: d }))
+                        data: yearDataPop0
                     }),
                     new c3.Plot.Layer.Line.Vertical({
                         data: ["2000"],
@@ -880,7 +885,7 @@
                             'drag': function (from_year) {
                                 from_year = snapToValidYear(from_year);
                                 this.data = [from_year];
-                                currentFilters[0]['year'] = [from_year].slice() //probably needs .toString()
+                                currentFilters[0]['year'] = [from_year].slice();
                                 updateFiltering([CFDDict0['long']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
                             },
                             'render': function () {
@@ -899,10 +904,9 @@
                             'drag': function (until_year) {
                                 until_year = snapToValidYear(until_year);
                                 this.data = [until_year];
-                                currentFilters[1]['year'] = [until_year].slice() //probably needs .toString()
+                                currentFilters[1]['year'] = [until_year].slice();
                                 updateFiltering([CFDDict1['long']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
                             },
-                            // Filter the data based on the initial year selection
                             'render': function () {
                                 this.handlers['drag'](this.data[0]);
                             }
@@ -1006,7 +1010,7 @@
             worldChart0
                 .width(1000)
                 .height(400)
-                .dimension(CFDDict0['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .dimension(cat_vars_and_values["location_name"]) // Use any dimension; it’s required but not used for filtering here
                 .group(WrappedYLLPerPerson0)
                 .colors(d3.scale.linear().range(YLLPerPersonColorRange))
                 .colorDomain(YLLPerPersonColorDomain)
@@ -1029,7 +1033,7 @@
             worldChart1
                 .width(1000)
                 .height(400)
-                .dimension(CFDDict1['population']['d']['location_name']) // Use any dimension; it’s required but not used for filtering here
+                .dimension(cat_vars_and_values["location_name"]) // Use any dimension; it’s required but not used for filtering here
                 .group(WrappedYLLPerPerson1)
                 .colors(d3.scale.linear().range(YLLPerPersonColorRange))
                 .colorDomain(YLLPerPersonColorDomain)
@@ -1058,7 +1062,7 @@
             worldChartChange
                 .width(1000)
                 .height(400)
-                .dimension(CFDDict1['population']['d']['location_name'])
+                .dimension(cat_vars_and_values["location_name"])
                 .group(WrappedYLLPerPersonChange)
                 .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
                 .colorDomain(YLLPerPersonChangeColorDomain)
