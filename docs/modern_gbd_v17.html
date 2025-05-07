@@ -936,6 +936,17 @@
                 };
             }
 
+            function combineDicts(xDict, yDict, combineFn, xMissingVal=0, yMissingVal=0) {
+                const result = {};
+                for (const key of new Set([...Object.keys(xDict), ...Object.keys(yDict)])) {
+                    const xVal = xDict[key] ?? xMissingVal;
+                    const yVal = yDict[key] ?? yMissingVal;
+                    result[key] = combineFn(xVal, yVal);
+                }
+
+                return result;
+            }
+
             // Function to calculate the ratio
             function ratio(x, y) {
                 return y > 0 ? x / y : 0;
@@ -955,6 +966,32 @@
             var YLLPerPerson1 = combineGroups(locationNameDimGBDAgg1, locationNameDimPopAgg1, ratio);
 
             var YLLPerPersonChange = combineGroups(YLLPerPerson1, YLLPerPerson0, ratio_m1);
+
+            console.log("YLLPerPerson0.all() snapshot:", structuredClone(YLLPerPerson0.all()));
+            function dictToKeyValueArray(dict) {
+                return Object.entries(dict).map(([key, value]) => ({
+                    key: key,
+                    value: value
+                }));
+            }
+            function generateSimpleValueDict(data, valueName) {
+                const result = {};
+                for (const [key, record] of Object.entries(data)) {
+                    result[key] = record["aggregatedData"][valueName];
+                }
+                return result;
+            }
+
+            // const WrappedYLLPerPerson0_v2 = {
+            //     all: function () {
+            //         const locationNamePopValDict = generateSimpleValueDict(aggTree[0]["population"]["location_name"], "pop_val")
+            //         const locationNameYllValDict = generateSimpleValueDict(aggTree[0]["long"]["location_name"], "yll_val")
+            //         const locationNameYllperPopValDict = combineDicts(locationNameYllValDict,locationNamePopValDict, ratio)
+            //         const locationNameYllperPopValArray =  dictToKeyValueArray(locationNameYllperPopValDict)
+            //         return locationNameYllperPopValArray;
+            //     }
+            // };
+
 
             const WrappedYLLPerPerson0 = {
                 all: function () {
