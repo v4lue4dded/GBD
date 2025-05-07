@@ -169,10 +169,16 @@
     <div id="waiting"><b>Loading Global Burden of Disease data...</b> <br><br></div>
     <main style="display:none">
         <div id="gbd_timeline"></div>
+        <div id="gbd_timeline_v2"></div>
         <br>
         <div id="gbd_map0" class="map-container"></div>
         <div id="gbd_map1" class="map-container"></div>
         <div id="gbd_map_change" class="map-container"></div>
+        <br>
+        <div id="gbd_map0_v2" class="map-container"></div>
+        <div id="gbd_map1_v2" class="map-container"></div>
+        <div id="gbd_map_change_v2" class="map-container"></div>
+        <br>
         <div id="gdb_year_0"></div>
         <div id="gdb_year_1"></div>
         <div id="gdb_region_name_table"></div>
@@ -810,6 +816,94 @@
                 ]
             }));
 
+            // const tableBranch = aggTree[tableSet][table];
+            // [dimToUse][keyToUse]["aggregatedData"][valueCol]
+            console.log("aggDict0 snapshot:", structuredClone(aggDict0));
+            charts.push(timeline = new c3.Plot({
+                anchor: '#gbd_timeline_v2',
+                height: 600,
+                width: "100%",
+                h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
+                v: d3.scale.linear().domain([0, d3.max(Object.entries(aggTree[0]['population']['year']).filter(([key]) => key !== 'All').map(([_, d]) => d.aggregatedData.pop_val))]),
+                // The **x** function uses the key directly, which represents the year from the year dimension.
+                x: function (d) { return d.key; },
+                // The default **y** function generates its value based on the population value.
+                y: function (d) { return d.value.pop_val; },
+                // Set margins on all sides of the chart to allow extra room for labels to fit.
+                margins: 50,
+                // Create **axes** for this plot.
+                axes: [
+                    new c3.Axis.X({
+                        label: "Year",
+                        grid: true,
+                        tick_label: d3.format('f')
+                    }),
+                    new c3.Axis.Y({
+                        label: "Population",
+                        grid: true,
+                        tick_label: d3.format(',')
+                    }),
+                ],
+                // Create the **layers** for this timeline.
+                layers: [
+                    new c3.Plot.Layer.Area({
+                        options: {
+                            title: "Population",
+                            "class": "population_area_graph"
+                        },
+                        data: aggDict0['population']['year'],
+                        v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
+                        y: function (d) { return d.value.pop_val; },
+                        interpolate: 'cardinal'
+                    }),
+                    new c3.Plot.Layer.Line({
+                        options: {
+                            title: "population",
+                            "class": 'population_line_graph'
+                        },
+                        data: aggDict0['population']['year']
+                    }),
+                    new c3.Plot.Layer.Line.Vertical({
+                        data: ["2000"],
+                        draggable: true,
+                        options: {
+                            title: "from Year",
+                            "class": 'from_year'
+                        },
+                        handlers: {
+                            'drag': function (from_year) {
+                                from_year = snapToValidYear(from_year);
+                                this.data = [from_year];
+                                currentFilters[0]['year'] = [from_year].slice() //probably needs .toString()
+                                updateFiltering([CFDDict0['long']['d']['year'], CFDDict0['population']['d']['year']], currentFilters[0]['year']);
+                            },
+                            'render': function () {
+                                this.handlers['drag'](this.data[0]);
+                            }
+                        }
+                    }),
+                    new c3.Plot.Layer.Line.Vertical({
+                        data: ["2019"],
+                        draggable: true,
+                        options: {
+                            title: "until Year",
+                            "class": 'until_year'
+                        },
+                        handlers: {
+                            'drag': function (until_year) {
+                                until_year = snapToValidYear(until_year);
+                                this.data = [until_year];
+                                currentFilters[1]['year'] = [until_year].slice() //probably needs .toString()
+                                updateFiltering([CFDDict1['long']['d']['year'], CFDDict1['population']['d']['year']], currentFilters[1]['year']);
+                            },
+                            // Filter the data based on the initial year selection
+                            'render': function () {
+                                this.handlers['drag'](this.data[0]);
+                            }
+                        }
+                    }),
+                ]
+            }));
 
             function combineGroups(xGroup, yGroup, combineFunction) {
                 return {
