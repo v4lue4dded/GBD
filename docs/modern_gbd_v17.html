@@ -174,11 +174,6 @@
         <div id="gbd_map0" class="map-container"></div>
         <div id="gbd_map1" class="map-container"></div>
         <div id="gbd_map_change" class="map-container"></div>
-        <br>
-        <div id="gbd_map0_v2" class="map-container"></div>
-        <div id="gbd_map1_v2" class="map-container"></div>
-        <div id="gbd_map_change_v2" class="map-container"></div>
-        <br>
         <div id="gdb_year_0"></div>
         <div id="gdb_year_1"></div>
         <div id="gdb_region_name_table"></div>
@@ -982,15 +977,39 @@
                 return result;
             }
 
-            // const WrappedYLLPerPerson0_v2 = {
-            //     all: function () {
-            //         const locationNamePopValDict = generateSimpleValueDict(aggTree[0]["population"]["location_name"], "pop_val")
-            //         const locationNameYllValDict = generateSimpleValueDict(aggTree[0]["long"]["location_name"], "yll_val")
-            //         const locationNameYllperPopValDict = combineDicts(locationNameYllValDict,locationNamePopValDict, ratio)
-            //         const locationNameYllperPopValArray =  dictToKeyValueArray(locationNameYllperPopValDict)
-            //         return locationNameYllperPopValArray;
-            //     }
-            // };
+            const WrappedYLLPerPerson0_v2 = {
+                all: function () {
+                    const locationNamePopValDict = generateSimpleValueDict(aggTree[0]["population"]["location_name"], "pop_val")
+                    const locationNameYllValDict = generateSimpleValueDict(aggTree[0]["long"]["location_name"], "yll_val")
+                    const locationNameYllperPopValDict = combineDicts(locationNameYllValDict,locationNamePopValDict, ratio)
+                    const locationNameYllperPopValArray =  dictToKeyValueArray(locationNameYllperPopValDict)
+                    return locationNameYllperPopValArray;
+                }
+            };
+
+            const WrappedYLLPerPerson1_v2 = {
+                all: function () {
+                    const locationNamePopValDict = generateSimpleValueDict(aggTree[1]["population"]["location_name"], "pop_val")
+                    const locationNameYllValDict = generateSimpleValueDict(aggTree[1]["long"]["location_name"], "yll_val")
+                    const locationNameYllperPopValDict = combineDicts(locationNameYllValDict,locationNamePopValDict, ratio)
+                    const locationNameYllperPopValArray =  dictToKeyValueArray(locationNameYllperPopValDict)
+                    return locationNameYllperPopValArray;
+                }
+            };
+
+            const WrappedYLLPerPersonChange_v2 = {
+                all: function () {
+                    const locationNamePopValDict0 = generateSimpleValueDict(aggTree[0]["population"]["location_name"], "pop_val")
+                    const locationNameYllValDict0 = generateSimpleValueDict(aggTree[0]["long"]["location_name"], "yll_val")
+                    const locationNameYllperPopValDict0 = combineDicts(locationNameYllValDict0,locationNamePopValDict0, ratio)
+                    const locationNamePopValDict1 = generateSimpleValueDict(aggTree[1]["population"]["location_name"], "pop_val")
+                    const locationNameYllValDict1 = generateSimpleValueDict(aggTree[1]["long"]["location_name"], "yll_val")
+                    const locationNameYllperPopValDict1 = combineDicts(locationNameYllValDict1,locationNamePopValDict1, ratio)
+                    const locationNameYllperPopChangeValDict = combineDicts(locationNameYllperPopValDict1,locationNameYllperPopValDict0, ratio_m1)
+                    const locationNameYllperPopChangeValArray =  dictToKeyValueArray(locationNameYllperPopChangeValDict)
+                    return locationNameYllperPopChangeValArray;
+                }
+            };
 
 
             const WrappedYLLPerPerson0 = {
@@ -1008,6 +1027,9 @@
                     return YLLPerPersonChange.all();
                 }
             };
+
+            console.log("WrappedYLLPerPersonChange_v2.all() snapshot:", structuredClone(WrappedYLLPerPersonChange_v2.all()));
+            console.log("WrappedYLLPerPersonChange.all() snapshot:", structuredClone(WrappedYLLPerPersonChange.all()));
 
             const worldChart0 = dc.geoChoroplethChart("#gbd_map0");
             const worldChart1 = dc.geoChoroplethChart("#gbd_map1");
@@ -1042,13 +1064,15 @@
                 "#9E9E9E",
                 "#787878"
             ];
-
+            
+            const cf      = crossfilter([]);         // empty data set
+            const fakeDim = cf.dimension(d => d);    // accessor is irrelevant
             //#endregion
             worldChart0
                 .width(1000)
                 .height(400)
-                .dimension(cat_vars_and_values["location_name"]) // Use any dimension; it’s required but not used for filtering here
-                .group(WrappedYLLPerPerson0)
+                .dimension(fakeDim) // Use any dimension; it’s required but not used for filtering here
+                .group(WrappedYLLPerPerson0_v2)
                 .colors(d3.scale.linear().range(YLLPerPersonColorRange))
                 .colorDomain(YLLPerPersonColorDomain)
                 .colorCalculator(function (d) { return d ? worldChart0.colors()(d) : '#ccc'; })
@@ -1070,8 +1094,8 @@
             worldChart1
                 .width(1000)
                 .height(400)
-                .dimension(cat_vars_and_values["location_name"]) // Use any dimension; it’s required but not used for filtering here
-                .group(WrappedYLLPerPerson1)
+                .dimension(fakeDim) // Use any dimension; it’s required but not used for filtering here
+                .group(WrappedYLLPerPerson1_v2)
                 .colors(d3.scale.linear().range(YLLPerPersonColorRange))
                 .colorDomain(YLLPerPersonColorDomain)
                 .colorCalculator(function (d) { return d ? worldChart1.colors()(d) : '#ccc'; })
@@ -1099,8 +1123,8 @@
             worldChartChange
                 .width(1000)
                 .height(400)
-                .dimension(cat_vars_and_values["location_name"])
-                .group(WrappedYLLPerPersonChange)
+                .dimension(fakeDim) // Use any dimension; it’s required but not used for filtering here
+                .group(WrappedYLLPerPersonChange_v2)
                 .colors(d3.scale.linear().range(YLLPerPersonChangeColorRange))
                 .colorDomain(YLLPerPersonChangeColorDomain)
                 .colorCalculator(function (d) { return d ? worldChartChange.colors()(d) : '#ccc'; })
