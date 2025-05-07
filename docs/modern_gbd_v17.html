@@ -816,22 +816,18 @@
                 ]
             }));
 
-            // const tableBranch = aggTree[tableSet][table];
-            // [dimToUse][keyToUse]["aggregatedData"][valueCol]
-            console.log("aggDict0 snapshot:", structuredClone(aggDict0));
+            // // const tableBranch = aggTree[tableSet][table];
+            // // [dimToUse][keyToUse]["aggregatedData"][valueCol]
+            // console.log("aggDict0 snapshot:", structuredClone(aggDict0));
             charts.push(timeline = new c3.Plot({
                 anchor: '#gbd_timeline_v2',
                 height: 600,
                 width: "100%",
                 h: d3.scale.linear().domain([d3.min(validYears), d3.max(validYears)]),
                 v: d3.scale.linear().domain([0, d3.max(Object.entries(aggTree[0]['population']['year']).filter(([key]) => key !== 'All').map(([_, d]) => d.aggregatedData.pop_val))]),
-                // The **x** function uses the key directly, which represents the year from the year dimension.
                 x: function (d) { return d.key; },
-                // The default **y** function generates its value based on the population value.
-                y: function (d) { return d.value.pop_val; },
-                // Set margins on all sides of the chart to allow extra room for labels to fit.
+                y: function (d) { return d.value.aggregatedData.pop_val; },
                 margins: 50,
-                // Create **axes** for this plot.
                 axes: [
                     new c3.Axis.X({
                         label: "Year",
@@ -844,16 +840,24 @@
                         tick_label: d3.format(',')
                     }),
                 ],
-                // Create the **layers** for this timeline.
                 layers: [
                     new c3.Plot.Layer.Area({
                         options: {
                             title: "Population",
                             "class": "population_area_graph"
                         },
-                        data: aggDict0['population']['year'],
-                        v: d3.scale.linear().domain([0, d3.max(aggDict0['population']['year'], function (d) { return d.value.pop_val; })]),
-                        y: function (d) { return d.value.pop_val; },
+                        data: Object.entries(aggTree[0]['population']['year'])
+                            .filter(([key]) => key !== 'All')
+                            .map(([key, d]) => ({ key: +key, value: d })),
+                        v: d3.scale.linear().domain([
+                            0,
+                            d3.max(
+                                Object.entries(aggTree[0]['population']['year'])
+                                    .filter(([key]) => key !== 'All')
+                                    .map(([_, d]) => d.aggregatedData.pop_val)
+                            )
+                        ]),
+                        y: function (d) { return d.value.aggregatedData.pop_val; },
                         interpolate: 'cardinal'
                     }),
                     new c3.Plot.Layer.Line({
@@ -861,7 +865,9 @@
                             title: "population",
                             "class": 'population_line_graph'
                         },
-                        data: aggDict0['population']['year']
+                        data: Object.entries(aggTree[0]['population']['year'])
+                            .filter(([key]) => key !== 'All')
+                            .map(([key, d]) => ({ key: +key, value: d }))
                     }),
                     new c3.Plot.Layer.Line.Vertical({
                         data: ["2000"],
