@@ -1,3 +1,14 @@
+# 2025-05-08
+Location: All countries
+Year: 1980-2019 (in 5 year steps)
+Context: Cause
+Age: all 5 year brackets
+Measure: YLL (Years of life lost), Deaths, YLDs, DALYs
+Sex: Male and Female
+Cause: all Level 1, 2, 3, 4 causes
+
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/ccf4908b5e318499b2a15f66e2894db1
+
 # New
 Location: All countries
 Year: 1990-2019 (in 5 year steps)
