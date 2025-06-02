@@ -3,13 +3,17 @@ create table         gbd.db02_processing.relevant_year as
 select
 *
 from (
-      select 1990 as year
+      select 1980 as year
+union select 1985 as year
+union select 1990 as year
 union select 1995 as year
 union select 2000 as year
 union select 2005 as year
 union select 2010 as year
 union select 2015 as year
 union select 2019 as year
+union select 2020 as year
+union select 2021 as year
 ) x
 ;
 

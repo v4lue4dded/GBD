@@ -42,6 +42,3 @@ df_measure = pd.concat(list_of_dfs)
 
 df_measure.to_sql(name=f'measure_{year}', con=engine, schema='db01_import', if_exists='replace', index=False, chunksize=10000)
 ##################################################################################################
-
-
-

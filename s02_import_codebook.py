@@ -18,7 +18,7 @@ listdir(codebook_dir)
 for i_cb in listdir(codebook_dir):
     print(i_cb)
     if i_cb[-4:] == '.csv':
-        cb_name = 'info_' + i_cb[:-5].lower()
+        cb_name = 'info_' + i_cb[:-4].lower()
         print(cb_name)
         df = pd.read_csv(opj(codebook_dir, i_cb))
         df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
