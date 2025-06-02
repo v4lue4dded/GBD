@@ -69,7 +69,7 @@ for table_type in table_types:
 
     print(f"Creating rollup table: {target_table1}")
     print(create_rollup_sql)
-    con.execute(text(create_rollup_sql))
+    # con.execute(text(create_rollup_sql))
 
 for table_type in table_types:
     source_table2 = f"gbd.db04_modelling.export_{table_type}_rollup"

@@ -24,6 +24,9 @@ where l1.cause_outline not in (
 ,'G'
 )
 ;
+select *
+from gbd.db03_clean_tables.cb_cause_hierarchy_l4
+
 
 drop table if exists gbd.db03_clean_tables.cb_cause_hierarchy_l3;
 create table         gbd.db03_clean_tables.cb_cause_hierarchy_l3 as

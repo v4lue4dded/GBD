@@ -1,0 +1,378 @@
+Cause ID,Cause Name,Parent ID,Parent Name,Level,Cause Outline,Sort Order,YLL Only,YLD Only
+294,All causes,294,All causes,0,Total,1,,
+295,"Communicable, maternal, neonatal, and nutritional diseases",294,All causes,1,A,2,,
+955,HIV/AIDS and sexually transmitted infections,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.1,3,,
+298,HIV/AIDS,955,HIV/AIDS and sexually transmitted infections,3,A.1.1,4,,
+948,HIV/AIDS - Drug-susceptible Tuberculosis,298,HIV/AIDS,4,A.1.1.1,5,,
+949,HIV/AIDS - Multidrug-resistant Tuberculosis without extensive drug resistance,298,HIV/AIDS,4,A.1.1.2,6,,
+950,HIV/AIDS - Extensively drug-resistant Tuberculosis,298,HIV/AIDS,4,A.1.1.3,7,,
+300,HIV/AIDS resulting in other diseases,298,HIV/AIDS,4,A.1.1.4,8,,
+393,Sexually transmitted infections excluding HIV,955,HIV/AIDS and sexually transmitted infections,3,A.1.2,9,,
+394,Syphilis,393,Sexually transmitted infections excluding HIV,4,A.1.2.1,10,,
+395,Chlamydial infection,393,Sexually transmitted infections excluding HIV,4,A.1.2.2,11,,
+396,Gonococcal infection,393,Sexually transmitted infections excluding HIV,4,A.1.2.3,12,,
+397,Trichomoniasis,393,Sexually transmitted infections excluding HIV,4,A.1.2.4,13,,X
+398,Genital herpes,393,Sexually transmitted infections excluding HIV,4,A.1.2.5,14,,X
+399,Other sexually transmitted infections,393,Sexually transmitted infections excluding HIV,4,A.1.2.6,15,,
+956,Respiratory infections and tuberculosis,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.2,16,,
+297,Tuberculosis,956,Respiratory infections and tuberculosis,3,A.2.1,17,,
+954,Latent tuberculosis infection,297,Tuberculosis,4,A.2.1.1,18,,X
+934,Drug-susceptible tuberculosis,297,Tuberculosis,4,A.2.1.2,19,,
+946,Multidrug-resistant tuberculosis without extensive drug resistance,297,Tuberculosis,4,A.2.1.3,20,,
+947,Extensively drug-resistant tuberculosis,297,Tuberculosis,4,A.2.1.4,21,,
+322,Lower respiratory infections,956,Respiratory infections and tuberculosis,3,A.2.2,22,,
+328,Upper respiratory infections,956,Respiratory infections and tuberculosis,3,A.2.3,23,,
+329,Otitis media,956,Respiratory infections and tuberculosis,3,A.2.4,24,,
+1048,COVID-19,956,Respiratory infections and tuberculosis,3,A.2.5,25,,
+957,Enteric infections,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.3,26,,
+302,Diarrheal diseases,957,Enteric infections,3,A.3.1,27,,
+958,Typhoid and paratyphoid,957,Enteric infections,3,A.3.2,28,,
+319,Typhoid fever,958,Typhoid and paratyphoid,4,A.3.2.1,29,,
+320,Paratyphoid fever,958,Typhoid and paratyphoid,4,A.3.2.2,30,,
+959,Invasive Non-typhoidal Salmonella (iNTS),957,Enteric infections,3,A.3.3,31,,
+321,Other intestinal infectious diseases,957,Enteric infections,3,A.3.5,32,,
+344,Neglected tropical diseases and malaria,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.4,33,,
+345,Malaria,344,Neglected tropical diseases and malaria,3,A.4.1,34,,
+346,Chagas disease,344,Neglected tropical diseases and malaria,3,A.4.2,35,,
+347,Leishmaniasis,344,Neglected tropical diseases and malaria,3,A.4.3,36,,
+348,Visceral leishmaniasis,347,Leishmaniasis,4,A.4.3.1,37,,
+349,Cutaneous and mucocutaneous leishmaniasis,347,Leishmaniasis,4,A.4.3.2,38,,X
+350,African trypanosomiasis,344,Neglected tropical diseases and malaria,3,A.4.4,39,,
+351,Schistosomiasis,344,Neglected tropical diseases and malaria,3,A.4.5,40,,
+352,Cysticercosis,344,Neglected tropical diseases and malaria,3,A.4.6,41,,
+353,Cystic echinococcosis,344,Neglected tropical diseases and malaria,3,A.4.7,42,,
+354,Lymphatic filariasis,344,Neglected tropical diseases and malaria,3,A.4.8,43,,X
+355,Onchocerciasis,344,Neglected tropical diseases and malaria,3,A.4.9,44,,X
+356,Trachoma,344,Neglected tropical diseases and malaria,3,A.4.10,45,,X
+357,Dengue,344,Neglected tropical diseases and malaria,3,A.4.11,46,,
+358,Yellow fever,344,Neglected tropical diseases and malaria,3,A.4.12,47,,
+359,Rabies,344,Neglected tropical diseases and malaria,3,A.4.13,48,,
+360,Intestinal nematode infections,344,Neglected tropical diseases and malaria,3,A.4.14,49,,
+361,Ascariasis,360,Intestinal nematode infections,4,A.4.14.1,50,,
+362,Trichuriasis,360,Intestinal nematode infections,4,A.4.14.2,51,,X
+363,Hookworm disease,360,Intestinal nematode infections,4,A.4.14.3,52,,X
+364,Food-borne trematodiases,344,Neglected tropical diseases and malaria,3,A.4.15,53,,X
+405,Leprosy,344,Neglected tropical diseases and malaria,3,A.4.16,54,,X
+843,Ebola,344,Neglected tropical diseases and malaria,3,A.4.17,55,,
+935,Zika virus,344,Neglected tropical diseases and malaria,3,A.4.18,56,,
+936,Guinea worm disease,344,Neglected tropical diseases and malaria,3,A.4.19,57,,X
+365,Other neglected tropical diseases,344,Neglected tropical diseases and malaria,3,A.4.20,58,,
+961,Other infectious diseases,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.5,59,,
+332,Meningitis,961,Other infectious diseases,3,A.5.1,60,,
+337,Encephalitis,961,Other infectious diseases,3,A.5.2,61,,
+338,Diphtheria,961,Other infectious diseases,3,A.5.3,62,,
+339,Pertussis,961,Other infectious diseases,3,A.5.4,63,,
+340,Tetanus,961,Other infectious diseases,3,A.5.5,64,,
+341,Measles,961,Other infectious diseases,3,A.5.6,65,,
+342,Varicella and herpes zoster,961,Other infectious diseases,3,A.5.7,66,,
+400,Acute hepatitis,961,Other infectious diseases,3,A.5.8,67,,
+401,Acute hepatitis A,400,Acute hepatitis,4,A.5.8.1,68,,
+402,Acute hepatitis B,400,Acute hepatitis,4,A.5.8.2,69,,
+403,Acute hepatitis C,400,Acute hepatitis,4,A.5.8.3,70,,
+404,Acute hepatitis E,400,Acute hepatitis,4,A.5.8.4,71,,
+408,Other unspecified infectious diseases,961,Other infectious diseases,3,A.5.9,72,,
+962,Maternal and neonatal disorders,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.6,73,,
+366,Maternal disorders,962,Maternal and neonatal disorders,3,A.6.1,74,,
+367,Maternal hemorrhage,366,Maternal disorders,4,A.6.1.1,75,,
+368,Maternal sepsis and other maternal infections,366,Maternal disorders,4,A.6.1.2,76,,
+369,Maternal hypertensive disorders,366,Maternal disorders,4,A.6.1.3,77,,
+370,Maternal obstructed labor and uterine rupture,366,Maternal disorders,4,A.6.1.4,78,,
+995,Maternal abortion and miscarriage,366,Maternal disorders,4,A.6.1.5,79,,
+374,Ectopic pregnancy,366,Maternal disorders,4,A.6.1.6,80,,
+375,Indirect maternal deaths,366,Maternal disorders,4,A.6.1.7,81,X,
+376,Late maternal deaths,366,Maternal disorders,4,A.6.1.8,82,X,
+741,Maternal deaths aggravated by HIV/AIDS,366,Maternal disorders,4,A.6.1.9,83,X,
+379,Other direct maternal disorders,366,Maternal disorders,4,A.6.1.10,84,,
+380,Neonatal disorders,962,Maternal and neonatal disorders,3,A.6.2,85,,
+381,Neonatal preterm birth,380,Neonatal disorders,4,A.6.2.1,86,,
+382,Neonatal encephalopathy due to birth asphyxia and trauma,380,Neonatal disorders,4,A.6.2.2,87,,
+383,Neonatal sepsis and other neonatal infections,380,Neonatal disorders,4,A.6.2.3,88,,
+384,Hemolytic disease and other neonatal jaundice,380,Neonatal disorders,4,A.6.2.4,89,,
+385,Other neonatal disorders,380,Neonatal disorders,4,A.6.2.5,90,,
+386,Nutritional deficiencies,295,"Communicable, maternal, neonatal, and nutritional diseases",2,A.7,91,,
+387,Protein-energy malnutrition,386,Nutritional deficiencies,3,A.7.1,92,,
+388,Iodine deficiency,386,Nutritional deficiencies,3,A.7.2,93,,X
+389,Vitamin A deficiency,386,Nutritional deficiencies,3,A.7.3,94,,X
+390,Dietary iron deficiency,386,Nutritional deficiencies,3,A.7.4,95,,X
+391,Other nutritional deficiencies,386,Nutritional deficiencies,3,A.7.5,96,,
+409,Non-communicable diseases,294,All causes,1,B,97,,
+410,Neoplasms,409,Non-communicable diseases,2,B.1,98,,
+444,Lip and oral cavity cancer,410,Neoplasms,3,B.1.1,99,,
+447,Nasopharynx cancer,410,Neoplasms,3,B.1.2,100,,
+450,Other pharynx cancer,410,Neoplasms,3,B.1.3,101,,
+411,Esophageal cancer,410,Neoplasms,3,B.1.4,102,,
+414,Stomach cancer,410,Neoplasms,3,B.1.5,103,,
+441,Colon and rectum cancer,410,Neoplasms,3,B.1.6,104,,
+417,Liver cancer,410,Neoplasms,3,B.1.7,105,,
+418,Liver cancer due to hepatitis B,417,Liver cancer,4,B.1.7.1,106,,
+419,Liver cancer due to hepatitis C,417,Liver cancer,4,B.1.7.2,107,,
+420,Liver cancer due to alcohol use,417,Liver cancer,4,B.1.7.3,108,,
+996,Liver cancer due to NASH,417,Liver cancer,4,B.1.7.4,109,,
+1005,Hepatoblastoma,417,Liver cancer,4,B.1.7.5,110,,
+421,Liver cancer due to other causes,417,Liver cancer,4,B.1.7.6,111,,
+453,Gallbladder and biliary tract cancer,410,Neoplasms,3,B.1.8,112,,
+456,Pancreatic cancer,410,Neoplasms,3,B.1.9,113,,
+423,Larynx cancer,410,Neoplasms,3,B.1.10,114,,
+426,"Tracheal, bronchus, and lung cancer",410,Neoplasms,3,B.1.11,115,,
+459,Malignant skin melanoma,410,Neoplasms,3,B.1.12,116,,
+462,Non-melanoma skin cancer,410,Neoplasms,3,B.1.13,117,,
+849,Non-melanoma skin cancer (squamous-cell carcinoma),462,Non-melanoma skin cancer,4,B.1.13.1,118,,
+850,Non-melanoma skin cancer (basal-cell carcinoma),462,Non-melanoma skin cancer,4,B.1.13.2,119,,X
+1011,Soft tissue and other extraosseous sarcomas,410,Neoplasms,3,B.1.14,120,,
+1012,Malignant neoplasm of bone and articular cartilage,410,Neoplasms,3,B.1.15,121,,
+429,Breast cancer,410,Neoplasms,3,B.1.16,122,,
+432,Cervical cancer,410,Neoplasms,3,B.1.17,123,,
+435,Uterine cancer,410,Neoplasms,3,B.1.18,124,,
+465,Ovarian cancer,410,Neoplasms,3,B.1.19,125,,
+438,Prostate cancer,410,Neoplasms,3,B.1.20,126,,
+468,Testicular cancer,410,Neoplasms,3,B.1.21,127,,
+471,Kidney cancer,410,Neoplasms,3,B.1.22,128,,
+474,Bladder cancer,410,Neoplasms,3,B.1.23,129,,
+477,Brain and central nervous system cancer,410,Neoplasms,3,B.1.24,130,,
+1008,Eye cancer,410,Neoplasms,3,B.1.25,131,,
+1009,Retinoblastoma,1008,Eye cancer,4,B.1.25.1,132,,
+1010,Other eye cancers,1008,Eye cancer,4,B.1.25.2,133,,
+1013,Neuroblastoma and other peripheral nervous cell tumors,410,Neoplasms,3,B.1.26,134,,
+480,Thyroid cancer,410,Neoplasms,3,B.1.27,135,,
+483,Mesothelioma,410,Neoplasms,3,B.1.28,136,,
+484,Hodgkin lymphoma,410,Neoplasms,3,B.1.29,137,,
+485,Non-Hodgkin lymphoma,410,Neoplasms,3,B.1.30,138,,
+1006,Burkitt lymphoma,485,Non-Hodgkin lymphoma,4,B.1.30.1,139,,
+1007,Other non-Hodgkin lymphoma,485,Non-Hodgkin lymphoma,4,B.1.30.2,140,,
+486,Multiple myeloma,410,Neoplasms,3,B.1.31,141,,
+487,Leukemia,410,Neoplasms,3,B.1.32,142,,
+845,Acute lymphoid leukemia,487,Leukemia,4,B.1.32.1,143,,
+846,Chronic lymphoid leukemia,487,Leukemia,4,B.1.32.2,144,,
+847,Acute myeloid leukemia,487,Leukemia,4,B.1.32.3,145,,
+848,Chronic myeloid leukemia,487,Leukemia,4,B.1.32.4,146,,
+943,Other leukemia,487,Leukemia,4,B.1.32.5,147,,
+489,Other malignant neoplasms,410,Neoplasms,3,B.1.33,148,,
+490,Other neoplasms,410,Neoplasms,3,B.1.34,149,,
+964,"Myelodysplastic, myeloproliferative, and other hematopoietic neoplasms",490,Other neoplasms,4,B.1.34.1,150,,
+965,Benign and in situ intestinal neoplasms,490,Other neoplasms,4,B.1.34.2,151,,X
+966,Benign and in situ cervical and uterine neoplasms,490,Other neoplasms,4,B.1.34.3,152,,X
+967,Other benign and in situ neoplasms,490,Other neoplasms,4,B.1.34.4,153,,
+491,Cardiovascular diseases,409,Non-communicable diseases,2,B.2,154,,
+492,Rheumatic heart disease,491,Cardiovascular diseases,3,B.2.1,155,,
+493,Ischemic heart disease,491,Cardiovascular diseases,3,B.2.2,156,,
+494,Stroke,491,Cardiovascular diseases,3,B.2.3,157,,
+495,Ischemic stroke,494,Stroke,4,B.2.3.1,158,,
+496,Intracerebral hemorrhage,494,Stroke,4,B.2.3.2,159,,
+497,Subarachnoid hemorrhage,494,Stroke,4,B.2.3.3,160,,
+498,Hypertensive heart disease,491,Cardiovascular diseases,3,B.2.4,161,,
+504,Non-rheumatic valvular heart disease,491,Cardiovascular diseases,3,B.2.5,162,,
+968,Non-rheumatic calcific aortic valve disease,504,Non-rheumatic valvular heart disease,4,B.2.5.1,163,,
+969,Non-rheumatic degenerative mitral valve disease,504,Non-rheumatic valvular heart disease,4,B.2.5.2,164,,
+970,Other non-rheumatic valve diseases,504,Non-rheumatic valvular heart disease,4,B.2.5.3,165,,
+499,Cardiomyopathy and myocarditis,491,Cardiovascular diseases,3,B.2.6,166,,
+942,Myocarditis,499,Cardiomyopathy and myocarditis,4,B.2.6.1,167,,
+938,Alcoholic cardiomyopathy,499,Cardiomyopathy and myocarditis,4,B.2.6.2,168,,
+944,Other cardiomyopathy,499,Cardiomyopathy and myocarditis,4,B.2.6.3,169,,
+1004,Pulmonary Arterial Hypertension,491,Cardiovascular diseases,3,B.2.7,170,,
+500,Atrial fibrillation and flutter,491,Cardiovascular diseases,3,B.2.8,171,,
+501,Aortic aneurysm,491,Cardiovascular diseases,3,B.2.9,172,X,
+502,Lower extremity peripheral arterial disease,491,Cardiovascular diseases,3,B.2.10,173,,
+503,Endocarditis,491,Cardiovascular diseases,3,B.2.11,174,,
+507,Other cardiovascular and circulatory diseases,491,Cardiovascular diseases,3,B.2.12,175,,
+508,Chronic respiratory diseases,409,Non-communicable diseases,2,B.3,176,,
+509,Chronic obstructive pulmonary disease,508,Chronic respiratory diseases,3,B.3.1,177,,
+510,Pneumoconiosis,508,Chronic respiratory diseases,3,B.3.2,178,,
+511,Silicosis,510,Pneumoconiosis,4,B.3.2.1,179,,
+512,Asbestosis,510,Pneumoconiosis,4,B.3.2.2,180,,
+513,Coal workers pneumoconiosis,510,Pneumoconiosis,4,B.3.2.3,181,,
+514,Other pneumoconiosis,510,Pneumoconiosis,4,B.3.2.4,182,,
+515,Asthma,508,Chronic respiratory diseases,3,B.3.3,183,,
+516,Interstitial lung disease and pulmonary sarcoidosis,508,Chronic respiratory diseases,3,B.3.4,184,,
+520,Other chronic respiratory diseases,508,Chronic respiratory diseases,3,B.3.5,185,,
+526,Digestive diseases,409,Non-communicable diseases,2,B.4,186,,
+521,Cirrhosis and other chronic liver diseases,526,Digestive diseases,3,B.4.1,187,,
+522,Chronic hepatitis B including cirrhosis,521,Cirrhosis and other chronic liver diseases,4,B.4.1.1,188,,
+523,Chronic hepatitis C including cirrhosis,521,Cirrhosis and other chronic liver diseases,4,B.4.1.2,189,,
+524,Cirrhosis due to alcohol,521,Cirrhosis and other chronic liver diseases,4,B.4.1.3,190,,
+971,Nonalcoholic fatty liver disease including cirrhosis,521,Cirrhosis and other chronic liver diseases,4,B.4.1.4,191,,
+525,Cirrhosis due to other causes,521,Cirrhosis and other chronic liver diseases,4,B.4.1.5,192,,
+992,Upper digestive system diseases,526,Digestive diseases,3,B.4.2,193,,
+527,Peptic ulcer disease,992,Upper digestive system diseases,4,B.4.2.1,194,,
+528,Gastritis and duodenitis,992,Upper digestive system diseases,4,B.4.2.2,195,,
+536,Gastroesophageal reflux disease,992,Upper digestive system diseases,4,B.4.2.3,196,,X
+529,Appendicitis,526,Digestive diseases,3,B.4.3,197,,
+530,Paralytic ileus and intestinal obstruction,526,Digestive diseases,3,B.4.4,198,,
+531,"Inguinal, femoral, and abdominal hernia",526,Digestive diseases,3,B.4.5,199,,
+532,Inflammatory bowel disease,526,Digestive diseases,3,B.4.6,200,,
+533,Vascular intestinal disorders,526,Digestive diseases,3,B.4.7,201,,
+534,Gallbladder and biliary diseases,526,Digestive diseases,3,B.4.8,202,,
+535,Pancreatitis,526,Digestive diseases,3,B.4.9,203,,
+541,Other digestive diseases,526,Digestive diseases,3,B.4.10,204,,
+542,Neurological disorders,409,Non-communicable diseases,2,B.5,205,,
+543,Alzheimer's disease and other dementias,542,Neurological disorders,3,B.5.1,206,,
+544,Parkinson's disease,542,Neurological disorders,3,B.5.2,207,,
+545,Idiopathic epilepsy,542,Neurological disorders,3,B.5.3,208,,
+546,Multiple sclerosis,542,Neurological disorders,3,B.5.4,209,,
+554,Motor neuron disease,542,Neurological disorders,3,B.5.5,210,,
+972,Headache disorders,542,Neurological disorders,3,B.5.6,211,,X
+547,Migraine,972,Headache disorders,4,B.5.6.1,212,,X
+548,Tension-type headache,972,Headache disorders,4,B.5.6.2,213,,X
+557,Other neurological disorders,542,Neurological disorders,3,B.5.7,214,,
+558,Mental disorders,409,Non-communicable diseases,2,B.6,215,,
+559,Schizophrenia,558,Mental disorders,3,B.6.1,216,,X
+567,Depressive disorders,558,Mental disorders,3,B.6.2,217,,X
+568,Major depressive disorder,567,Depressive disorders,4,B.6.2.1,218,,X
+569,Dysthymia,567,Depressive disorders,4,B.6.2.2,219,,X
+570,Bipolar disorder,558,Mental disorders,3,B.6.3,220,,X
+571,Anxiety disorders,558,Mental disorders,3,B.6.4,221,,X
+572,Eating disorders,558,Mental disorders,3,B.6.5,222,,
+573,Anorexia nervosa,572,Eating disorders,4,B.6.5.1,223,,
+574,Bulimia nervosa,572,Eating disorders,4,B.6.5.2,224,,X
+575,Autism spectrum disorders,558,Mental disorders,3,B.6.6,225,,X
+578,Attention-deficit/hyperactivity disorder,558,Mental disorders,3,B.6.7,226,,X
+579,Conduct disorder,558,Mental disorders,3,B.6.8,227,,X
+582,Idiopathic developmental intellectual disability,558,Mental disorders,3,B.6.9,228,,X
+585,Other mental disorders,558,Mental disorders,3,B.6.10,229,,X
+973,Substance use disorders,409,Non-communicable diseases,2,B.7,230,,
+560,Alcohol use disorders,973,Substance use disorders,3,B.7.1,231,,
+561,Drug use disorders,973,Substance use disorders,3,B.7.2,232,,
+562,Opioid use disorders,561,Drug use disorders,4,B.7.2.1,233,,
+563,Cocaine use disorders,561,Drug use disorders,4,B.7.2.2,234,,
+564,Amphetamine use disorders,561,Drug use disorders,4,B.7.2.3,235,,
+565,Cannabis use disorders,561,Drug use disorders,4,B.7.2.4,236,,X
+566,Other drug use disorders,561,Drug use disorders,4,B.7.2.5,237,,
+974,Diabetes and kidney diseases,409,Non-communicable diseases,2,B.8,238,,
+587,Diabetes mellitus,974,Diabetes and kidney diseases,3,B.8.1,239,,
+975,Diabetes mellitus type 1,587,Diabetes mellitus,4,B.8.1.1,240,,
+976,Diabetes mellitus type 2,587,Diabetes mellitus,4,B.8.1.2,241,,
+589,Chronic kidney disease,974,Diabetes and kidney diseases,3,B.8.2,242,,
+997,Chronic kidney disease due to diabetes mellitus type 1,589,Chronic kidney disease,4,B.8.2.1,243,,
+998,Chronic kidney disease due to diabetes mellitus type 2,589,Chronic kidney disease,4,B.8.2.2,244,,
+591,Chronic kidney disease due to hypertension,589,Chronic kidney disease,4,B.8.2.3,245,,
+592,Chronic kidney disease due to glomerulonephritis,589,Chronic kidney disease,4,B.8.2.4,246,,
+593,Chronic kidney disease due to other and unspecified causes,589,Chronic kidney disease,4,B.8.2.5,247,,
+588,Acute glomerulonephritis,974,Diabetes and kidney diseases,3,B.8.3,248,,
+653,Skin and subcutaneous diseases,409,Non-communicable diseases,2,B.9,249,,
+654,Dermatitis,653,Skin and subcutaneous diseases,3,B.9.1,250,,X
+977,Atopic dermatitis,654,Dermatitis,4,B.9.1.1,251,,X
+978,Contact dermatitis,654,Dermatitis,4,B.9.1.2,252,,X
+979,Seborrhoeic dermatitis,654,Dermatitis,4,B.9.1.3,253,,X
+655,Psoriasis,653,Skin and subcutaneous diseases,3,B.9.2,254,,X
+980,Bacterial skin diseases,653,Skin and subcutaneous diseases,3,B.9.3,255,,
+656,Cellulitis,980,Bacterial skin diseases,4,B.9.3.1,256,,
+657,Pyoderma,980,Bacterial skin diseases,4,B.9.3.2,257,,
+658,Scabies,653,Skin and subcutaneous diseases,3,B.9.4,258,,X
+659,Fungal skin diseases,653,Skin and subcutaneous diseases,3,B.9.5,259,,X
+660,Viral skin diseases,653,Skin and subcutaneous diseases,3,B.9.6,260,,X
+661,Acne vulgaris,653,Skin and subcutaneous diseases,3,B.9.7,261,,X
+662,Alopecia areata,653,Skin and subcutaneous diseases,3,B.9.8,262,,X
+663,Pruritus,653,Skin and subcutaneous diseases,3,B.9.9,263,,X
+664,Urticaria,653,Skin and subcutaneous diseases,3,B.9.10,264,,X
+665,Decubitus ulcer,653,Skin and subcutaneous diseases,3,B.9.11,265,,
+668,Other skin and subcutaneous diseases,653,Skin and subcutaneous diseases,3,B.9.12,266,,
+669,Sense organ diseases,409,Non-communicable diseases,2,B.10,267,,X
+981,Blindness and vision loss,669,Sense organ diseases,3,B.10.1,268,,X
+670,Glaucoma,981,Blindness and vision loss,4,B.10.1.1,269,,X
+671,Cataract,981,Blindness and vision loss,4,B.10.1.2,270,,X
+672,Age-related macular degeneration,981,Blindness and vision loss,4,B.10.1.3,271,,X
+999,Refraction disorders,981,Blindness and vision loss,4,B.10.1.4,272,,X
+1000,Near vision loss,981,Blindness and vision loss,4,B.10.1.5,273,,X
+675,Other vision loss,981,Blindness and vision loss,4,B.10.1.6,274,,X
+674,Age-related and other hearing loss,669,Sense organ diseases,3,B.10.2,275,,X
+679,Other sense organ diseases,669,Sense organ diseases,3,B.10.3,276,,X
+626,Musculoskeletal disorders,409,Non-communicable diseases,2,B.11,277,,
+627,Rheumatoid arthritis,626,Musculoskeletal disorders,3,B.11.1,278,,
+628,Osteoarthritis,626,Musculoskeletal disorders,3,B.11.2,279,,X
+1014,Osteoarthritis hip,628,Osteoarthritis,4,B.11.2.1,280,,X
+1015,Osteoarthritis knee,628,Osteoarthritis,4,B.11.2.2,281,,X
+1016,Osteoarthritis hand,628,Osteoarthritis,4,B.11.2.3,282,,X
+1017,Osteoarthritis other,628,Osteoarthritis,4,B.11.2.4,283,,X
+630,Low back pain,626,Musculoskeletal disorders,3,B.11.3,284,,X
+631,Neck pain,626,Musculoskeletal disorders,3,B.11.4,285,,X
+632,Gout,626,Musculoskeletal disorders,3,B.11.5,286,,X
+639,Other musculoskeletal disorders,626,Musculoskeletal disorders,3,B.11.6,287,,
+640,Other non-communicable diseases,409,Non-communicable diseases,2,B.12,288,,
+641,Congenital birth defects,640,Other non-communicable diseases,3,B.12.1,289,,
+642,Neural tube defects,641,Congenital birth defects,4,B.12.1.1,290,,
+643,Congenital heart anomalies,641,Congenital birth defects,4,B.12.1.2,291,,
+644,Orofacial clefts,641,Congenital birth defects,4,B.12.1.3,292,,
+645,Down syndrome,641,Congenital birth defects,4,B.12.1.4,293,,
+646,Turner syndrome,641,Congenital birth defects,4,B.12.1.5,294,,X
+647,Klinefelter syndrome,641,Congenital birth defects,4,B.12.1.6,295,,X
+648,Other chromosomal abnormalities,641,Congenital birth defects,4,B.12.1.7,296,,
+649,Congenital musculoskeletal and limb anomalies,641,Congenital birth defects,4,B.12.1.8,297,,
+650,Urogenital congenital anomalies,641,Congenital birth defects,4,B.12.1.9,298,,
+651,Digestive congenital anomalies,641,Congenital birth defects,4,B.12.1.10,299,,
+652,Other congenital birth defects,641,Congenital birth defects,4,B.12.1.11,300,,
+594,Urinary diseases and male infertility,640,Other non-communicable diseases,3,B.12.2,301,,
+595,Urinary tract infections and interstitial nephritis,594,Urinary diseases and male infertility,4,B.12.2.1,302,,
+596,Urolithiasis,594,Urinary diseases and male infertility,4,B.12.2.2,303,,
+597,Benign prostatic hyperplasia,594,Urinary diseases and male infertility,4,B.12.2.3,304,,X
+598,Male infertility,594,Urinary diseases and male infertility,4,B.12.2.4,305,,X
+602,Other urinary diseases,594,Urinary diseases and male infertility,4,B.12.2.5,306,,
+603,Gynecological diseases,640,Other non-communicable diseases,3,B.12.3,307,,
+604,Uterine fibroids,603,Gynecological diseases,4,B.12.3.1,308,,
+605,Polycystic ovarian syndrome,603,Gynecological diseases,4,B.12.3.2,309,,X
+606,Female infertility,603,Gynecological diseases,4,B.12.3.3,310,,X
+607,Endometriosis,603,Gynecological diseases,4,B.12.3.4,311,,
+608,Genital prolapse,603,Gynecological diseases,4,B.12.3.5,312,,
+609,Premenstrual syndrome,603,Gynecological diseases,4,B.12.3.6,313,,X
+612,Other gynecological diseases,603,Gynecological diseases,4,B.12.3.7,314,,
+613,Hemoglobinopathies and hemolytic anemias,640,Other non-communicable diseases,3,B.12.4,315,,
+614,Thalassemias,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.1,316,,
+837,Thalassemias trait,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.2,317,,X
+615,Sickle cell disorders,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.3,318,,
+838,Sickle cell trait,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.4,319,,X
+616,G6PD deficiency,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.5,320,,
+839,G6PD trait,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.6,321,,X
+618,Other hemoglobinopathies and hemolytic anemias,613,Hemoglobinopathies and hemolytic anemias,4,B.12.4.7,322,,
+619,"Endocrine, metabolic, blood, and immune disorders",640,Other non-communicable diseases,3,B.12.5,323,,
+680,Oral disorders,640,Other non-communicable diseases,3,B.12.6,324,,X
+681,Caries of deciduous teeth,680,Oral disorders,4,B.12.6.1,325,,X
+682,Caries of permanent teeth,680,Oral disorders,4,B.12.6.2,326,,X
+683,Periodontal diseases,680,Oral disorders,4,B.12.6.3,327,,X
+684,Edentulism,680,Oral disorders,4,B.12.6.4,328,,X
+685,Other oral disorders,680,Oral disorders,4,B.12.6.5,329,,X
+686,Sudden infant death syndrome,640,Other non-communicable diseases,3,B.12.7,330,X,
+687,Injuries,294,All causes,1,C,331,,
+688,Transport injuries,687,Injuries,2,C.1,332,,
+689,Road injuries,688,Transport injuries,3,C.1.1,333,,
+690,Pedestrian road injuries,689,Road injuries,4,C.1.1.1,334,,
+691,Cyclist road injuries,689,Road injuries,4,C.1.1.2,335,,
+692,Motorcyclist road injuries,689,Road injuries,4,C.1.1.3,336,,
+693,Motor vehicle road injuries,689,Road injuries,4,C.1.1.4,337,,
+694,Other road injuries,689,Road injuries,4,C.1.1.5,338,,
+695,Other transport injuries,688,Transport injuries,3,C.1.2,339,,
+696,Unintentional injuries,687,Injuries,2,C.2,340,,
+697,Falls,696,Unintentional injuries,3,C.2.1,341,,
+698,Drowning,696,Unintentional injuries,3,C.2.2,342,,
+699,"Fire, heat, and hot substances",696,Unintentional injuries,3,C.2.3,343,,
+700,Poisonings,696,Unintentional injuries,3,C.2.4,344,,
+701,Poisoning by carbon monoxide,700,Poisonings,4,C.2.4.1,345,,
+703,Poisoning by other means,700,Poisonings,4,C.2.4.2,346,,
+704,Exposure to mechanical forces,696,Unintentional injuries,3,C.2.5,347,,
+705,Unintentional firearm injuries,704,Exposure to mechanical forces,4,C.2.5.1,348,,
+707,Other exposure to mechanical forces,704,Exposure to mechanical forces,4,C.2.5.2,349,,
+708,Adverse effects of medical treatment,696,Unintentional injuries,3,C.2.6,350,,
+709,Animal contact,696,Unintentional injuries,3,C.2.7,351,,
+710,Venomous animal contact,709,Animal contact,4,C.2.7.1,352,,
+711,Non-venomous animal contact,709,Animal contact,4,C.2.7.2,353,,
+712,Foreign body,696,Unintentional injuries,3,C.2.8,354,,
+713,Pulmonary aspiration and foreign body in airway,712,Foreign body,4,C.2.8.1,355,,
+714,Foreign body in eyes,712,Foreign body,4,C.2.8.2,356,,X
+715,Foreign body in other body part,712,Foreign body,4,C.2.8.3,357,,
+842,Environmental heat and cold exposure,696,Unintentional injuries,3,C.2.10,358,,
+729,Exposure to forces of nature,696,Unintentional injuries,3,C.2.11,359,,
+1056,Other unintentional injuries,696,Unintentional injuries,3,C.2.12,360,,
+717,Self-harm and interpersonal violence,687,Injuries,2,C.3,361,,
+718,Self-harm,717,Self-harm and interpersonal violence,3,C.3.1,362,,
+721,Self-harm by firearm,718,Self-harm,4,C.3.1.1,363,,
+723,Self-harm by other specified means,718,Self-harm,4,C.3.1.2,364,,
+724,Interpersonal violence,717,Self-harm and interpersonal violence,3,C.3.2,365,,
+725,Physical violence by firearm,724,Interpersonal violence,4,C.3.2.1,366,,
+726,Physical violence by sharp object,724,Interpersonal violence,4,C.3.2.2,367,,
+941,Sexual violence,724,Interpersonal violence,4,C.3.2.3,368,,X
+727,Physical violence by other means,724,Interpersonal violence,4,C.3.2.4,369,,
+945,Conflict and terrorism,717,Self-harm and interpersonal violence,3,C.3.3,370,,
+854,Police conflict and executions,717,Self-harm and interpersonal violence,3,C.3.4,371,,
+1058,Other COVID-19 pandemic-related outcomes,294,All causes,1,D,372,X,
+1029,Total cancers,294,All causes,1,E,373,,
+1026,Total burden related to hepatitis B,294,All causes,1,F,374,,
+1027,Total burden related to hepatitis C,294,All causes,1,G,375,,
+1028,Total burden related to Non-alcoholic fatty liver disease (NAFLD),294,All causes,1,H,376,,
+1059,Total Cancers excluding Non-melanoma skin cancer,294,All causes,1,I,377,,
