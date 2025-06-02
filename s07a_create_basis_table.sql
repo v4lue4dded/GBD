@@ -1,69 +1,70 @@
-drop table if exists gbd.db03_clean_tables.cb_age_group;
-create table         gbd.db03_clean_tables.cb_age_group as
+drop table if exists gbd.db03_clean_tables.info_age_group;
+create table         gbd.db03_clean_tables.info_age_group as
 select
 distinct
-  age_group_id
-, age_group_name
-from gbd.db01_import.pop_age_year_groups
+  age_id   age_group_id
+, age_name age_group_name
+from gbd.db01_import.info_age_to_age_id
 ;
-
-alter table gbd.db03_clean_tables.cb_age_group
+alter table gbd.db03_clean_tables.info_age_group
 add primary key (age_group_id);
 
-drop table if exists gbd.db04_modelling.cb_age_group_export;
-create table         gbd.db04_modelling.cb_age_group_export as
+drop table if exists gbd.db04_modelling.info_age_group_export;
+create table         gbd.db04_modelling.info_age_group_export as
+select
+  y.age_group_id
+, x.*
+from (
+         select      '<1 year' as age_group_name ,   '00 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
+   union select    '1-4 years' as age_group_name ,'01-04 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
+   union select    '5-9 years' as age_group_name ,'05-09 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
+   union select  '10-14 years' as age_group_name ,'10-14 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
+   union select  '15-19 years' as age_group_name ,'15-19 years' as age_group_name_sorted, '15-29 years' as age_cluster_name_sorted
+   union select  '20-24 years' as age_group_name ,'20-24 years' as age_group_name_sorted, '15-29 years' as age_cluster_name_sorted
+   union select  '25-29 years' as age_group_name ,'25-29 years' as age_group_name_sorted, '15-29 years' as age_cluster_name_sorted
+   union select  '30-34 years' as age_group_name ,'30-34 years' as age_group_name_sorted, '30-44 years' as age_cluster_name_sorted
+   union select  '35-39 years' as age_group_name ,'35-39 years' as age_group_name_sorted, '30-44 years' as age_cluster_name_sorted
+   union select  '40-44 years' as age_group_name ,'40-44 years' as age_group_name_sorted, '30-44 years' as age_cluster_name_sorted
+   union select  '45-49 years' as age_group_name ,'45-49 years' as age_group_name_sorted, '45-59 years' as age_cluster_name_sorted
+   union select  '50-54 years' as age_group_name ,'50-54 years' as age_group_name_sorted, '45-59 years' as age_cluster_name_sorted
+   union select  '55-59 years' as age_group_name ,'55-59 years' as age_group_name_sorted, '45-59 years' as age_cluster_name_sorted
+   union select  '60-64 years' as age_group_name ,'60-64 years' as age_group_name_sorted, '60-74 years' as age_cluster_name_sorted
+   union select  '65-69 years' as age_group_name ,'65-69 years' as age_group_name_sorted, '60-74 years' as age_cluster_name_sorted
+   union select  '70-74 years' as age_group_name ,'70-74 years' as age_group_name_sorted, '60-74 years' as age_cluster_name_sorted
+   union select  '75-79 years' as age_group_name ,'75-79 years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
+   union select  '80-84 years' as age_group_name ,'80-84 years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
+   union select  '85-89 years' as age_group_name ,'85-89 years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
+   union select  '90-94 years' as age_group_name ,'90-94 years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
+   union select    '95+ years' as age_group_name ,  '95+ years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
+) x
+left join gbd.db03_clean_tables.info_age_group as y on x.age_group_name = y.age_group_name
+;
+
+alter table gbd.db04_modelling.info_age_group_export
+add primary key (age_group_id);
+
+drop table if exists gbd.db03_clean_tables.info_sex;
+create table         gbd.db03_clean_tables.info_sex as
 select
 *
 from (
-         select  28 as age_group_id ,  '<1 year' as age_group_name ,'00 years' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
-   union select   5 as age_group_id ,   '1 to 4' as age_group_name ,'01 to 04' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
-   union select   6 as age_group_id ,   '5 to 9' as age_group_name ,'05 to 09' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
-   union select   7 as age_group_id , '10 to 14' as age_group_name ,'10 to 14' as age_group_name_sorted, '00 to 14' as age_cluster_name_sorted
-   union select   8 as age_group_id , '15 to 19' as age_group_name ,'15 to 19' as age_group_name_sorted, '15 to 29' as age_cluster_name_sorted
-   union select   9 as age_group_id , '20 to 24' as age_group_name ,'20 to 24' as age_group_name_sorted, '15 to 29' as age_cluster_name_sorted
-   union select  10 as age_group_id , '25 to 29' as age_group_name ,'25 to 29' as age_group_name_sorted, '15 to 29' as age_cluster_name_sorted
-   union select  11 as age_group_id , '30 to 34' as age_group_name ,'30 to 34' as age_group_name_sorted, '30 to 44' as age_cluster_name_sorted
-   union select  12 as age_group_id , '35 to 39' as age_group_name ,'35 to 39' as age_group_name_sorted, '30 to 44' as age_cluster_name_sorted
-   union select  13 as age_group_id , '40 to 44' as age_group_name ,'40 to 44' as age_group_name_sorted, '30 to 44' as age_cluster_name_sorted
-   union select  14 as age_group_id , '45 to 49' as age_group_name ,'45 to 49' as age_group_name_sorted, '45 to 59' as age_cluster_name_sorted
-   union select  15 as age_group_id , '50 to 54' as age_group_name ,'50 to 54' as age_group_name_sorted, '45 to 59' as age_cluster_name_sorted
-   union select  16 as age_group_id , '55 to 59' as age_group_name ,'55 to 59' as age_group_name_sorted, '45 to 59' as age_cluster_name_sorted
-   union select  17 as age_group_id , '60 to 64' as age_group_name ,'60 to 64' as age_group_name_sorted, '60 to 74' as age_cluster_name_sorted
-   union select  18 as age_group_id , '65 to 69' as age_group_name ,'65 to 69' as age_group_name_sorted, '60 to 74' as age_cluster_name_sorted
-   union select  19 as age_group_id , '70 to 74' as age_group_name ,'70 to 74' as age_group_name_sorted, '60 to 74' as age_cluster_name_sorted
-   union select  20 as age_group_id , '75 to 79' as age_group_name ,'75 to 79' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
-   union select  30 as age_group_id , '80 to 84' as age_group_name ,'80 to 84' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
-   union select  31 as age_group_id , '85 to 89' as age_group_name ,'85 to 89' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
-   union select  32 as age_group_id , '90 to 94' as age_group_name ,'90 to 94' as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
-   union select 235 as age_group_id ,  '95 plus' as age_group_name ,'95 plus'  as age_group_name_sorted, '75 plus' as age_cluster_name_sorted
+         select  1 as sex_id, 'male'   as sex_name
+   union select  2 as sex_id, 'female' as sex_name
 ) x
 ;
 
-alter table gbd.db04_modelling.cb_age_group_export
-add primary key (age_group_id);
-
-
-drop table if exists gbd.db03_clean_tables.cb_sex;
-create table         gbd.db03_clean_tables.cb_sex as
-select
-distinct
-  sex_id
-, sex_name
-from gbd.db01_import.pop_age_year_groups;
-
-alter table gbd.db03_clean_tables.cb_sex
+alter table gbd.db03_clean_tables.info_sex
 add primary key (sex_id);
 
-drop table if exists gbd.db03_clean_tables.cb_year;
-create table         gbd.db03_clean_tables.cb_year as
+drop table if exists gbd.db03_clean_tables.info_year;
+create table         gbd.db03_clean_tables.info_year as
 select
 distinct
- year_id as year
-from gbd.db01_import.pop_age_year_groups;
+ year
+from gbd.db01_import.population;
 
-alter table gbd.db03_clean_tables.cb_year
+alter table gbd.db03_clean_tables.info_year
 add primary key (year);
-
 
 -- create basis table population
 drop table if exists gbd.db04_modelling.export_basis_population;
@@ -78,10 +79,10 @@ select
 , se.sex_id
 , se.sex_name
 , concat(ye.year, '--', lc.location_id, '--', ag.age_group_id, '--', se.sex_id) population_id
-from       gbd.db03_clean_tables.cb_year               as ye
-cross join gbd.db03_clean_tables.cb_location_country   as lc
-cross join gbd.db04_modelling.cb_age_group_export      as ag
-cross join gbd.db03_clean_tables.cb_sex                as se
+from       gbd.db03_clean_tables.info_year               as ye
+cross join gbd.db03_clean_tables.info_location_country   as lc
+cross join gbd.db04_modelling.info_age_group_export      as ag
+cross join gbd.db03_clean_tables.info_sex                as se
 where ye.year           in (select * from gbd.db02_processing.relevant_year          )
 and   ag.age_group_name in (select * from gbd.db02_processing.relevant_age_group_name)
 and   se.sex_name       in (select * from gbd.db02_processing.relevant_sex_name      )
@@ -99,9 +100,13 @@ select
 , ch.l1_cause_name
 , ch.l2_cause_id
 , ch.l2_cause_name
+, ch.l3_cause_id
+, ch.l3_cause_name
+, ch.l4_cause_id
+, ch.l4_cause_name
 from       gbd.db04_modelling.export_basis_population as po
-cross join gbd.db03_clean_tables.cb_cause_hierarchy_l2 as ch
+cross join gbd.db03_clean_tables.info_cause_hierarchy_l4 as ch
 ;
 
 alter table gbd.db04_modelling.export_basis_measures
-add primary key (location_id, sex_id, age_group_id, year, l2_cause_id);
+add primary key (location_id, sex_id, age_group_id, year, l4_cause_id);

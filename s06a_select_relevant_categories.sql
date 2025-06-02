@@ -22,27 +22,27 @@ create table         gbd.db02_processing.relevant_age_group_name as
 select
 *
 from (
-      select '<1 year'  as age_group_name
-union select '1 to 4'   as age_group_name
-union select '5 to 9'   as age_group_name
-union select '10 to 14' as age_group_name
-union select '15 to 19' as age_group_name
-union select '20 to 24' as age_group_name
-union select '25 to 29' as age_group_name
-union select '30 to 34' as age_group_name
-union select '35 to 39' as age_group_name
-union select '40 to 44' as age_group_name
-union select '45 to 49' as age_group_name
-union select '50 to 54' as age_group_name
-union select '55 to 59' as age_group_name
-union select '60 to 64' as age_group_name
-union select '65 to 69' as age_group_name
-union select '70 to 74' as age_group_name
-union select '75 to 79' as age_group_name
-union select '80 to 84' as age_group_name
-union select '85 to 89' as age_group_name
-union select '90 to 94' as age_group_name
-union select '95 plus'  as age_group_name
+      select     '<1 year' as age_group_name
+union select   '1-4 years' as age_group_name
+union select   '5-9 years' as age_group_name
+union select '10-14 years' as age_group_name
+union select '15-19 years' as age_group_name
+union select '20-24 years' as age_group_name
+union select '25-29 years' as age_group_name
+union select '30-34 years' as age_group_name
+union select '35-39 years' as age_group_name
+union select '40-44 years' as age_group_name
+union select '45-49 years' as age_group_name
+union select '50-54 years' as age_group_name
+union select '55-59 years' as age_group_name
+union select '60-64 years' as age_group_name
+union select '65-69 years' as age_group_name
+union select '70-74 years' as age_group_name
+union select '75-79 years' as age_group_name
+union select '80-84 years' as age_group_name
+union select '85-89 years' as age_group_name
+union select '90-94 years' as age_group_name
+union select   '95+ years' as age_group_name
 ) x
 ;
 
