@@ -22,27 +22,28 @@ create table         gbd.db02_processing.relevant_age_group_name as
 select
 *
 from (
-      select     '<1 year' as age_group_name
-union select   '1-4 years' as age_group_name
-union select   '5-9 years' as age_group_name
-union select '10-14 years' as age_group_name
-union select '15-19 years' as age_group_name
-union select '20-24 years' as age_group_name
-union select '25-29 years' as age_group_name
-union select '30-34 years' as age_group_name
-union select '35-39 years' as age_group_name
-union select '40-44 years' as age_group_name
-union select '45-49 years' as age_group_name
-union select '50-54 years' as age_group_name
-union select '55-59 years' as age_group_name
-union select '60-64 years' as age_group_name
-union select '65-69 years' as age_group_name
-union select '70-74 years' as age_group_name
-union select '75-79 years' as age_group_name
-union select '80-84 years' as age_group_name
-union select '85-89 years' as age_group_name
-union select '90-94 years' as age_group_name
-union select   '95+ years' as age_group_name
+      select      '<1 year' as age_group_name
+union select '12-23 months' as age_group_name
+union select    '2-4 years' as age_group_name
+union select    '5-9 years' as age_group_name
+union select  '10-14 years' as age_group_name
+union select  '15-19 years' as age_group_name
+union select  '20-24 years' as age_group_name
+union select  '25-29 years' as age_group_name
+union select  '30-34 years' as age_group_name
+union select  '35-39 years' as age_group_name
+union select  '40-44 years' as age_group_name
+union select  '45-49 years' as age_group_name
+union select  '50-54 years' as age_group_name
+union select  '55-59 years' as age_group_name
+union select  '60-64 years' as age_group_name
+union select  '65-69 years' as age_group_name
+union select  '70-74 years' as age_group_name
+union select  '75-79 years' as age_group_name
+union select  '80-84 years' as age_group_name
+union select  '85-89 years' as age_group_name
+union select  '90-94 years' as age_group_name
+union select    '95+ years' as age_group_name
 ) x
 ;
 

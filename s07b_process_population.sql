@@ -88,12 +88,3 @@ or pop_present = 0
 end;
 $$
 ;
-
-
-select *
-from gbd.db04_modelling.export_population
-where
-   pop_val       <=  0 or pop_val       is null
-or pop_lower     <=  0 or pop_lower     is null
-or pop_upper     <=  0 or pop_upper     is null
-or pop_present = 0

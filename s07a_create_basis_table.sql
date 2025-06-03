@@ -16,7 +16,8 @@ select
 , x.*
 from (
          select      '<1 year' as age_group_name ,   '00 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
-   union select    '1-4 years' as age_group_name ,'01-04 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
+   union select '12-23 months' as age_group_name ,    '01 year' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
+   union select    '2-4 years' as age_group_name ,'02-04 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
    union select    '5-9 years' as age_group_name ,'05-09 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
    union select  '10-14 years' as age_group_name ,'10-14 years' as age_group_name_sorted, '00-14 years' as age_cluster_name_sorted
    union select  '15-19 years' as age_group_name ,'15-19 years' as age_group_name_sorted, '15-29 years' as age_cluster_name_sorted
@@ -38,10 +39,13 @@ from (
    union select    '95+ years' as age_group_name ,  '95+ years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
 ) x
 left join gbd.db03_clean_tables.info_age_group as y on x.age_group_name = y.age_group_name
+where age_group_id != 49 -- duplicate key for '12-23 months' we only need 238 not 49
 ;
 
 alter table gbd.db04_modelling.info_age_group_export
-add primary key (age_group_id);
+add primary key (age_group_name);
+
+
 
 drop table if exists gbd.db03_clean_tables.info_sex;
 create table         gbd.db03_clean_tables.info_sex as
@@ -104,7 +108,7 @@ select
 , ch.l3_cause_name
 , ch.l4_cause_id
 , ch.l4_cause_name
-from       gbd.db04_modelling.export_basis_population as po
+from       gbd.db04_modelling.export_basis_population    as po
 cross join gbd.db03_clean_tables.info_cause_hierarchy_l4 as ch
 ;
 

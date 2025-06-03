@@ -1,11 +1,11 @@
 All year population data:
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/2a12408fda58f94aadad131633ad27e9
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/d04b0831b956ec2c2d8e86b637d21bc3
 
 Year: 1980-2000 (in 5 year steps)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/79e15be92c290970196599d53f0775d0
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/601d6a669b9b86f54d757f6960c4d9c1
 
 Year: 2005-2021 (in 5 year steps all years at end)
-https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/a7dc7bf9a097e3efb9f9a3f67fb23cac
+https://vizhub.healthdata.org/gbd-results?params=gbd-api-2021-permalink/9c14765c57e10c451834293e437e2028
 
 # 2025-05-08
 Location: All countries
