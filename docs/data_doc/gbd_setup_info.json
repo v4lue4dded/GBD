@@ -1,80 +1,93 @@
 {
-  "table_types": ["population", "long"],
-  "rollup_cols_dict": {
-    "population": [
-      [
-        "year"
-      ],
-      [
-        "sex_name"
-      ],
-      [
-        "region_name",
-        "sub_region_name",
-        "location_name"
-      ],
-      [
-        "age_cluster_name_sorted",
-        "age_group_name_sorted"
-      ]
+    "table_types": [
+        "population",
+        "long"
     ],
-    "long": [
-      [
-        "year"
-      ],
-      [
-        "sex_name"
-      ],
-      [
-        "region_name",
-        "sub_region_name",
-        "location_name"
-      ],
-      [
-        "age_cluster_name_sorted",
-        "age_group_name_sorted"
-      ],
-      [
-        "l1_cause_name",
-        "l2_cause_name"
-      ]
-    ]
-  },
-  "dimension_cols_ordered_dict": {
-    "population": [
-      "year",
-      "sex_name",
-      "region_name",
-      "sub_region_name",
-      "location_name",
-      "age_cluster_name_sorted",
-      "age_group_name_sorted"
-    ],
-    "long": [
-      "year",
-      "sex_name",
-      "region_name",
-      "sub_region_name",
-      "location_name",
-      "age_cluster_name_sorted",
-      "age_group_name_sorted",
-      "l1_cause_name",
-      "l2_cause_name"
-    ]
-  },
-  "aggregated_cols_dict": {
-    "population": [
-      "pop_val",
-      "pop_upper",
-      "pop_lower"
-    ],
-    "long": [
-      "yll_val",
-      "yll_upper",
-      "yll_lower",
-      "deaths_val",
-      "deaths_upper",
-      "deaths_lower"
-    ]
-  }
+    "rollup_cols_dict": {
+        "population": [
+            [
+                "year"
+            ],
+            [
+                "sex_name"
+            ],
+            [
+                "region_name",
+                "sub_region_name",
+                "location_name"
+            ],
+            [
+                "age_cluster_name_sorted",
+                "age_group_name_sorted"
+            ]
+        ],
+        "long": [
+            [
+                "year"
+            ],
+            [
+                "sex_name"
+            ],
+            [
+                "region_name",
+                "sub_region_name",
+                "location_name"
+            ],
+            [
+                "age_cluster_name_sorted",
+                "age_group_name_sorted"
+            ],
+            [
+                "l1_cause_name",
+                "l2_cause_name",
+                "l3_cause_name",
+                "l4_cause_name"
+            ]
+        ]
+    },
+    "dimension_cols_ordered_dict": {
+        "population": [
+            "year",
+            "sex_name",
+            "region_name",
+            "sub_region_name",
+            "location_name",
+            "age_cluster_name_sorted",
+            "age_group_name_sorted"
+        ],
+        "long": [
+            "year",
+            "sex_name",
+            "region_name",
+            "sub_region_name",
+            "location_name",
+            "age_cluster_name_sorted",
+            "age_group_name_sorted",
+            "l1_cause_name",
+            "l2_cause_name",
+            "l3_cause_name",
+            "l4_cause_name"
+        ]
+    },
+    "aggregated_cols_dict": {
+        "population": [
+            "pop_val",
+            "pop_upper",
+            "pop_lower"
+        ],
+        "long": [
+            "daly_val",
+            "daly_upper",
+            "daly_lower",
+            "ydl_val",
+            "ydl_upper",
+            "ydl_lower",
+            "yll_val",
+            "yll_upper",
+            "yll_lower",
+            "deaths_val",
+            "deaths_upper",
+            "deaths_lower"
+        ]
+    }
 }
