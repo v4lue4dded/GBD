@@ -41,11 +41,17 @@ concat_start = time.time()
 df_measure = pd.concat(list_of_dfs)
 print(f"Concatenated dataframes in {time.time() - concat_start:.2f} seconds")
 
-# Optional save
-# df_measure.to_csv(opj(intermediate_dir,f"df_measure"), index=False, sep='\t', encoding='utf-8-sig')
+disk_write_start = time.time()
+df_measure.to_parquet(opj(intermediate_dir, f"df_measure.parquet"))
+print(f"wrote to disk in {time.time() - disk_write_start:.2f} seconds")
 
+disk_read_start = time.time()
+df_measure = pd.read_parquet(opj(intermediate_dir, f"df_measure.parquet"))
+print(f"rdead from disk in {time.time() - disk_read_start:.2f} seconds")
+
+print(df_measure.shape)
 sql_start = time.time()
-df_measure.to_sql(name="measure", con=engine, schema="db01_import", if_exists="replace", index=False, chunksize=10000)
+df_measure.to_sql(name="measure", con=engine, schema="db01_import", if_exists="replace", index=False, chunksize=500000)
 print(f"Saved to SQL in {time.time() - sql_start:.2f} seconds")
 
 total_time = time.time() - start_time
