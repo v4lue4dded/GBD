@@ -1,5 +1,5 @@
-drop table if exists gbd.db02_processing.relevant_year;
-create table         gbd.db02_processing.relevant_year as
+drop table if exists db02_processing.relevant_year;
+create table         db02_processing.relevant_year as
 select
 *
 from (
@@ -17,8 +17,8 @@ union select 2021 as year
 ) x
 ;
 
-drop table if exists gbd.db02_processing.relevant_age_group_name;
-create table         gbd.db02_processing.relevant_age_group_name as
+drop table if exists db02_processing.relevant_age_group_name;
+create table         db02_processing.relevant_age_group_name as
 select
 *
 from (
@@ -47,8 +47,8 @@ union select    '95+ years' as age_group_name
 ) x
 ;
 
-drop table if exists gbd.db02_processing.relevant_sex_name;
-create table         gbd.db02_processing.relevant_sex_name as
+drop table if exists db02_processing.relevant_sex_name;
+create table         db02_processing.relevant_sex_name as
 select
 *
 from (
