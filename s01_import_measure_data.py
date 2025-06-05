@@ -1,25 +1,12 @@
-import os
+# -*- coding: utf-8 -*-
 from os import listdir
 from os.path import join as opj
-import json
 import pandas as pd
-
-# from sqlalchemy import create_engine
 from zipfile import ZipFile
 import time
-
-# from io import StringIO
-# import psycopg2
-import duckdb
 import my_config as config
 
-
-# ────────────────────────────────────────────────────────────────
-# Linux DB setup  ➜  switch from PostgreSQL to DuckDB
-# ────────────────────────────────────────────────────────────────
-db_path = opj(config.REPO_DIRECTORY, "data", "duckdb", "gdb_database.duckdb")
-con = duckdb.connect(db_path)
-
+con = config.duckdb_con
 ##################################################################################################
 
 start_time = time.time()
