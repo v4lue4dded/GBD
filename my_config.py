@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import pyodbc
 import pandas as pd
 import numpy as np
 import sqlalchemy as sa
@@ -25,7 +24,7 @@ try:
 except Exception as e:
     print(e)    
 
-engine = create_engine('postgresql://' + db_login["user"] + ':' + db_login["pw"] + '@host.docker.internal:5432/gbd')
+# engine = create_engine('postgresql://' + db_login["user"] + ':' + db_login["pw"] + '@host.docker.internal:5432/gbd')
 
 ###############################################################################################################################
 ## defining functions ###########################################################################################################

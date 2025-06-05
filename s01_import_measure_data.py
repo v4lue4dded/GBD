@@ -3,14 +3,21 @@ from os import listdir
 from os.path import join as opj
 import json
 import pandas as pd
-from sqlalchemy import create_engine
+# from sqlalchemy import create_engine          # ← obsolete
 from zipfile import ZipFile
 import time
+# from io import StringIO                      # ← obsolete
+# import psycopg2                              # ← obsolete
+import duckdb                                   # NEW
 import my_config as config
 
-# Linux DB setup
-engine = config.engine
-con = engine.connect()
+
+# ────────────────────────────────────────────────────────────────
+# Linux DB setup  ➜  switch from PostgreSQL to DuckDB
+# ────────────────────────────────────────────────────────────────
+db_path = opj(config.REPO_DIRECTORY, "data", "duckdb", "gdb_database.duckdb")
+con = duckdb.connect(db_path)                              # NEW
+
 
 ##################################################################################################
 
@@ -42,17 +49,30 @@ df_measure = pd.concat(list_of_dfs)
 print(f"Concatenated dataframes in {time.time() - concat_start:.2f} seconds")
 
 disk_write_start = time.time()
-df_measure.to_parquet(opj(intermediate_dir, f"df_measure.parquet"))
-print(f"wrote to disk in {time.time() - disk_write_start:.2f} seconds")
+parquet_path = opj(intermediate_dir, "df_measure.parquet")
+df_measure.to_parquet(parquet_path)
+print(f"Wrote to disk in {time.time() - disk_write_start:.2f} seconds")
 
 disk_read_start = time.time()
-df_measure = pd.read_parquet(opj(intermediate_dir, f"df_measure.parquet"))
-print(f"rdead from disk in {time.time() - disk_read_start:.2f} seconds")
+df_measure = pd.read_parquet(parquet_path)
+print(f"Read from disk in {time.time() - disk_read_start:.2f} seconds")
 
 print(df_measure.shape)
+
 sql_start = time.time()
-df_measure.to_sql(name="measure", con=engine, schema="db01_import", if_exists="replace", index=False, chunksize=500000)
-print(f"Saved to SQL in {time.time() - sql_start:.2f} seconds")
+print("Uploading to DuckDB…")                               
+
+con.register("df_measure_view", df_measure)                
+con.execute("""                                             
+    CREATE SCHEMA IF NOT EXISTS db01_import;
+    CREATE OR REPLACE TABLE db01_import.measure AS
+    SELECT * FROM df_measure_view;
+""")                                                       
+con.unregister("df_measure_view")                           
+
+print(f"Saved to DuckDB in {time.time() - sql_start:.2f} seconds")   
 
 total_time = time.time() - start_time
 print(f"Script completed in {total_time:.2f} seconds")
+
+con.close()                                                
