@@ -3,12 +3,14 @@ from os import listdir
 from os.path import join as opj
 import json
 import pandas as pd
-# from sqlalchemy import create_engine          # ← obsolete
+
+# from sqlalchemy import create_engine
 from zipfile import ZipFile
 import time
-# from io import StringIO                      # ← obsolete
-# import psycopg2                              # ← obsolete
-import duckdb                                   # NEW
+
+# from io import StringIO
+# import psycopg2
+import duckdb
 import my_config as config
 
 
@@ -16,8 +18,7 @@ import my_config as config
 # Linux DB setup  ➜  switch from PostgreSQL to DuckDB
 # ────────────────────────────────────────────────────────────────
 db_path = opj(config.REPO_DIRECTORY, "data", "duckdb", "gdb_database.duckdb")
-con = duckdb.connect(db_path)                              # NEW
-
+con = duckdb.connect(db_path)
 
 ##################################################################################################
 
@@ -60,19 +61,21 @@ print(f"Read from disk in {time.time() - disk_read_start:.2f} seconds")
 print(df_measure.shape)
 
 sql_start = time.time()
-print("Uploading to DuckDB…")                               
+print("Uploading to DuckDB…")
 
-con.register("df_measure_view", df_measure)                
-con.execute("""                                             
+con.register("df_measure_view", df_measure)
+con.execute(
+    """                                             
     CREATE SCHEMA IF NOT EXISTS db01_import;
     CREATE OR REPLACE TABLE db01_import.measure AS
     SELECT * FROM df_measure_view;
-""")                                                       
-con.unregister("df_measure_view")                           
+"""
+)
+con.unregister("df_measure_view")
 
-print(f"Saved to DuckDB in {time.time() - sql_start:.2f} seconds")   
+print(f"Saved to DuckDB in {time.time() - sql_start:.2f} seconds")
 
 total_time = time.time() - start_time
 print(f"Script completed in {total_time:.2f} seconds")
 
-con.close()                                                
+con.close()
