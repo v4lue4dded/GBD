@@ -1,16 +1,16 @@
-drop table if exists gbd.db03_clean_tables.info_age_group;
-create table         gbd.db03_clean_tables.info_age_group as
+drop table if exists db03_clean_tables.info_age_group;
+create table         db03_clean_tables.info_age_group as
 select
 distinct
   age_id   age_group_id
 , age_name age_group_name
-from gbd.db01_import.info_age_to_age_id
+from db01_import.info_age_to_age_id
 ;
-alter table gbd.db03_clean_tables.info_age_group
+alter table db03_clean_tables.info_age_group
 add primary key (age_group_id);
 
-drop table if exists gbd.db04_modelling.info_age_group_export;
-create table         gbd.db04_modelling.info_age_group_export as
+drop table if exists db04_modelling.info_age_group_export;
+create table         db04_modelling.info_age_group_export as
 select
   y.age_group_id
 , x.*
@@ -38,17 +38,17 @@ from (
    union select  '90-94 years' as age_group_name ,'90-94 years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
    union select    '95+ years' as age_group_name ,  '95+ years' as age_group_name_sorted, '75+ years' as age_cluster_name_sorted
 ) x
-left join gbd.db03_clean_tables.info_age_group as y on x.age_group_name = y.age_group_name
+left join db03_clean_tables.info_age_group as y on x.age_group_name = y.age_group_name
 where age_group_id != 49 -- duplicate key for '12-23 months' we only need 238 not 49
 ;
 
-alter table gbd.db04_modelling.info_age_group_export
+alter table db04_modelling.info_age_group_export
 add primary key (age_group_name);
 
 
 
-drop table if exists gbd.db03_clean_tables.info_sex;
-create table         gbd.db03_clean_tables.info_sex as
+drop table if exists db03_clean_tables.info_sex;
+create table         db03_clean_tables.info_sex as
 select
 *
 from (
@@ -57,22 +57,22 @@ from (
 ) x
 ;
 
-alter table gbd.db03_clean_tables.info_sex
+alter table db03_clean_tables.info_sex
 add primary key (sex_id);
 
-drop table if exists gbd.db03_clean_tables.info_year;
-create table         gbd.db03_clean_tables.info_year as
+drop table if exists db03_clean_tables.info_year;
+create table         db03_clean_tables.info_year as
 select
 distinct
  year
-from gbd.db01_import.population;
+from db01_import.population;
 
-alter table gbd.db03_clean_tables.info_year
+alter table db03_clean_tables.info_year
 add primary key (year);
 
 -- create basis table population
-drop table if exists gbd.db04_modelling.export_basis_population;
-create table         gbd.db04_modelling.export_basis_population as
+drop table if exists db04_modelling.export_basis_population;
+create table         db04_modelling.export_basis_population as
 select
   ye.year
 , lc.location_id
@@ -83,21 +83,21 @@ select
 , se.sex_id
 , se.sex_name
 , concat(ye.year, '--', lc.location_id, '--', ag.age_group_id, '--', se.sex_id) population_id
-from       gbd.db03_clean_tables.info_year               as ye
-cross join gbd.db03_clean_tables.info_location_country   as lc
-cross join gbd.db04_modelling.info_age_group_export      as ag
-cross join gbd.db03_clean_tables.info_sex                as se
-where ye.year           in (select * from gbd.db02_processing.relevant_year          )
-and   ag.age_group_name in (select * from gbd.db02_processing.relevant_age_group_name)
-and   se.sex_name       in (select * from gbd.db02_processing.relevant_sex_name      )
+from       db03_clean_tables.info_year               as ye
+cross join db03_clean_tables.info_location_country   as lc
+cross join db04_modelling.info_age_group_export      as ag
+cross join db03_clean_tables.info_sex                as se
+where ye.year           in (select * from db02_processing.relevant_year          )
+and   ag.age_group_name in (select * from db02_processing.relevant_age_group_name)
+and   se.sex_name       in (select * from db02_processing.relevant_sex_name      )
 ;
 
-alter table gbd.db04_modelling.export_basis_population
+alter table db04_modelling.export_basis_population
 add primary key (location_id, sex_id, age_group_id, year);
 
 -- create basis table measures
-drop table if exists gbd.db04_modelling.export_basis_measures;
-create table         gbd.db04_modelling.export_basis_measures as
+drop table if exists db04_modelling.export_basis_measures;
+create table         db04_modelling.export_basis_measures as
 select
   po.*
 , ch.l1_cause_id
@@ -108,9 +108,9 @@ select
 , ch.l3_cause_name
 , ch.l4_cause_id
 , ch.l4_cause_name
-from       gbd.db04_modelling.export_basis_population    as po
-cross join gbd.db03_clean_tables.info_cause_hierarchy_l4 as ch
+from       db04_modelling.export_basis_population    as po
+cross join db03_clean_tables.info_cause_hierarchy_l4 as ch
 ;
 
-alter table gbd.db04_modelling.export_basis_measures
+alter table db04_modelling.export_basis_measures
 add primary key (location_id, sex_id, age_group_id, year, l4_cause_id);
