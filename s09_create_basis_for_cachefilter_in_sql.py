@@ -2,6 +2,7 @@
 import my_config as config
 import json
 import pandas as pd
+from itertools import product
 from os.path import join as opj
 
 con = config.duckdb_con
@@ -19,9 +20,65 @@ aggregated_cols_dict = setup_dict["aggregated_cols_dict"]
 
 priority_exclude_cols = {"year"}
 
-# ==============================================================================
-# 1.  CREATE ROLLUP + CACHEFILTER TABLES
-# ==============================================================================
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 1.  CREATE ROLLUP + CACHEFILTER TABLES  (now using split queries)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def build_split_rollup_sql(
+    source_table: str,
+    target_table: str,
+    rollup_groups,  # list[list[str]]
+    dim_select_str: str,
+    agg_select_str: str,
+    priority_select: str,
+    batch_size: int = 50,
+    temp_prefix: str = "tmp_split_",
+) -> str:
+    """Return a multi-statement SQL script that:
+    • drops the old target,
+    • materialises batches of grouping sets into TEMP tables,
+    • unions them into the final roll-up table.
+    """
+    # ── 1) Enumerate every grouping-set the multi-ROLLUP would produce
+    level_lists = [[tuple(group[:k]) for k in range(len(group), -1, -1)] for group in rollup_groups]
+    all_sets = [tuple(c for level in combo for c in level) for combo in product(*level_lists)]
+
+    def gs_fmt(cols):
+        return "()" if not cols else f"({', '.join(cols)})"
+
+    # ── 2) Build the batch temp-table statements
+    stmts = [f"DROP TABLE IF EXISTS {target_table} CASCADE;"]
+    for idx in range(0, len(all_sets), batch_size):
+        batch_no = idx // batch_size + 1
+        tmp_name = f"{temp_prefix}{batch_no}"
+        stmts.append(f"DROP TABLE IF EXISTS {tmp_name};")
+
+        grouping_sets_sql = ",\n       ".join(gs_fmt(gs) for gs in all_sets[idx : idx + batch_size])
+
+        stmts.append(
+            f"""\
+CREATE TEMP TABLE {tmp_name} AS
+SELECT
+       {dim_select_str}
+     , {agg_select_str}
+     , {priority_select}
+FROM {source_table}
+GROUP BY GROUPING SETS (
+       {grouping_sets_sql}
+);
+"""
+        )
+
+    # ── 3) Union everything into the final table
+    union_all = " UNION ALL\n".join(f"SELECT * FROM {temp_prefix}{i+1}" for i in range(len(stmts) // 2))  # temp count
+    stmts.append(f"CREATE TABLE {target_table} AS\n{union_all}\n;")
+
+    return "\n".join(stmts)
+
+
+# ── MAIN LOOP ──────────────────────────────────────────────────────────────────
 for table_type in table_types:
     source_table1 = f"db04_modelling.export_{table_type}"
     target_table1 = f"db04_modelling.export_{table_type}_rollup"
@@ -30,83 +87,41 @@ for table_type in table_types:
     dim_cols = dimension_cols_ordered_dict[table_type]
     agg_cols = aggregated_cols_dict[table_type]
 
-    dim_selects = [f"COALESCE({col}::varchar, 'All') AS {col}" for col in dim_cols]
-    dim_select_str = ("\n" + " " * 7 + "   , ").join(dim_selects)
+    # 1a. projection lists (unchanged)
+    dim_selects = [f"COALESCE({c}::varchar, 'All') AS {c}" for c in dim_cols]
+    dim_select_str = ("\n" + " " * 7 + ", ").join(dim_selects)
 
-    agg_selects = [f"SUM(ROUND({col}::numeric,4)) AS {col}" for col in agg_cols]
+    agg_selects = [f"SUM(ROUND({c}::numeric,4)) AS {c}" for c in agg_cols]
     agg_selects.append("COUNT(*) AS anz")
-    agg_select_str = ("\n" + " " * 7 + "   , ").join(agg_selects)
+    agg_select_str = ("\n" + " " * 7 + ", ").join(agg_selects)
 
-    priority_parts = []
-    for group in rollup_col_lists:
-        filtered_group = [col for col in group if col not in priority_exclude_cols]
-        if filtered_group:
-            cond = " OR ".join(f"{col}::varchar IS NOT NULL" for col in filtered_group)
-            priority_parts.append(f"CASE WHEN {cond} THEN 1 ELSE 0 END")
-    priority_expr = ("\n" + " " * 7 + "   + ").join(priority_parts)
-    priority_select = f"{priority_expr}\n" + " " * 7 + "   AS priority"
+    # 1b. priority expression (unchanged)
+    priority_parts = [
+        f"CASE WHEN {' OR '.join(f'{c}::varchar IS NOT NULL' for c in group if c not in priority_exclude_cols)} "
+        f"THEN 1 ELSE 0 END"
+        for group in rollup_col_lists
+        if any(c not in priority_exclude_cols for c in group)
+    ]
+    priority_select = ("\n" + " " * 7 + " + ").join(priority_parts) + " AS priority"
 
-    group_by_parts = []
-    for group in rollup_col_lists:
-        group_cols = ", ".join(f"{c}::varchar" for c in group)
-        group_by_parts.append(f"ROLLUP({group_cols})")
-    group_by_str = ("\n" + " " * 7 + "   , ").join(group_by_parts)
+    # 1c. generate split SQL and execute
+    split_sql = build_split_rollup_sql(
+        source_table=source_table1,
+        target_table=target_table1,
+        rollup_groups=rollup_col_lists,
+        dim_select_str=dim_select_str,
+        agg_select_str=agg_select_str,
+        priority_select=priority_select,
+        batch_size=50,  # ⇐ tune if needed
+        temp_prefix=f"tmp_{table_type}_batch_",
+    )
 
-    create_rollup_sql = f"""
-        DROP TABLE IF EXISTS {target_table1} CASCADE;
-        CREATE TABLE {target_table1} AS
-        SELECT
-            {dim_select_str}
-          , {agg_select_str}
-          , {priority_select}
-        FROM {source_table1}
-        GROUP BY
-            {group_by_str}
-        ;
-    """
-
-    print(f"Creating rollup table: {target_table1}")
-    print(create_rollup_sql)
-    con.execute(create_rollup_sql)
-
-for table_type in table_types:
-    source_table2 = f"db04_modelling.export_{table_type}_rollup"
-    target_table2 = f"db04_modelling.export_{table_type}_cachefilter"
-
-    dim_cols = dimension_cols_ordered_dict[table_type]
-    agg_cols = aggregated_cols_dict[table_type]
-
-    combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dim_cols]
-    identifying_string_expr = "(" + ("\n" + " " * 17 + "|| ' | ' || ").join(combo_pairs) + ")"
-
-    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
-    aggregator_expr = ("\n" + " " * 14 + ", ").join(agg_pairs)
-
-    create_cachefilter_sql = f"""
-        DROP TABLE IF EXISTS {target_table2} CASCADE;
-        CREATE TABLE {target_table2} AS
-        WITH combo AS (
-            SELECT
-                *,
-                {identifying_string_expr} AS identifying_string
-            FROM {source_table2}
-        )
-        SELECT
-            identifying_string,
-            priority,
-            substr(sha256(identifying_string), 1, 32) AS identifying_string_hash,
-            json_object(
-                {aggregator_expr}
-            ) AS json_column
-        FROM combo
-    """
-
-    print(f"Creating cachefilter table: {target_table2}")
-    print(create_cachefilter_sql)
-    con.execute(create_cachefilter_sql)
+    print(f"Creating rollup table (split): {target_table1}")
+    print(split_sql)
+    con.execute(split_sql)
 
 # ==============================================================================
-# 2.  HIERARCHICAL (n:1) ROLL-UP METADATA (unchanged)
+# 2.  HIERARCHICAL (n:1) ROLL-UP METADATA
 # ==============================================================================
 metadata_dict = {}
 
@@ -174,7 +189,7 @@ for table_type in table_types:
         if df_vals["val"].isna().any():
             raise ValueError(f"Null value detected in column '{col}' of table type '{table_type}'")
 
-        values = sorted(df_vals["val"].astype(str).tolist())        
+        values = sorted(df_vals["val"].astype(str).tolist())
         distinct_values_dict.setdefault(table_type, {})[col] = values
 
 with open(opj(data_directory, "gbd_dim_distinct_values.json"), "w", encoding="utf-8") as fh:
