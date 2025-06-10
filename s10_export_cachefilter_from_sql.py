@@ -35,7 +35,6 @@ export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", "cachefilter_hash_db
 os.makedirs(export_dir, exist_ok=True)
 
 file_where = {}
-# all distinct 3-char prefixes
 prefix_rows = con.execute("""
     SELECT DISTINCT left(identifying_string_hash, 3) AS file_id
     FROM db04_modelling.export_cachefilter_merged
@@ -44,34 +43,28 @@ prefix_rows = con.execute("""
 for (fid,) in prefix_rows:
     file_where[fid] = f"left(identifying_string_hash, 3) = '{fid}'"
 
-# special buckets
 file_where["priority_1"] = "priority <= 1"
 file_where["priority_2"] = "priority <= 2"
 
 metadata = {}
+items = list(file_where.items())
 
-for file_id, where_clause in file_where.items():
-    chunk_json_string = con.execute(
+for file_id, where_clause in items:
+    filepath = opj(export_dir, f"{file_id}.parquet")
+    con.execute(
         f"""
-        SELECT
-            json_group_object(identifying_string_hash, json_column)::VARCHAR
-                AS chunk_json_string
-        FROM {merge_table}
-        WHERE {where_clause}
+        COPY (
+            SELECT
+                identifying_string_hash,
+                json_column
+            FROM {merge_table}
+            WHERE {where_clause}
+        ) TO '{filepath}' (FORMAT 'parquet')
         """
-    ).fetchone()[0]
-
-    filepath = opj(export_dir, f"{file_id}.json")
-    with open(filepath, "w") as f:
-        f.write(chunk_json_string)
-
+    )
     file_size = os.path.getsize(filepath)
     metadata[file_id] = file_size
-    print(f"Wrote {file_id}.json ({file_size} bytes)")
-
-# ----------------------------------------------------------------------
-# 3) Save metadata
-# ----------------------------------------------------------------------
+    print(f"Wrote {file_id}.parquet ({file_size} bytes)")
 
 metadata_path = opj(export_dir, "file_sizes.json")
 with open(metadata_path, "w") as meta_file:
