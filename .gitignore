@@ -7,3 +7,4 @@ private
 *.pbix
 **/old/**
 *.pyc
+docs/data_doc/cachefilter_hash_db_2/
