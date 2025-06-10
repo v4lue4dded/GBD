@@ -25,6 +25,7 @@ priority_exclude_cols = {"year"}
 # 1.  CREATE ROLLUP + CACHEFILTER TABLES  (now using split queries)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def build_fully_split_rollup_sql(
     source_table: str,
     target_table: str,
@@ -33,7 +34,7 @@ def build_fully_split_rollup_sql(
     agg_cols: list[str],
     priority_groups: list[list[str]],
     priority_exclude: set[str],
-    temp_prefix: str = "tmp_gs_",         # gs == grouping-set
+    temp_prefix: str = "tmp_gs_",  # gs == grouping-set
 ) -> str:
     """
     Emit SQL that:
@@ -42,14 +43,8 @@ def build_fully_split_rollup_sql(
       • finally unions them all into `target_table`.
     """
     # ── 0. enumerate every grouping-set produced by the multi-ROLLUP
-    level_lists = [
-        [tuple(g[:k]) for k in range(len(g), -1, -1)]
-        for g in rollup_groups
-    ]
-    all_sets = [
-        tuple(c for lvl in combo for c in lvl)
-        for combo in product(*level_lists)
-    ]
+    level_lists = [[tuple(g[:k]) for k in range(len(g), -1, -1)] for g in rollup_groups]
+    all_sets = [tuple(c for lvl in combo for c in lvl) for combo in product(*level_lists)]
 
     def gs_sql(cols: tuple[str]) -> str:
         return "()" if not cols else f"({', '.join(cols)})"
@@ -64,9 +59,7 @@ def build_fully_split_rollup_sql(
 
         # projection list
         dim_select = [
-            (f"COALESCE({c}::varchar, 'All')" if c in cols_present else "'All'")
-            + f" AS {c}"
-            for c in dim_cols
+            (f"COALESCE({c}::varchar, 'All')" if c in cols_present else "'All'") + f" AS {c}" for c in dim_cols
         ]
         agg_select = [f"SUM(ROUND({c}::numeric,4)) AS {c}" for c in agg_cols]
         agg_select.append("COUNT(*) AS anz")
@@ -82,18 +75,18 @@ def build_fully_split_rollup_sql(
 
         select_list = ",\n       ".join(dim_select + agg_select + [priority_select])
 
-        stmts.append(f"""\
+        stmts.append(
+            f"""
 CREATE TEMP TABLE {tmp} AS
 SELECT
        {select_list}
 FROM {source_table}
 GROUP BY GROUPING SETS ({gs_sql(gset)});
-""")
+"""
+        )
 
     # ── 2. final UNION ALL into the roll-up table
-    union_all = " UNION ALL\n".join(
-        f"SELECT * FROM {temp_prefix}{i+1}" for i in range(len(all_sets))
-    )
+    union_all = " UNION ALL\n".join(f"SELECT * FROM {temp_prefix}{i+1}" for i in range(len(all_sets)))
     stmts.append(f"CREATE TABLE {target_table} AS\n{union_all}\n;")
 
     return "\n".join(stmts)
@@ -102,27 +95,44 @@ GROUP BY GROUPING SETS ({gs_sql(gset)});
 # ── MAIN LOOP ──────────────────────────────────────────────────────────────────
 for table_type in table_types:
     source_table = f"db04_modelling.export_{table_type}"
-    target_table = f"db04_modelling.export_{table_type}_rollup"
+    rollup_table = f"db04_modelling.export_{table_type}_rollup"
+    cachefilter_table = f"db04_modelling.export_{table_type}_cachefilter"
 
     rollup_col_lists = rollup_cols_dict[table_type]
-    dim_cols         = dimension_cols_ordered_dict[table_type]
-    agg_cols         = aggregated_cols_dict[table_type]
+    dim_cols = dimension_cols_ordered_dict[table_type]
+    agg_cols = aggregated_cols_dict[table_type]
 
     # priority groups unchanged
-    split_sql = build_fully_split_rollup_sql(
-        source_table      = source_table,
-        target_table      = target_table,
-        rollup_groups     = rollup_col_lists,
-        dim_cols          = dim_cols,
-        agg_cols          = agg_cols,
-        priority_groups   = rollup_col_lists,
-        priority_exclude  = priority_exclude_cols,
-        temp_prefix       = f"tmp_{table_type}_gs_"
+    rollup_query = build_fully_split_rollup_sql(
+        source_table=source_table,
+        target_table=rollup_table,
+        rollup_groups=rollup_col_lists,
+        dim_cols=dim_cols,
+        agg_cols=agg_cols,
+        priority_groups=rollup_col_lists,
+        priority_exclude=priority_exclude_cols,
+        temp_prefix=f"tmp_{table_type}_gs_",
     )
+    print(f"Creating rollup table (fully split): {rollup_table}")
+    print(rollup_query)
+    # con.execute(rollup_query)
 
-    print(f"Creating rollup table (fully split): {target_table}")
-    print(split_sql)
-    con.execute(split_sql)
+    combo_pairs = [f"'{od}: ' || {od}::varchar" for od in dim_cols]
+    identifying_string_expr = "(" + ("\n" + "|| ' | ' || ").join(combo_pairs) + ")"
+    agg_pairs = [f"'{agg}', {agg}" for agg in agg_cols]
+    aggregator_expr = ("\n" + " " * 14 + ", ").join(agg_pairs)
+
+    cachefilter_prep_query = f"""CREATE OR REPLACE TABLE {cachefilter_table} AS
+select 
+  {identifying_string_expr} as identifying_string
+, substr(sha256(identifying_string), 1, 32) AS identifying_string_hash
+, priority
+, json_object(
+  {aggregator_expr}
+  ) AS json_column
+from {rollup_table}"""
+    print(cachefilter_prep_query)
+    con.execute(cachefilter_prep_query)
 
 
 # ==============================================================================
@@ -151,7 +161,7 @@ for table_type in table_types:
                 f") x"
             )
 
-            df = pd.read_sql(is_unique_col_sql, con)
+            df = con.execute(is_unique_col_sql).df()
 
             # ── check n:1 assumption ───────────────────────────────────────
             violating_rows = df[df["is_unique_col"] > 1].sort_values(
@@ -188,8 +198,7 @@ for table_type in table_types:
 
     for col in dim_cols:
         sql = f"SELECT DISTINCT {col}::varchar AS val FROM {source_table}"
-        df_vals = pd.read_sql(sql, con)
-
+        df_vals = con.execute(sql).df()
         # Assert no NULLs present
         if df_vals["val"].isna().any():
             raise ValueError(f"Null value detected in column '{col}' of table type '{table_type}'")

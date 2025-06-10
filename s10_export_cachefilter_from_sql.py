@@ -5,11 +5,9 @@ import pandas as pd
 import my_config as config
 from sqlalchemy import text
 
-# Database connection
-engine = config.engine
-con = engine.connect()
+con = config.duckdb_con
 
-prep_table = "gbd.db04_modelling.export_cachefilter_agg"
+prep_table = "db04_modelling.export_cachefilter_agg"
 table_types = ["population", "long"]
 
 # ----------------------------------------------------------------------
@@ -23,7 +21,7 @@ union_queries = "\n    UNION ALL\n".join(
         identifying_string_hash,
         priority,
         json_column
-    FROM gbd.db04_modelling.export_{table_type}_cachefilter"""
+    FROM db04_modelling.export_{table_type}_cachefilter"""
         for table_type in table_types
     ]
 )
@@ -73,14 +71,14 @@ SELECT * FROM (
 """
 
 print(full_sql)
-con.execute(text(full_sql))
+con.execute(full_sql)
 print("Aggregation complete.")
 
 # ----------------------------------------------------------------------
 # 2) Export each JSON chunk to file
 # ----------------------------------------------------------------------
 
-export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", "cachefilter_hash_db")
+export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", "cachefilter_hash_db_2")
 os.makedirs(export_dir, exist_ok=True)
 
 file_id_agg_query = f"""
@@ -88,8 +86,7 @@ file_id_agg_query = f"""
     FROM {prep_table}
     ORDER BY file_id
 """
-df_chunks = pd.read_sql(file_id_agg_query, con=engine)
-
+df_chunks = con.execute(file_id_agg_query).df() 
 metadata = {}
 
 for idx, row in df_chunks.iterrows():

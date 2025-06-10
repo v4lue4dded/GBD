@@ -1,18 +1,6 @@
 {
   "population": {
     "sub_region_name": {
-      "Eastern Europe": {
-        "region_name": "Europe"
-      },
-      "Northern America": {
-        "region_name": "Americas"
-      },
-      "South-eastern Asia": {
-        "region_name": "Asia"
-      },
-      "Southern Europe": {
-        "region_name": "Europe"
-      },
       "Melanesia": {
         "region_name": "Oceania"
       },
@@ -25,11 +13,8 @@
       "Western Asia": {
         "region_name": "Asia"
       },
-      "Australia and New Zealand": {
+      "Polynesia": {
         "region_name": "Oceania"
-      },
-      "Central Asia": {
-        "region_name": "Asia"
       },
       "Southern Asia": {
         "region_name": "Asia"
@@ -37,20 +22,35 @@
       "Sub-Saharan Africa": {
         "region_name": "Africa"
       },
+      "Central Asia": {
+        "region_name": "Asia"
+      },
+      "Australia and New Zealand": {
+        "region_name": "Oceania"
+      },
+      "Latin America and the Caribbean": {
+        "region_name": "Americas"
+      },
+      "Eastern Europe": {
+        "region_name": "Europe"
+      },
+      "Northern America": {
+        "region_name": "Americas"
+      },
+      "South-eastern Asia": {
+        "region_name": "Asia"
+      },
       "Micronesia": {
         "region_name": "Oceania"
       },
       "Western Europe": {
         "region_name": "Europe"
       },
-      "Polynesia": {
-        "region_name": "Oceania"
-      },
       "Eastern Asia": {
         "region_name": "Asia"
       },
-      "Latin America and the Caribbean": {
-        "region_name": "Americas"
+      "Southern Europe": {
+        "region_name": "Europe"
       }
     },
     "location_name": {
@@ -242,78 +242,6 @@
         "region_name": "Asia",
         "sub_region_name": "Central Asia"
       },
-      "Angola": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Chile": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Dominica": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Equatorial Guinea": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Eswatini": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Fiji": {
-        "region_name": "Oceania",
-        "sub_region_name": "Melanesia"
-      },
-      "Lithuania": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
-      },
-      "Palau": {
-        "region_name": "Oceania",
-        "sub_region_name": "Micronesia"
-      },
-      "Sierra Leone": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "United States Virgin Islands": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Venezuela (Bolivarian Republic of)": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Bermuda": {
-        "region_name": "Americas",
-        "sub_region_name": "Northern America"
-      },
-      "Czechia": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "Morocco": {
-        "region_name": "Africa",
-        "sub_region_name": "Northern Africa"
-      },
-      "Myanmar": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
-      },
-      "Nepal": {
-        "region_name": "Asia",
-        "sub_region_name": "Southern Asia"
-      },
-      "Taiwan (Province of China)": {
-        "region_name": "Asia",
-        "sub_region_name": "Eastern Asia"
-      },
-      "Tonga": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
-      },
       "Bahamas": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
@@ -385,6 +313,78 @@
       "United Kingdom": {
         "region_name": "Europe",
         "sub_region_name": "Northern Europe"
+      },
+      "Angola": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Chile": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Dominica": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Equatorial Guinea": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Eswatini": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Fiji": {
+        "region_name": "Oceania",
+        "sub_region_name": "Melanesia"
+      },
+      "Lithuania": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
+      },
+      "Palau": {
+        "region_name": "Oceania",
+        "sub_region_name": "Micronesia"
+      },
+      "Sierra Leone": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "United States Virgin Islands": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Venezuela (Bolivarian Republic of)": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Bermuda": {
+        "region_name": "Americas",
+        "sub_region_name": "Northern America"
+      },
+      "Czechia": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
+      },
+      "Morocco": {
+        "region_name": "Africa",
+        "sub_region_name": "Northern Africa"
+      },
+      "Myanmar": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
+      },
+      "Nepal": {
+        "region_name": "Asia",
+        "sub_region_name": "Southern Asia"
+      },
+      "Taiwan (Province of China)": {
+        "region_name": "Asia",
+        "sub_region_name": "Eastern Asia"
+      },
+      "Tonga": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
       },
       "Bahrain": {
         "region_name": "Asia",
@@ -530,6 +530,38 @@
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
       },
+      "Cameroon": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Guinea": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Nigeria": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Philippines": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
+      },
+      "Samoa": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Serbia": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
+      },
+      "Tuvalu": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Vanuatu": {
+        "region_name": "Oceania",
+        "sub_region_name": "Melanesia"
+      },
       "Albania": {
         "region_name": "Europe",
         "sub_region_name": "Southern Europe"
@@ -578,37 +610,57 @@
         "region_name": "Asia",
         "sub_region_name": "South-eastern Asia"
       },
-      "Cameroon": {
+      "Dominican Republic": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Eritrea": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
       },
-      "Guinea": {
+      "Gabon": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
       },
-      "Nigeria": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
+      "Germany": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
       },
-      "Philippines": {
+      "India": {
+        "region_name": "Asia",
+        "sub_region_name": "Southern Asia"
+      },
+      "Lao People's Democratic Republic": {
         "region_name": "Asia",
         "sub_region_name": "South-eastern Asia"
       },
-      "Samoa": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
+      "Malawi": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
       },
-      "Serbia": {
+      "Malaysia": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
+      },
+      "Saudi Arabia": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
+      },
+      "South Sudan": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Ukraine": {
         "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
+        "sub_region_name": "Eastern Europe"
       },
-      "Tuvalu": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
+      "United Republic of Tanzania": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
       },
-      "Vanuatu": {
-        "region_name": "Oceania",
-        "sub_region_name": "Melanesia"
+      "Viet Nam": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
       },
       "Algeria": {
         "region_name": "Africa",
@@ -698,58 +750,6 @@
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
       },
-      "Dominican Republic": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Eritrea": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Gabon": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Germany": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "India": {
-        "region_name": "Asia",
-        "sub_region_name": "Southern Asia"
-      },
-      "Lao People's Democratic Republic": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
-      },
-      "Malawi": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Malaysia": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
-      },
-      "Saudi Arabia": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
-      },
-      "South Sudan": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Ukraine": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "United Republic of Tanzania": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Viet Nam": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
-      },
       "Armenia": {
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
@@ -798,30 +798,6 @@
         "region_name": "Europe",
         "sub_region_name": "Southern Europe"
       },
-      "Argentina": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Comoros": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Ecuador": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "New Zealand": {
-        "region_name": "Oceania",
-        "sub_region_name": "Australia and New Zealand"
-      },
-      "Norway": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
-      },
-      "Slovakia": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
       "Afghanistan": {
         "region_name": "Asia",
         "sub_region_name": "Southern Asia"
@@ -869,6 +845,30 @@
       "Syrian Arab Republic": {
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
+      },
+      "Argentina": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Comoros": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Ecuador": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "New Zealand": {
+        "region_name": "Oceania",
+        "sub_region_name": "Australia and New Zealand"
+      },
+      "Norway": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
+      },
+      "Slovakia": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
       }
     },
     "age_group_name_sorted": {
@@ -883,9 +883,6 @@
       },
       "65-69 years": {
         "age_cluster_name_sorted": "60-74 years"
-      },
-      "75-79 years": {
-        "age_cluster_name_sorted": "75+ years"
       },
       "50-54 years": {
         "age_cluster_name_sorted": "45-59 years"
@@ -902,8 +899,11 @@
       "95+ years": {
         "age_cluster_name_sorted": "75+ years"
       },
-      "05-09 years": {
+      "01 year": {
         "age_cluster_name_sorted": "00-14 years"
+      },
+      "80-84 years": {
+        "age_cluster_name_sorted": "75+ years"
       },
       "20-24 years": {
         "age_cluster_name_sorted": "15-29 years"
@@ -914,20 +914,20 @@
       "40-44 years": {
         "age_cluster_name_sorted": "30-44 years"
       },
-      "01 year": {
+      "75-79 years": {
+        "age_cluster_name_sorted": "75+ years"
+      },
+      "05-09 years": {
         "age_cluster_name_sorted": "00-14 years"
       },
-      "80-84 years": {
-        "age_cluster_name_sorted": "75+ years"
+      "35-39 years": {
+        "age_cluster_name_sorted": "30-44 years"
       },
       "10-14 years": {
         "age_cluster_name_sorted": "00-14 years"
       },
       "85-89 years": {
         "age_cluster_name_sorted": "75+ years"
-      },
-      "35-39 years": {
-        "age_cluster_name_sorted": "30-44 years"
       },
       "00 years": {
         "age_cluster_name_sorted": "00-14 years"
@@ -942,41 +942,44 @@
   },
   "long": {
     "sub_region_name": {
-      "Southern Asia": {
-        "region_name": "Asia"
+      "Northern Europe": {
+        "region_name": "Europe"
       },
       "Sub-Saharan Africa": {
         "region_name": "Africa"
       },
-      "Northern Europe": {
-        "region_name": "Europe"
+      "Northern Africa": {
+        "region_name": "Africa"
       },
       "Melanesia": {
         "region_name": "Oceania"
       },
-      "Central Asia": {
-        "region_name": "Asia"
+      "Polynesia": {
+        "region_name": "Oceania"
       },
       "Western Asia": {
         "region_name": "Asia"
       },
-      "Polynesia": {
+      "Micronesia": {
         "region_name": "Oceania"
-      },
-      "Western Europe": {
-        "region_name": "Europe"
       },
       "Australia and New Zealand": {
         "region_name": "Oceania"
       },
-      "Southern Europe": {
+      "Southern Asia": {
+        "region_name": "Asia"
+      },
+      "Eastern Asia": {
+        "region_name": "Asia"
+      },
+      "Central Asia": {
+        "region_name": "Asia"
+      },
+      "Western Europe": {
         "region_name": "Europe"
       },
-      "Northern Africa": {
-        "region_name": "Africa"
-      },
-      "Micronesia": {
-        "region_name": "Oceania"
+      "Southern Europe": {
+        "region_name": "Europe"
       },
       "Latin America and the Caribbean": {
         "region_name": "Americas"
@@ -984,48 +987,17 @@
       "South-eastern Asia": {
         "region_name": "Asia"
       },
-      "Eastern Asia": {
-        "region_name": "Asia"
+      "Eastern Europe": {
+        "region_name": "Europe"
       },
       "Northern America": {
         "region_name": "Americas"
-      },
-      "Eastern Europe": {
-        "region_name": "Europe"
       }
     },
     "location_name": {
       "Greece": {
         "region_name": "Europe",
         "sub_region_name": "Southern Europe"
-      },
-      "American Samoa": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
-      },
-      "Guinea-Bissau": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Iraq": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
-      },
-      "Türkiye": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
-      },
-      "Austria": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "Haiti": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Tajikistan": {
-        "region_name": "Asia",
-        "sub_region_name": "Central Asia"
       },
       "Pakistan": {
         "region_name": "Asia",
@@ -1035,21 +1007,13 @@
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
       },
-      "Ghana": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
+      "Austria": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
       },
-      "Solomon Islands": {
-        "region_name": "Oceania",
-        "sub_region_name": "Melanesia"
-      },
-      "Cook Islands": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
-      },
-      "Democratic Republic of the Congo": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
+      "Türkiye": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
       },
       "Chad": {
         "region_name": "Africa",
@@ -1058,6 +1022,62 @@
       "Zimbabwe": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Haiti": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Tajikistan": {
+        "region_name": "Asia",
+        "sub_region_name": "Central Asia"
+      },
+      "Democratic People's Republic of Korea": {
+        "region_name": "Asia",
+        "sub_region_name": "Eastern Asia"
+      },
+      "American Samoa": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Guinea-Bissau": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Monaco": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
+      },
+      "Ghana": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Bhutan": {
+        "region_name": "Asia",
+        "sub_region_name": "Southern Asia"
+      },
+      "Uruguay": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Australia": {
+        "region_name": "Oceania",
+        "sub_region_name": "Australia and New Zealand"
+      },
+      "Central African Republic": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Iraq": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
+      },
+      "Kiribati": {
+        "region_name": "Oceania",
+        "sub_region_name": "Micronesia"
+      },
+      "United States of America": {
+        "region_name": "Americas",
+        "sub_region_name": "Northern America"
       },
       "Georgia": {
         "region_name": "Asia",
@@ -1075,77 +1095,17 @@
         "region_name": "Asia",
         "sub_region_name": "Central Asia"
       },
-      "Australia": {
+      "Solomon Islands": {
         "region_name": "Oceania",
-        "sub_region_name": "Australia and New Zealand"
+        "sub_region_name": "Melanesia"
       },
-      "Central African Republic": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Latvia": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
-      },
-      "Democratic People's Republic of Korea": {
-        "region_name": "Asia",
-        "sub_region_name": "Eastern Asia"
-      },
-      "Monaco": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "Bhutan": {
-        "region_name": "Asia",
-        "sub_region_name": "Southern Asia"
-      },
-      "Uruguay": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "United Arab Emirates": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
-      },
-      "Honduras": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Russian Federation": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "Somalia": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Kiribati": {
-        "region_name": "Oceania",
-        "sub_region_name": "Micronesia"
-      },
-      "United States of America": {
-        "region_name": "Americas",
-        "sub_region_name": "Northern America"
-      },
-      "Tokelau": {
+      "Cook Islands": {
         "region_name": "Oceania",
         "sub_region_name": "Polynesia"
       },
-      "Uzbekistan": {
-        "region_name": "Asia",
-        "sub_region_name": "Central Asia"
-      },
-      "Kyrgyzstan": {
-        "region_name": "Asia",
-        "sub_region_name": "Central Asia"
-      },
-      "Barbados": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Panama": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
+      "Democratic Republic of the Congo": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
       },
       "Ethiopia": {
         "region_name": "Africa",
@@ -1159,43 +1119,31 @@
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
       },
-      "Iceland": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
-      },
-      "Switzerland": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "Congo": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Colombia": {
+      "Honduras": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Russian Federation": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
       },
       "Belarus": {
         "region_name": "Europe",
         "sub_region_name": "Eastern Europe"
       },
-      "Madagascar": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
+      "Latvia": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
       },
       "United States Virgin Islands": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
       },
-      "Chile": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
+      "Kyrgyzstan": {
+        "region_name": "Asia",
+        "sub_region_name": "Central Asia"
       },
-      "Dominica": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Venezuela (Bolivarian Republic of)": {
+      "Colombia": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
       },
@@ -1231,6 +1179,50 @@
         "region_name": "Europe",
         "sub_region_name": "Southern Europe"
       },
+      "Madagascar": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Tokelau": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Uzbekistan": {
+        "region_name": "Asia",
+        "sub_region_name": "Central Asia"
+      },
+      "Dominica": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Chile": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Venezuela (Bolivarian Republic of)": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "United Kingdom": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
+      },
+      "United Arab Emirates": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
+      },
+      "Iceland": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
+      },
+      "Switzerland": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
+      },
+      "Congo": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
       "Cabo Verde": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
@@ -1238,6 +1230,14 @@
       "Croatia": {
         "region_name": "Europe",
         "sub_region_name": "Southern Europe"
+      },
+      "Somalia": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Nepal": {
+        "region_name": "Asia",
+        "sub_region_name": "Southern Asia"
       },
       "Liberia": {
         "region_name": "Africa",
@@ -1271,9 +1271,13 @@
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
       },
-      "Nauru": {
-        "region_name": "Oceania",
-        "sub_region_name": "Micronesia"
+      "Benin": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Netherlands": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
       },
       "Mongolia": {
         "region_name": "Asia",
@@ -1291,13 +1295,21 @@
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
       },
-      "United Kingdom": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
+      "Barbados": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
       },
-      "Sri Lanka": {
+      "Panama": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Bangladesh": {
         "region_name": "Asia",
         "sub_region_name": "Southern Asia"
+      },
+      "Brunei Darussalam": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
       },
       "Myanmar": {
         "region_name": "Asia",
@@ -1319,41 +1331,41 @@
         "region_name": "Europe",
         "sub_region_name": "Eastern Europe"
       },
-      "Nepal": {
+      "Saint Vincent and the Grenadines": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Northern Mariana Islands": {
+        "region_name": "Oceania",
+        "sub_region_name": "Micronesia"
+      },
+      "Maldives": {
         "region_name": "Asia",
         "sub_region_name": "Southern Asia"
       },
-      "Taiwan (Province of China)": {
-        "region_name": "Asia",
-        "sub_region_name": "Eastern Asia"
-      },
-      "Belgium": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "Lebanon": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
-      },
-      "Lesotho": {
+      "Togo": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Benin": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Netherlands": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "Bosnia and Herzegovina": {
-        "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
       },
       "Costa Rica": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Belize": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Côte d'Ivoire": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Guatemala": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Qatar": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
       },
       "Spain": {
         "region_name": "Europe",
@@ -1371,13 +1383,9 @@
         "region_name": "Asia",
         "sub_region_name": "Eastern Asia"
       },
-      "Bangladesh": {
+      "Sri Lanka": {
         "region_name": "Asia",
         "sub_region_name": "Southern Asia"
-      },
-      "Brunei Darussalam": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
       },
       "Andorra": {
         "region_name": "Europe",
@@ -1403,21 +1411,25 @@
         "region_name": "Americas",
         "sub_region_name": "Northern America"
       },
-      "Saint Vincent and the Grenadines": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Northern Mariana Islands": {
-        "region_name": "Oceania",
-        "sub_region_name": "Micronesia"
-      },
-      "Maldives": {
+      "Taiwan (Province of China)": {
         "region_name": "Asia",
-        "sub_region_name": "Southern Asia"
+        "sub_region_name": "Eastern Asia"
       },
-      "Togo": {
+      "Belgium": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
+      },
+      "Lebanon": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
+      },
+      "Lesotho": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Bosnia and Herzegovina": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
       },
       "Indonesia": {
         "region_name": "Asia",
@@ -1435,21 +1447,9 @@
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
       },
-      "Belize": {
+      "Suriname": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Côte d'Ivoire": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Guatemala": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Qatar": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
       },
       "Timor-Leste": {
         "region_name": "Asia",
@@ -1459,9 +1459,13 @@
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
       },
-      "Micronesia (Federated States of)": {
-        "region_name": "Oceania",
-        "sub_region_name": "Micronesia"
+      "Cameroon": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Serbia": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
       },
       "France": {
         "region_name": "Europe",
@@ -1471,21 +1475,13 @@
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
       },
-      "Sao Tome and Principe": {
+      "Nigeria": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
       },
-      "Singapore": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
-      },
-      "Sweden": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
-      },
-      "Thailand": {
-        "region_name": "Asia",
-        "sub_region_name": "South-eastern Asia"
+      "Guinea": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
       },
       "Bulgaria": {
         "region_name": "Europe",
@@ -1495,69 +1491,17 @@
         "region_name": "Asia",
         "sub_region_name": "Southern Asia"
       },
-      "Mozambique": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Paraguay": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Albania": {
-        "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
-      },
-      "Portugal": {
-        "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
-      },
-      "Romania": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "Suriname": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Vanuatu": {
-        "region_name": "Oceania",
-        "sub_region_name": "Melanesia"
-      },
-      "Nigeria": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Cameroon": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Serbia": {
-        "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
-      },
-      "Guinea": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Tuvalu": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
-      },
-      "Samoa": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
-      },
       "Philippines": {
         "region_name": "Asia",
         "sub_region_name": "South-eastern Asia"
       },
-      "Germany": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
       "United Republic of Tanzania": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Albania": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
       },
       "Dominican Republic": {
         "region_name": "Americas",
@@ -1575,29 +1519,85 @@
         "region_name": "Europe",
         "sub_region_name": "Eastern Europe"
       },
-      "Gabon": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
+      "Romania": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
       },
-      "India": {
-        "region_name": "Asia",
-        "sub_region_name": "Southern Asia"
+      "Nauru": {
+        "region_name": "Oceania",
+        "sub_region_name": "Micronesia"
       },
       "Lao People's Democratic Republic": {
         "region_name": "Asia",
         "sub_region_name": "South-eastern Asia"
       },
-      "Malaysia": {
+      "Micronesia (Federated States of)": {
+        "region_name": "Oceania",
+        "sub_region_name": "Micronesia"
+      },
+      "Sao Tome and Principe": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Singapore": {
         "region_name": "Asia",
         "sub_region_name": "South-eastern Asia"
       },
-      "Saudi Arabia": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
+      "Sweden": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
       },
-      "South Sudan": {
+      "Thailand": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
+      },
+      "Tuvalu": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Samoa": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Mozambique": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Algeria": {
+        "region_name": "Africa",
+        "sub_region_name": "Northern Africa"
+      },
+      "Gambia": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Kenya": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Paraguay": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Portugal": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
+      },
+      "Poland": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
+      },
+      "India": {
+        "region_name": "Asia",
+        "sub_region_name": "Southern Asia"
+      },
+      "Vanuatu": {
+        "region_name": "Oceania",
+        "sub_region_name": "Melanesia"
+      },
+      "Malaysia": {
+        "region_name": "Asia",
+        "sub_region_name": "South-eastern Asia"
       },
       "Viet Nam": {
         "region_name": "Asia",
@@ -1615,6 +1615,22 @@
         "region_name": "Africa",
         "sub_region_name": "Northern Africa"
       },
+      "Grenada": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Mali": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Mauritania": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Italy": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
+      },
       "Burundi": {
         "region_name": "Africa",
         "sub_region_name": "Sub-Saharan Africa"
@@ -1627,25 +1643,21 @@
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
       },
-      "Italy": {
+      "Germany": {
         "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
-      },
-      "Algeria": {
-        "region_name": "Africa",
-        "sub_region_name": "Northern Africa"
-      },
-      "Gambia": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Kenya": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
+        "sub_region_name": "Western Europe"
       },
       "Tunisia": {
         "region_name": "Africa",
         "sub_region_name": "Northern Africa"
+      },
+      "Azerbaijan": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
+      },
+      "Puerto Rico": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
       },
       "Mauritius": {
         "region_name": "Africa",
@@ -1675,25 +1687,77 @@
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
       },
-      "Poland": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "Grenada": {
+      "Ecuador": {
         "region_name": "Americas",
         "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Mali": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Mauritania": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
       },
       "Malta": {
         "region_name": "Europe",
         "sub_region_name": "Southern Europe"
+      },
+      "Rwanda": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Afghanistan": {
+        "region_name": "Asia",
+        "sub_region_name": "Southern Asia"
+      },
+      "Hungary": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
+      },
+      "Nicaragua": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Denmark": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
+      },
+      "Gabon": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Papua New Guinea": {
+        "region_name": "Oceania",
+        "sub_region_name": "Melanesia"
+      },
+      "Luxembourg": {
+        "region_name": "Europe",
+        "sub_region_name": "Western Europe"
+      },
+      "Slovenia": {
+        "region_name": "Europe",
+        "sub_region_name": "Southern Europe"
+      },
+      "Comoros": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Niue": {
+        "region_name": "Oceania",
+        "sub_region_name": "Polynesia"
+      },
+      "Saudi Arabia": {
+        "region_name": "Asia",
+        "sub_region_name": "Western Asia"
+      },
+      "South Sudan": {
+        "region_name": "Africa",
+        "sub_region_name": "Sub-Saharan Africa"
+      },
+      "Slovakia": {
+        "region_name": "Europe",
+        "sub_region_name": "Eastern Europe"
+      },
+      "Argentina": {
+        "region_name": "Americas",
+        "sub_region_name": "Latin America and the Caribbean"
+      },
+      "Norway": {
+        "region_name": "Europe",
+        "sub_region_name": "Northern Europe"
       },
       "Armenia": {
         "region_name": "Asia",
@@ -1719,73 +1783,9 @@
         "region_name": "Asia",
         "sub_region_name": "South-eastern Asia"
       },
-      "Azerbaijan": {
-        "region_name": "Asia",
-        "sub_region_name": "Western Asia"
-      },
-      "Puerto Rico": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Papua New Guinea": {
-        "region_name": "Oceania",
-        "sub_region_name": "Melanesia"
-      },
-      "Luxembourg": {
-        "region_name": "Europe",
-        "sub_region_name": "Western Europe"
-      },
-      "Slovenia": {
-        "region_name": "Europe",
-        "sub_region_name": "Southern Europe"
-      },
-      "Comoros": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "New Zealand": {
-        "region_name": "Oceania",
-        "sub_region_name": "Australia and New Zealand"
-      },
-      "Ecuador": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Slovakia": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "Argentina": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
-      "Norway": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
-      },
-      "Rwanda": {
-        "region_name": "Africa",
-        "sub_region_name": "Sub-Saharan Africa"
-      },
-      "Afghanistan": {
-        "region_name": "Asia",
-        "sub_region_name": "Southern Asia"
-      },
-      "Hungary": {
-        "region_name": "Europe",
-        "sub_region_name": "Eastern Europe"
-      },
-      "Nicaragua": {
-        "region_name": "Americas",
-        "sub_region_name": "Latin America and the Caribbean"
-      },
       "Guam": {
         "region_name": "Oceania",
         "sub_region_name": "Micronesia"
-      },
-      "Denmark": {
-        "region_name": "Europe",
-        "sub_region_name": "Northern Europe"
       },
       "Saint Lucia": {
         "region_name": "Americas",
@@ -1803,33 +1803,21 @@
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
       },
+      "New Zealand": {
+        "region_name": "Oceania",
+        "sub_region_name": "Australia and New Zealand"
+      },
       "Oman": {
         "region_name": "Asia",
         "sub_region_name": "Western Asia"
-      },
-      "Niue": {
-        "region_name": "Oceania",
-        "sub_region_name": "Polynesia"
       }
     },
     "age_group_name_sorted": {
-      "45-49 years": {
-        "age_cluster_name_sorted": "45-59 years"
-      },
       "90-94 years": {
         "age_cluster_name_sorted": "75+ years"
       },
       "65-69 years": {
         "age_cluster_name_sorted": "60-74 years"
-      },
-      "55-59 years": {
-        "age_cluster_name_sorted": "45-59 years"
-      },
-      "50-54 years": {
-        "age_cluster_name_sorted": "45-59 years"
-      },
-      "75-79 years": {
-        "age_cluster_name_sorted": "75+ years"
       },
       "70-74 years": {
         "age_cluster_name_sorted": "60-74 years"
@@ -1837,26 +1825,35 @@
       "80-84 years": {
         "age_cluster_name_sorted": "75+ years"
       },
+      "15-19 years": {
+        "age_cluster_name_sorted": "15-29 years"
+      },
+      "75-79 years": {
+        "age_cluster_name_sorted": "75+ years"
+      },
+      "55-59 years": {
+        "age_cluster_name_sorted": "45-59 years"
+      },
       "01 year": {
         "age_cluster_name_sorted": "00-14 years"
       },
-      "15-19 years": {
-        "age_cluster_name_sorted": "15-29 years"
+      "45-49 years": {
+        "age_cluster_name_sorted": "45-59 years"
+      },
+      "50-54 years": {
+        "age_cluster_name_sorted": "45-59 years"
       },
       "95+ years": {
         "age_cluster_name_sorted": "75+ years"
       },
-      "30-34 years": {
-        "age_cluster_name_sorted": "30-44 years"
-      },
       "60-64 years": {
         "age_cluster_name_sorted": "60-74 years"
       },
-      "40-44 years": {
-        "age_cluster_name_sorted": "30-44 years"
-      },
       "05-09 years": {
         "age_cluster_name_sorted": "00-14 years"
+      },
+      "40-44 years": {
+        "age_cluster_name_sorted": "30-44 years"
       },
       "20-24 years": {
         "age_cluster_name_sorted": "15-29 years"
@@ -1864,11 +1861,14 @@
       "35-39 years": {
         "age_cluster_name_sorted": "30-44 years"
       },
-      "10-14 years": {
-        "age_cluster_name_sorted": "00-14 years"
+      "30-34 years": {
+        "age_cluster_name_sorted": "30-44 years"
       },
       "85-89 years": {
         "age_cluster_name_sorted": "75+ years"
+      },
+      "10-14 years": {
+        "age_cluster_name_sorted": "00-14 years"
       },
       "25-29 years": {
         "age_cluster_name_sorted": "15-29 years"
@@ -1887,46 +1887,43 @@
       "Chronic respiratory diseases": {
         "l1_cause_name": "Non-communicable diseases"
       },
-      "Sense organ diseases": {
+      "Skin and subcutaneous diseases": {
         "l1_cause_name": "Non-communicable diseases"
-      },
-      "Neglected tropical diseases and malaria": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases"
-      },
-      "Nutritional deficiencies": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases"
       },
       "Unintentional injuries": {
         "l1_cause_name": "Injuries"
       },
-      "Skin and subcutaneous diseases": {
+      "Sense organ diseases": {
         "l1_cause_name": "Non-communicable diseases"
       },
-      "Self-harm and interpersonal violence": {
+      "Transport injuries": {
         "l1_cause_name": "Injuries"
       },
       "Enteric infections": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases"
       },
-      "Respiratory infections and tuberculosis": {
+      "Nutritional deficiencies": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases"
       },
-      "Transport injuries": {
+      "Self-harm and interpersonal violence": {
         "l1_cause_name": "Injuries"
-      },
-      "Musculoskeletal disorders": {
-        "l1_cause_name": "Non-communicable diseases"
-      },
-      "Cardiovascular diseases": {
-        "l1_cause_name": "Non-communicable diseases"
       },
       "Neurological disorders": {
         "l1_cause_name": "Non-communicable diseases"
       },
-      "Digestive diseases": {
+      "Respiratory infections and tuberculosis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases"
+      },
+      "Musculoskeletal disorders": {
         "l1_cause_name": "Non-communicable diseases"
       },
-      "Mental disorders": {
+      "Neoplasms": {
+        "l1_cause_name": "Non-communicable diseases"
+      },
+      "Neglected tropical diseases and malaria": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases"
+      },
+      "Digestive diseases": {
         "l1_cause_name": "Non-communicable diseases"
       },
       "Maternal and neonatal disorders": {
@@ -1941,7 +1938,10 @@
       "Substance use disorders": {
         "l1_cause_name": "Non-communicable diseases"
       },
-      "Neoplasms": {
+      "Mental disorders": {
+        "l1_cause_name": "Non-communicable diseases"
+      },
+      "Cardiovascular diseases": {
         "l1_cause_name": "Non-communicable diseases"
       },
       "Other non-communicable diseases": {
@@ -1957,17 +1957,29 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
+      "Uterine cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Interstitial lung disease and pulmonary sarcoidosis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Chronic respiratory diseases"
+      },
       "Chronic kidney disease": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Diabetes and kidney diseases"
       },
-      "Esophageal cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
+      "Tuberculosis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis"
       },
       "Other neglected tropical diseases": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
+      },
+      "Esophageal cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
       },
       "Age-related and other hearing loss": {
         "l1_cause_name": "Non-communicable diseases",
@@ -1981,21 +1993,13 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Digestive diseases"
       },
-      "Uterine cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Tuberculosis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis"
-      },
       "Lip and oral cavity cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Conflict and terrorism": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Self-harm and interpersonal violence"
+      "African trypanosomiasis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
       },
       "Gallbladder and biliary diseases": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2005,25 +2009,85 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Mental disorders"
       },
-      "Interstitial lung disease and pulmonary sarcoidosis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Chronic respiratory diseases"
+      "Conflict and terrorism": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Self-harm and interpersonal violence"
       },
       "Prostate cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "African trypanosomiasis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
+      "Other malignant neoplasms": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
       },
       "Bacterial skin diseases": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases"
       },
+      "Ischemic heart disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
+      },
+      "Soft tissue and other extraosseous sarcomas": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Other chronic respiratory diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Chronic respiratory diseases"
+      },
+      "Hodgkin lymphoma": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Trachoma": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
+      },
+      "Chronic obstructive pulmonary disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Chronic respiratory diseases"
+      },
+      "Vascular intestinal disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases"
+      },
+      "Other sense organ diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Sense organ diseases"
+      },
+      "Hypertensive heart disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
+      },
+      "Cystic echinococcosis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
+      },
+      "Appendicitis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases"
+      },
+      "Encephalitis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases"
+      },
+      "Low back pain": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Musculoskeletal disorders"
+      },
       "Other unspecified infectious diseases": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Other infectious diseases"
+      },
+      "Autism spectrum disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders"
+      },
+      "Psoriasis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases"
       },
       "Alcohol use disorders": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2037,7 +2101,11 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Soft tissue and other extraosseous sarcomas": {
+      "Police conflict and executions": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Self-harm and interpersonal violence"
+      },
+      "Colon and rectum cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
@@ -2057,81 +2125,9 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Liver cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Other sense organ diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Sense organ diseases"
-      },
-      "Hypertensive heart disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
-      },
-      "Cystic echinococcosis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
-      },
-      "Other malignant neoplasms": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Low back pain": {
+      "Neck pain": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Musculoskeletal disorders"
-      },
-      "Appendicitis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases"
-      },
-      "Encephalitis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases"
-      },
-      "Autism spectrum disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders"
-      },
-      "Psoriasis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
-      },
-      "Ischemic heart disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
-      },
-      "Other chronic respiratory diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Chronic respiratory diseases"
-      },
-      "Hodgkin lymphoma": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Trachoma": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
-      },
-      "Colon and rectum cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Chronic obstructive pulmonary disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Chronic respiratory diseases"
-      },
-      "Vascular intestinal disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases"
-      },
-      "Multiple sclerosis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders"
-      },
-      "Urinary diseases and male infertility": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases"
       },
       "Other neoplasms": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2149,13 +2145,13 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Diabetes and kidney diseases"
       },
+      "Idiopathic developmental intellectual disability": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders"
+      },
       "Meningitis": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Other infectious diseases"
-      },
-      "Other transport injuries": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Transport injuries"
       },
       "Chagas disease": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2173,21 +2169,17 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Blindness and vision loss": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Sense organ diseases"
-      },
-      "Police conflict and executions": {
+      "Foreign body": {
         "l1_cause_name": "Injuries",
-        "l2_cause_name": "Self-harm and interpersonal violence"
+        "l2_cause_name": "Unintentional injuries"
       },
-      "Larynx cancer": {
+      "Brain and central nervous system cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Maternal disorders": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Maternal and neonatal disorders"
+      "Mesothelioma": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
       },
       "Non-rheumatic valvular heart disease": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2196,6 +2188,10 @@
       "Osteoarthritis": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Musculoskeletal disorders"
+      },
+      "Endocarditis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
       },
       "Acute hepatitis": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2209,17 +2205,17 @@
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Unintentional injuries"
       },
-      "Neck pain": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Musculoskeletal disorders"
+      "Environmental heat and cold exposure": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries"
       },
-      "Protein-energy malnutrition": {
+      "Schistosomiasis": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Nutritional deficiencies"
+        "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Sudden infant death syndrome": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases"
+      "Tetanus": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases"
       },
       "Interpersonal violence": {
         "l1_cause_name": "Injuries",
@@ -2229,17 +2225,13 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Lower extremity peripheral arterial disease": {
+      "Rheumatoid arthritis": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
+        "l2_cause_name": "Musculoskeletal disorders"
       },
-      "Vitamin A deficiency": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Nutritional deficiencies"
-      },
-      "Idiopathic developmental intellectual disability": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders"
+      "Other transport injuries": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Transport injuries"
       },
       "Animal contact": {
         "l1_cause_name": "Injuries",
@@ -2269,33 +2261,33 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Other infectious diseases"
       },
-      "Brain and central nervous system cancer": {
+      "Blindness and vision loss": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Sense organ diseases"
+      },
+      "Acne vulgaris": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases"
+      },
+      "Larynx cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Mesothelioma": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Foreign body": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries"
-      },
-      "Endocarditis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
+      "Maternal disorders": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Maternal and neonatal disorders"
       },
       "Breast cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Environmental heat and cold exposure": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries"
+      "Multiple sclerosis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders"
       },
-      "Schistosomiasis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
+      "Urinary diseases and male infertility": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases"
       },
       "Drowning": {
         "l1_cause_name": "Injuries",
@@ -2305,93 +2297,33 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Chronic respiratory diseases"
       },
-      "Tetanus": {
+      "Protein-energy malnutrition": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases"
+        "l2_cause_name": "Nutritional deficiencies"
+      },
+      "Sudden infant death syndrome": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases"
       },
       "Typhoid and paratyphoid": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Enteric infections"
       },
+      "Lower extremity peripheral arterial disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
+      },
+      "Vitamin A deficiency": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Nutritional deficiencies"
+      },
       "Onchocerciasis": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Rheumatoid arthritis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Musculoskeletal disorders"
-      },
-      "Pruritus": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
-      },
       "Iodine deficiency": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Nutritional deficiencies"
-      },
-      "Oral disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases"
-      },
-      "Pertussis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases"
-      },
-      "Yellow fever": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
-      },
-      "Gallbladder and biliary tract cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Acne vulgaris": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
-      },
-      "Bladder cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Exposure to forces of nature": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries"
-      },
-      "Atrial fibrillation and flutter": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
-      },
-      "Alopecia areata": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
-      },
-      "Otitis media": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis"
-      },
-      "Gout": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Musculoskeletal disorders"
-      },
-      "Rabies": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
-      },
-      "Other skin and subcutaneous diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
-      },
-      "Depressive disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders"
-      },
-      "Rheumatic heart disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
-      },
-      "Dermatitis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
       },
       "Cervical cancer": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2409,13 +2341,21 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Mental disorders"
       },
-      "Headache disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders"
+      "Pertussis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases"
+      },
+      "Yellow fever": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
       },
       "Poisonings": {
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Unintentional injuries"
+      },
+      "Liver cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
       },
       "Falls": {
         "l1_cause_name": "Injuries",
@@ -2437,17 +2377,25 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Digestive diseases"
       },
-      "Dengue": {
+      "Alopecia areata": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases"
+      },
+      "Otitis media": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis"
+      },
+      "Rabies": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Malignant neoplasm of bone and articular cartilage": {
+      "Other skin and subcutaneous diseases": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
+        "l2_cause_name": "Skin and subcutaneous diseases"
       },
-      "Other nutritional deficiencies": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Nutritional deficiencies"
+      "Depressive disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders"
       },
       "Non-melanoma skin cancer": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2461,6 +2409,62 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Mental disorders"
       },
+      "Pruritus": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases"
+      },
+      "Oral disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases"
+      },
+      "Headache disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders"
+      },
+      "Cardiomyopathy and myocarditis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
+      },
+      "Bladder cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Exposure to forces of nature": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries"
+      },
+      "Atrial fibrillation and flutter": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
+      },
+      "Other unintentional injuries": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries"
+      },
+      "Dengue": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
+      },
+      "Malignant neoplasm of bone and articular cartilage": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Neuroblastoma and other peripheral nervous cell tumors": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Other mental disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders"
+      },
+      "Diabetes mellitus": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Diabetes and kidney diseases"
+      },
+      "Dermatitis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases"
+      },
       "Non-Hodgkin lymphoma": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
@@ -2469,17 +2473,13 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Cardiomyopathy and myocarditis": {
+      "Gallbladder and biliary tract cancer": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
+        "l2_cause_name": "Neoplasms"
       },
       "Upper respiratory infections": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Respiratory infections and tuberculosis"
-      },
-      "Other unintentional injuries": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries"
       },
       "Inflammatory bowel disease": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2493,25 +2493,25 @@
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Transport injuries"
       },
+      "Varicella and herpes zoster": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases"
+      },
       "Viral skin diseases": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases"
-      },
-      "Neuroblastoma and other peripheral nervous cell tumors": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Other mental disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders"
       },
       "Upper digestive system diseases": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Digestive diseases"
       },
-      "Diabetes mellitus": {
+      "Other nutritional deficiencies": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Nutritional deficiencies"
+      },
+      "Rheumatic heart disease": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Diabetes and kidney diseases"
+        "l2_cause_name": "Cardiovascular diseases"
       },
       "Endocrine, metabolic, blood, and immune disorders": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2525,15 +2525,19 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Varicella and herpes zoster": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases"
+      "Aortic aneurysm": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
       },
       "Drug use disorders": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Substance use disorders"
       },
       "Malaria": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
+      },
+      "Food-borne trematodiases": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
@@ -2545,25 +2549,13 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neurological disorders"
       },
-      "Anxiety disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders"
-      },
-      "Aortic aneurysm": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
-      },
-      "Thyroid cancer": {
+      "Testicular cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Tracheal, bronchus, and lung cancer": {
+      "Gout": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Food-borne trematodiases": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
+        "l2_cause_name": "Musculoskeletal disorders"
       },
       "Ebola": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2573,25 +2565,37 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms"
       },
-      "Scabies": {
+      "Thyroid cancer": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases"
+        "l2_cause_name": "Neoplasms"
       },
-      "Other cardiovascular and circulatory diseases": {
+      "Tracheal, bronchus, and lung cancer": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases"
+        "l2_cause_name": "Neoplasms"
+      },
+      "Leishmaniasis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
+      },
+      "Idiopathic epilepsy": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders"
       },
       "Lymphatic filariasis": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Eye cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
+      "Intestinal nematode infections": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria"
       },
-      "Testicular cancer": {
+      "Other neurological disorders": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
+        "l2_cause_name": "Neurological disorders"
+      },
+      "Anxiety disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders"
       },
       "Bipolar disorder": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2600,6 +2604,34 @@
       "HIV/AIDS": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "HIV/AIDS and sexually transmitted infections"
+      },
+      "Paralytic ileus and intestinal obstruction": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases"
+      },
+      "Ovarian cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Other digestive diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases"
+      },
+      "Scabies": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases"
+      },
+      "Other cardiovascular and circulatory diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases"
+      },
+      "Eye cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms"
+      },
+      "Hemoglobinopathies and hemolytic anemias": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases"
       },
       "COVID-19": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2613,38 +2645,6 @@
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Self-harm and interpersonal violence"
       },
-      "Other digestive diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases"
-      },
-      "Ovarian cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms"
-      },
-      "Leishmaniasis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
-      },
-      "Idiopathic epilepsy": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders"
-      },
-      "Intestinal nematode infections": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria"
-      },
-      "Other neurological disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders"
-      },
-      "Hemoglobinopathies and hemolytic anemias": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases"
-      },
-      "Paralytic ileus and intestinal obstruction": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases"
-      },
       "Fire, heat, and hot substances": {
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Unintentional injuries"
@@ -2656,11 +2656,6 @@
         "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
         "l3_cause_name": "Sexually transmitted infections excluding HIV"
       },
-      "Self-harm by firearm": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Self-harm and interpersonal violence",
-        "l3_cause_name": "Self-harm"
-      },
       "Acute hepatitis A": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Other infectious diseases",
@@ -2670,6 +2665,56 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Chronic respiratory diseases",
         "l3_cause_name": "Chronic obstructive pulmonary disease"
+      },
+      "Chronic kidney disease due to diabetes mellitus type 1": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Diabetes and kidney diseases",
+        "l3_cause_name": "Chronic kidney disease"
+      },
+      "Self-harm by firearm": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Self-harm and interpersonal violence",
+        "l3_cause_name": "Self-harm"
+      },
+      "Chronic hepatitis C including cirrhosis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases",
+        "l3_cause_name": "Cirrhosis and other chronic liver diseases"
+      },
+      "Cannabis use disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Substance use disorders",
+        "l3_cause_name": "Drug use disorders"
+      },
+      "Klinefelter syndrome": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Congenital birth defects"
+      },
+      "l3-Stomach cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Stomach cancer"
+      },
+      "Chronic kidney disease due to diabetes mellitus type 2": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Diabetes and kidney diseases",
+        "l3_cause_name": "Chronic kidney disease"
+      },
+      "Liver cancer due to NASH": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Liver cancer"
+      },
+      "Syphilis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
+        "l3_cause_name": "Sexually transmitted infections excluding HIV"
+      },
+      "Thalassemias trait": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
       },
       "Foreign body in eyes": {
         "l1_cause_name": "Injuries",
@@ -2686,40 +2731,20 @@
         "l2_cause_name": "Other non-communicable diseases",
         "l3_cause_name": "Endocrine, metabolic, blood, and immune disorders"
       },
-      "Chronic kidney disease due to diabetes mellitus type 1": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Diabetes and kidney diseases",
-        "l3_cause_name": "Chronic kidney disease"
+      "l3-Environmental heat and cold exposure": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries",
+        "l3_cause_name": "Environmental heat and cold exposure"
       },
-      "Cutaneous and mucocutaneous leishmaniasis": {
+      "l3-Other unspecified infectious diseases": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Leishmaniasis"
+        "l2_cause_name": "Other infectious diseases",
+        "l3_cause_name": "Other unspecified infectious diseases"
       },
-      "l3-Zika virus": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Zika virus"
-      },
-      "l3-Other neglected tropical diseases": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Other neglected tropical diseases"
-      },
-      "Indirect maternal deaths": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Maternal and neonatal disorders",
-        "l3_cause_name": "Maternal disorders"
-      },
-      "Chronic hepatitis C including cirrhosis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases",
-        "l3_cause_name": "Cirrhosis and other chronic liver diseases"
-      },
-      "Liver cancer due to alcohol use": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Liver cancer"
+      "l3-Other unintentional injuries": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries",
+        "l3_cause_name": "Other unintentional injuries"
       },
       "Amphetamine use disorders": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2730,11 +2755,6 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Neglected tropical diseases and malaria",
         "l3_cause_name": "Cystic echinococcosis"
-      },
-      "l3-Thyroid cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Thyroid cancer"
       },
       "Hepatoblastoma": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2776,25 +2796,30 @@
         "l2_cause_name": "Transport injuries",
         "l3_cause_name": "Other transport injuries"
       },
-      "Premenstrual syndrome": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Gynecological diseases"
+      "Cutaneous and mucocutaneous leishmaniasis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Leishmaniasis"
       },
-      "Pulmonary aspiration and foreign body in airway": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Foreign body"
+      "l3-Zika virus": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Zika virus"
       },
-      "l3-Stomach cancer": {
+      "Indirect maternal deaths": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Maternal and neonatal disorders",
+        "l3_cause_name": "Maternal disorders"
+      },
+      "Liver cancer due to alcohol use": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Stomach cancer"
+        "l3_cause_name": "Liver cancer"
       },
-      "l3-Soft tissue and other extraosseous sarcomas": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Soft tissue and other extraosseous sarcomas"
+      "l3-Other neglected tropical diseases": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Other neglected tropical diseases"
       },
       "HIV/AIDS resulting in other diseases": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2806,30 +2831,35 @@
         "l2_cause_name": "Neglected tropical diseases and malaria",
         "l3_cause_name": "Schistosomiasis"
       },
-      "l3-Other unintentional injuries": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Other unintentional injuries"
-      },
-      "Chronic kidney disease due to diabetes mellitus type 2": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Diabetes and kidney diseases",
-        "l3_cause_name": "Chronic kidney disease"
-      },
-      "Liver cancer due to NASH": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Liver cancer"
-      },
-      "Syphilis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
-        "l3_cause_name": "Sexually transmitted infections excluding HIV"
-      },
-      "Thalassemias trait": {
+      "Other oral disorders": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
+        "l3_cause_name": "Oral disorders"
+      },
+      "Visceral leishmaniasis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Leishmaniasis"
+      },
+      "l3-Other musculoskeletal disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Musculoskeletal disorders",
+        "l3_cause_name": "Other musculoskeletal disorders"
+      },
+      "l3-Thyroid cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Thyroid cancer"
+      },
+      "l3-Acute glomerulonephritis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Diabetes and kidney diseases",
+        "l3_cause_name": "Acute glomerulonephritis"
+      },
+      "l3-Decubitus ulcer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases",
+        "l3_cause_name": "Decubitus ulcer"
       },
       "Sickle cell trait": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2851,35 +2881,15 @@
         "l2_cause_name": "Musculoskeletal disorders",
         "l3_cause_name": "Low back pain"
       },
-      "Cannabis use disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Substance use disorders",
-        "l3_cause_name": "Drug use disorders"
-      },
-      "Klinefelter syndrome": {
+      "Premenstrual syndrome": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Congenital birth defects"
+        "l3_cause_name": "Gynecological diseases"
       },
       "Alcoholic cardiomyopathy": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Cardiovascular diseases",
         "l3_cause_name": "Cardiomyopathy and myocarditis"
-      },
-      "Other oral disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Oral disorders"
-      },
-      "Visceral leishmaniasis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Leishmaniasis"
-      },
-      "l3-Other musculoskeletal disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Musculoskeletal disorders",
-        "l3_cause_name": "Other musculoskeletal disorders"
       },
       "Bulimia nervosa": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2901,25 +2911,25 @@
         "l2_cause_name": "Musculoskeletal disorders",
         "l3_cause_name": "Gout"
       },
+      "Osteoarthritis hip": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Musculoskeletal disorders",
+        "l3_cause_name": "Osteoarthritis"
+      },
       "Retinoblastoma": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Eye cancer"
       },
-      "Gastritis and duodenitis": {
+      "Osteoarthritis knee": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases",
-        "l3_cause_name": "Upper digestive system diseases"
+        "l2_cause_name": "Musculoskeletal disorders",
+        "l3_cause_name": "Osteoarthritis"
       },
-      "l3-Environmental heat and cold exposure": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Environmental heat and cold exposure"
-      },
-      "l3-Other unspecified infectious diseases": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases",
-        "l3_cause_name": "Other unspecified infectious diseases"
+      "l3-Soft tissue and other extraosseous sarcomas": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Soft tissue and other extraosseous sarcomas"
       },
       "Ischemic stroke": {
         "l1_cause_name": "Non-communicable diseases",
@@ -2940,11 +2950,6 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Respiratory infections and tuberculosis",
         "l3_cause_name": "Lower respiratory infections"
-      },
-      "Latent tuberculosis infection": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis",
-        "l3_cause_name": "Tuberculosis"
       },
       "l3-Food-borne trematodiases": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2971,15 +2976,10 @@
         "l2_cause_name": "Transport injuries",
         "l3_cause_name": "Road injuries"
       },
-      "l3-Acute glomerulonephritis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Diabetes and kidney diseases",
-        "l3_cause_name": "Acute glomerulonephritis"
-      },
-      "l3-Decubitus ulcer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases",
-        "l3_cause_name": "Decubitus ulcer"
+      "Pulmonary aspiration and foreign body in airway": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries",
+        "l3_cause_name": "Foreign body"
       },
       "Hookworm disease": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -2996,25 +2996,40 @@
         "l2_cause_name": "Other non-communicable diseases",
         "l3_cause_name": "Oral disorders"
       },
-      "Osteoarthritis hip": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Musculoskeletal disorders",
-        "l3_cause_name": "Osteoarthritis"
+      "Latent tuberculosis infection": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis",
+        "l3_cause_name": "Tuberculosis"
       },
       "Acute hepatitis E": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Other infectious diseases",
         "l3_cause_name": "Acute hepatitis"
       },
+      "Opioid use disorders": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Substance use disorders",
+        "l3_cause_name": "Drug use disorders"
+      },
+      "Periodontal diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Oral disorders"
+      },
+      "l3-Other sense organ diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Sense organ diseases",
+        "l3_cause_name": "Other sense organ diseases"
+      },
       "Diabetes mellitus type 2": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Diabetes and kidney diseases",
         "l3_cause_name": "Diabetes mellitus"
       },
-      "Osteoarthritis knee": {
+      "Gastritis and duodenitis": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Musculoskeletal disorders",
-        "l3_cause_name": "Osteoarthritis"
+        "l2_cause_name": "Digestive diseases",
+        "l3_cause_name": "Upper digestive system diseases"
       },
       "Congenital heart anomalies": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3036,30 +3051,15 @@
         "l2_cause_name": "Musculoskeletal disorders",
         "l3_cause_name": "Neck pain"
       },
-      "Acute hepatitis C": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases",
-        "l3_cause_name": "Acute hepatitis"
+      "l3-Pulmonary Arterial Hypertension": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Pulmonary Arterial Hypertension"
       },
-      "Gonococcal infection": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
-        "l3_cause_name": "Sexually transmitted infections excluding HIV"
-      },
-      "Non-venomous animal contact": {
+      "Unintentional firearm injuries": {
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Animal contact"
-      },
-      "l3-Parkinson's disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders",
-        "l3_cause_name": "Parkinson's disease"
-      },
-      "Tension-type headache": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders",
-        "l3_cause_name": "Headache disorders"
+        "l3_cause_name": "Exposure to mechanical forces"
       },
       "Osteoarthritis other": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3091,25 +3091,25 @@
         "l2_cause_name": "Digestive diseases",
         "l3_cause_name": "Gallbladder and biliary diseases"
       },
-      "l3-Pulmonary Arterial Hypertension": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Pulmonary Arterial Hypertension"
-      },
-      "Chronic lymphoid leukemia": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Leukemia"
-      },
-      "l3-Alopecia areata": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases",
-        "l3_cause_name": "Alopecia areata"
-      },
-      "l3-Dengue": {
+      "Acute hepatitis C": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Dengue"
+        "l2_cause_name": "Other infectious diseases",
+        "l3_cause_name": "Acute hepatitis"
+      },
+      "Gonococcal infection": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
+        "l3_cause_name": "Sexually transmitted infections excluding HIV"
+      },
+      "Non-venomous animal contact": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Unintentional injuries",
+        "l3_cause_name": "Animal contact"
+      },
+      "Tension-type headache": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders",
+        "l3_cause_name": "Headache disorders"
       },
       "l3-Drowning": {
         "l1_cause_name": "Injuries",
@@ -3136,41 +3136,6 @@
         "l2_cause_name": "Digestive diseases",
         "l3_cause_name": "Vascular intestinal disorders"
       },
-      "Subarachnoid hemorrhage": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Stroke"
-      },
-      "l3-Multiple sclerosis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders",
-        "l3_cause_name": "Multiple sclerosis"
-      },
-      "Opioid use disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Substance use disorders",
-        "l3_cause_name": "Drug use disorders"
-      },
-      "Periodontal diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Oral disorders"
-      },
-      "l3-Other sense organ diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Sense organ diseases",
-        "l3_cause_name": "Other sense organ diseases"
-      },
-      "Chlamydial infection": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
-        "l3_cause_name": "Sexually transmitted infections excluding HIV"
-      },
-      "l3-Rabies": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Rabies"
-      },
       "Seborrhoeic dermatitis": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases",
@@ -3185,6 +3150,41 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Pancreatic cancer"
+      },
+      "Chronic lymphoid leukemia": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Leukemia"
+      },
+      "l3-Alopecia areata": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases",
+        "l3_cause_name": "Alopecia areata"
+      },
+      "l3-Dengue": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Dengue"
+      },
+      "l3-Multiple sclerosis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders",
+        "l3_cause_name": "Multiple sclerosis"
+      },
+      "Chlamydial infection": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
+        "l3_cause_name": "Sexually transmitted infections excluding HIV"
+      },
+      "l3-Rabies": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Rabies"
+      },
+      "Subarachnoid hemorrhage": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Stroke"
       },
       "Anorexia nervosa": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3206,15 +3206,20 @@
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Other pharynx cancer"
       },
-      "Unintentional firearm injuries": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Exposure to mechanical forces"
+      "l3-Parkinson's disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders",
+        "l3_cause_name": "Parkinson's disease"
       },
       "Other drug use disorders": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Substance use disorders",
         "l3_cause_name": "Drug use disorders"
+      },
+      "Other sexually transmitted infections": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
+        "l3_cause_name": "Sexually transmitted infections excluding HIV"
       },
       "Ascariasis": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -3231,10 +3236,10 @@
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Tracheal, bronchus, and lung cancer"
       },
-      "Other sexually transmitted infections": {
+      "l3-Measles": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
-        "l3_cause_name": "Sexually transmitted infections excluding HIV"
+        "l2_cause_name": "Other infectious diseases",
+        "l3_cause_name": "Measles"
       },
       "Pyoderma": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3245,11 +3250,6 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Nutritional deficiencies",
         "l3_cause_name": "Protein-energy malnutrition"
-      },
-      "l3-Measles": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases",
-        "l3_cause_name": "Measles"
       },
       "l3-Acne vulgaris": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3331,11 +3331,6 @@
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Neuroblastoma and other peripheral nervous cell tumors"
       },
-      "Urinary tract infections and interstitial nephritis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Urinary diseases and male infertility"
-      },
       "Cocaine use disorders": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Substance use disorders",
@@ -3345,6 +3340,11 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Maternal and neonatal disorders",
         "l3_cause_name": "Maternal disorders"
+      },
+      "Urinary tract infections and interstitial nephritis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Urinary diseases and male infertility"
       },
       "Chronic kidney disease due to glomerulonephritis": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3386,6 +3386,11 @@
         "l2_cause_name": "Digestive diseases",
         "l3_cause_name": "Pancreatitis"
       },
+      "Other road injuries": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Transport injuries",
+        "l3_cause_name": "Road injuries"
+      },
       "Maternal abortion and miscarriage": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Maternal and neonatal disorders",
@@ -3396,25 +3401,10 @@
         "l2_cause_name": "Self-harm and interpersonal violence",
         "l3_cause_name": "Interpersonal violence"
       },
-      "l3-Nasopharynx cancer": {
+      "l3-Endocarditis": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Nasopharynx cancer"
-      },
-      "Other road injuries": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Transport injuries",
-        "l3_cause_name": "Road injuries"
-      },
-      "Major depressive disorder": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders",
-        "l3_cause_name": "Depressive disorders"
-      },
-      "Other non-Hodgkin lymphoma": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Non-Hodgkin lymphoma"
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Endocarditis"
       },
       "Chronic hepatitis B including cirrhosis": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3430,6 +3420,16 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases",
         "l3_cause_name": "Other skin and subcutaneous diseases"
+      },
+      "Major depressive disorder": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders",
+        "l3_cause_name": "Depressive disorders"
+      },
+      "Other non-Hodgkin lymphoma": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Non-Hodgkin lymphoma"
       },
       "Self-harm by other specified means": {
         "l1_cause_name": "Injuries",
@@ -3450,6 +3450,106 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Other infectious diseases",
         "l3_cause_name": "Encephalitis"
+      },
+      "Congenital musculoskeletal and limb anomalies": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Congenital birth defects"
+      },
+      "Multidrug-resistant tuberculosis without extensive drug resistance": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis",
+        "l3_cause_name": "Tuberculosis"
+      },
+      "Non-rheumatic degenerative mitral valve disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Non-rheumatic valvular heart disease"
+      },
+      "Neonatal sepsis and other neonatal infections": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Maternal and neonatal disorders",
+        "l3_cause_name": "Neonatal disorders"
+      },
+      "Benign prostatic hyperplasia": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Urinary diseases and male infertility"
+      },
+      "l3-Other intestinal infectious diseases": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Enteric infections",
+        "l3_cause_name": "Other intestinal infectious diseases"
+      },
+      "HIV/AIDS - Multidrug-resistant Tuberculosis without extensive drug resistance": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
+        "l3_cause_name": "HIV/AIDS"
+      },
+      "Digestive congenital anomalies": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Congenital birth defects"
+      },
+      "Neonatal encephalopathy due to birth asphyxia and trauma": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Maternal and neonatal disorders",
+        "l3_cause_name": "Neonatal disorders"
+      },
+      "l3-Alzheimer's disease and other dementias": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders",
+        "l3_cause_name": "Alzheimer's disease and other dementias"
+      },
+      "Drug-susceptible tuberculosis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis",
+        "l3_cause_name": "Tuberculosis"
+      },
+      "Dysthymia": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders",
+        "l3_cause_name": "Depressive disorders"
+      },
+      "Acute hepatitis B": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases",
+        "l3_cause_name": "Acute hepatitis"
+      },
+      "l3-Nasopharynx cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Nasopharynx cancer"
+      },
+      "Other hemoglobinopathies and hemolytic anemias": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
+      },
+      "Other non-rheumatic valve diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Non-rheumatic valvular heart disease"
+      },
+      "l3-Otitis media": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis",
+        "l3_cause_name": "Otitis media"
+      },
+      "l3-Breast cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Breast cancer"
+      },
+      "Asbestosis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Chronic respiratory diseases",
+        "l3_cause_name": "Pneumoconiosis"
+      },
+      "l3-Inguinal, femoral, and abdominal hernia": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases",
+        "l3_cause_name": "Inguinal, femoral, and abdominal hernia"
       },
       "Caries of deciduous teeth": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3476,111 +3576,6 @@
         "l2_cause_name": "Chronic respiratory diseases",
         "l3_cause_name": "Pneumoconiosis"
       },
-      "Near vision loss": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Sense organ diseases",
-        "l3_cause_name": "Blindness and vision loss"
-      },
-      "l3-Idiopathic epilepsy": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders",
-        "l3_cause_name": "Idiopathic epilepsy"
-      },
-      "l3-Leprosy": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Leprosy"
-      },
-      "l3-Varicella and herpes zoster": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases",
-        "l3_cause_name": "Varicella and herpes zoster"
-      },
-      "Typhoid fever": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Enteric infections",
-        "l3_cause_name": "Typhoid and paratyphoid"
-      },
-      "HIV/AIDS - Multidrug-resistant Tuberculosis without extensive drug resistance": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "HIV/AIDS and sexually transmitted infections",
-        "l3_cause_name": "HIV/AIDS"
-      },
-      "Acute hepatitis B": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases",
-        "l3_cause_name": "Acute hepatitis"
-      },
-      "l3-Alzheimer's disease and other dementias": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neurological disorders",
-        "l3_cause_name": "Alzheimer's disease and other dementias"
-      },
-      "l3-Lower extremity peripheral arterial disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Lower extremity peripheral arterial disease"
-      },
-      "Neonatal sepsis and other neonatal infections": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Maternal and neonatal disorders",
-        "l3_cause_name": "Neonatal disorders"
-      },
-      "l3-Endocarditis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Endocarditis"
-      },
-      "Other hemoglobinopathies and hemolytic anemias": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
-      },
-      "Other non-rheumatic valve diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Non-rheumatic valvular heart disease"
-      },
-      "l3-Otitis media": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis",
-        "l3_cause_name": "Otitis media"
-      },
-      "l3-Breast cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Breast cancer"
-      },
-      "Benign prostatic hyperplasia": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Urinary diseases and male infertility"
-      },
-      "l3-Other intestinal infectious diseases": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Enteric infections",
-        "l3_cause_name": "Other intestinal infectious diseases"
-      },
-      "l3-Inguinal, femoral, and abdominal hernia": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases",
-        "l3_cause_name": "Inguinal, femoral, and abdominal hernia"
-      },
-      "Congenital musculoskeletal and limb anomalies": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Congenital birth defects"
-      },
-      "Multidrug-resistant tuberculosis without extensive drug resistance": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis",
-        "l3_cause_name": "Tuberculosis"
-      },
-      "Non-rheumatic degenerative mitral valve disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Non-rheumatic valvular heart disease"
-      },
       "Contact dermatitis": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases",
@@ -3606,10 +3601,10 @@
         "l2_cause_name": "Chronic respiratory diseases",
         "l3_cause_name": "Other chronic respiratory diseases"
       },
-      "Asbestosis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Chronic respiratory diseases",
-        "l3_cause_name": "Pneumoconiosis"
+      "Typhoid fever": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Enteric infections",
+        "l3_cause_name": "Typhoid and paratyphoid"
       },
       "l3-Chagas disease": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -3621,30 +3616,35 @@
         "l2_cause_name": "Neglected tropical diseases and malaria",
         "l3_cause_name": "Lymphatic filariasis"
       },
-      "Digestive congenital anomalies": {
+      "Near vision loss": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Congenital birth defects"
+        "l2_cause_name": "Sense organ diseases",
+        "l3_cause_name": "Blindness and vision loss"
       },
-      "Neonatal encephalopathy due to birth asphyxia and trauma": {
+      "l3-Idiopathic epilepsy": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neurological disorders",
+        "l3_cause_name": "Idiopathic epilepsy"
+      },
+      "l3-Leprosy": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Maternal and neonatal disorders",
-        "l3_cause_name": "Neonatal disorders"
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Leprosy"
+      },
+      "l3-Varicella and herpes zoster": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases",
+        "l3_cause_name": "Varicella and herpes zoster"
       },
       "l3-Larynx cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Larynx cancer"
       },
-      "Drug-susceptible tuberculosis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis",
-        "l3_cause_name": "Tuberculosis"
-      },
-      "Dysthymia": {
+      "l3-Lower extremity peripheral arterial disease": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders",
-        "l3_cause_name": "Depressive disorders"
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Lower extremity peripheral arterial disease"
       },
       "Down syndrome": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3671,6 +3671,26 @@
         "l2_cause_name": "Neglected tropical diseases and malaria",
         "l3_cause_name": "Trachoma"
       },
+      "Diabetes mellitus type 1": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Diabetes and kidney diseases",
+        "l3_cause_name": "Diabetes mellitus"
+      },
+      "Liver cancer due to hepatitis C": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Liver cancer"
+      },
+      "Cirrhosis due to alcohol": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases",
+        "l3_cause_name": "Cirrhosis and other chronic liver diseases"
+      },
+      "l3-Bladder cancer": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Bladder cancer"
+      },
       "Cataract": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Sense organ diseases",
@@ -3685,16 +3705,6 @@
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases",
         "l3_cause_name": "Pruritus"
-      },
-      "Diabetes mellitus type 1": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Diabetes and kidney diseases",
-        "l3_cause_name": "Diabetes mellitus"
-      },
-      "Liver cancer due to hepatitis C": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Liver cancer"
       },
       "Atopic dermatitis": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3716,25 +3726,15 @@
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Malignant skin melanoma"
       },
-      "Cirrhosis due to alcohol": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases",
-        "l3_cause_name": "Cirrhosis and other chronic liver diseases"
-      },
-      "l3-Bladder cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Bladder cancer"
+      "Physical violence by firearm": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Self-harm and interpersonal violence",
+        "l3_cause_name": "Interpersonal violence"
       },
       "Other leukemia": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Leukemia"
-      },
-      "Physical violence by firearm": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Self-harm and interpersonal violence",
-        "l3_cause_name": "Interpersonal violence"
       },
       "Cirrhosis due to other causes": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3756,25 +3756,40 @@
         "l2_cause_name": "Digestive diseases",
         "l3_cause_name": "Appendicitis"
       },
-      "Foreign body in other body part": {
+      "Peptic ulcer disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Digestive diseases",
+        "l3_cause_name": "Upper digestive system diseases"
+      },
+      "Poisoning by other means": {
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Foreign body"
+        "l3_cause_name": "Poisonings"
       },
-      "Refraction disorders": {
+      "l3-Cervical cancer": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Sense organ diseases",
-        "l3_cause_name": "Blindness and vision loss"
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Cervical cancer"
       },
-      "l3-Hypertensive heart disease": {
+      "l3-Rheumatic heart disease": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Hypertensive heart disease"
+        "l3_cause_name": "Rheumatic heart disease"
       },
-      "Physical violence by other means": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Self-harm and interpersonal violence",
-        "l3_cause_name": "Interpersonal violence"
+      "Genital prolapse": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Gynecological diseases"
+      },
+      "l3-Attention-deficit/hyperactivity disorder": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Mental disorders",
+        "l3_cause_name": "Attention-deficit/hyperactivity disorder"
+      },
+      "l3-Guinea worm disease": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Guinea worm disease"
       },
       "l3-Other cardiovascular and circulatory diseases": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3866,30 +3881,25 @@
         "l2_cause_name": "Skin and subcutaneous diseases",
         "l3_cause_name": "Viral skin diseases"
       },
-      "Peptic ulcer disease": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Digestive diseases",
-        "l3_cause_name": "Upper digestive system diseases"
-      },
-      "Poisoning by other means": {
+      "Foreign body in other body part": {
         "l1_cause_name": "Injuries",
         "l2_cause_name": "Unintentional injuries",
-        "l3_cause_name": "Poisonings"
+        "l3_cause_name": "Foreign body"
       },
-      "l3-Cervical cancer": {
+      "Refraction disorders": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Cervical cancer"
+        "l2_cause_name": "Sense organ diseases",
+        "l3_cause_name": "Blindness and vision loss"
       },
-      "l3-Rheumatic heart disease": {
+      "l3-Hypertensive heart disease": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Rheumatic heart disease"
+        "l3_cause_name": "Hypertensive heart disease"
       },
-      "Male infertility": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Urinary diseases and male infertility"
+      "Physical violence by other means": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Self-harm and interpersonal violence",
+        "l3_cause_name": "Interpersonal violence"
       },
       "Late maternal deaths": {
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
@@ -3911,6 +3921,21 @@
         "l2_cause_name": "Neglected tropical diseases and malaria",
         "l3_cause_name": "Ebola"
       },
+      "Male infertility": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Other non-communicable diseases",
+        "l3_cause_name": "Urinary diseases and male infertility"
+      },
+      "Trichuriasis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Neglected tropical diseases and malaria",
+        "l3_cause_name": "Intestinal nematode infections"
+      },
+      "l3-Police conflict and executions": {
+        "l1_cause_name": "Injuries",
+        "l2_cause_name": "Self-harm and interpersonal violence",
+        "l3_cause_name": "Police conflict and executions"
+      },
       "Other urinary diseases": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Other non-communicable diseases",
@@ -3921,65 +3946,15 @@
         "l2_cause_name": "Other non-communicable diseases",
         "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
       },
-      "Trichuriasis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Intestinal nematode infections"
-      },
-      "Sickle cell disorders": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
-      },
-      "l3-Police conflict and executions": {
-        "l1_cause_name": "Injuries",
-        "l2_cause_name": "Self-harm and interpersonal violence",
-        "l3_cause_name": "Police conflict and executions"
-      },
       "l3-Multiple myeloma": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Multiple myeloma"
       },
-      "Genital prolapse": {
+      "G6PD deficiency": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Other non-communicable diseases",
-        "l3_cause_name": "Gynecological diseases"
-      },
-      "l3-Attention-deficit/hyperactivity disorder": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Mental disorders",
-        "l3_cause_name": "Attention-deficit/hyperactivity disorder"
-      },
-      "l3-Guinea worm disease": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Neglected tropical diseases and malaria",
-        "l3_cause_name": "Guinea worm disease"
-      },
-      "Acute lymphoid leukemia": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Leukemia"
-      },
-      "l3-Pertussis": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Other infectious diseases",
-        "l3_cause_name": "Pertussis"
-      },
-      "Coal workers pneumoconiosis": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Chronic respiratory diseases",
-        "l3_cause_name": "Pneumoconiosis"
-      },
-      "l3-Prostate cancer": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Prostate cancer"
-      },
-      "Other direct maternal disorders": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Maternal and neonatal disorders",
-        "l3_cause_name": "Maternal disorders"
+        "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
       },
       "Myocarditis": {
         "l1_cause_name": "Non-communicable diseases",
@@ -3991,15 +3966,40 @@
         "l2_cause_name": "Mental disorders",
         "l3_cause_name": "Anxiety disorders"
       },
+      "Non-melanoma skin cancer (basal-cell carcinoma)": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Non-melanoma skin cancer"
+      },
+      "Acute lymphoid leukemia": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Leukemia"
+      },
+      "l3-Pertussis": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Other infectious diseases",
+        "l3_cause_name": "Pertussis"
+      },
+      "Other direct maternal disorders": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Maternal and neonatal disorders",
+        "l3_cause_name": "Maternal disorders"
+      },
       "l3-Urticaria": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Skin and subcutaneous diseases",
         "l3_cause_name": "Urticaria"
       },
-      "Non-melanoma skin cancer (basal-cell carcinoma)": {
+      "Coal workers pneumoconiosis": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Chronic respiratory diseases",
+        "l3_cause_name": "Pneumoconiosis"
+      },
+      "l3-Prostate cancer": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Non-melanoma skin cancer"
+        "l3_cause_name": "Prostate cancer"
       },
       "Liver cancer due to other causes": {
         "l1_cause_name": "Non-communicable diseases",
@@ -4051,10 +4051,15 @@
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Non-Hodgkin lymphoma"
       },
-      "G6PD deficiency": {
+      "Sickle cell disorders": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Other non-communicable diseases",
         "l3_cause_name": "Hemoglobinopathies and hemolytic anemias"
+      },
+      "l3-Hodgkin lymphoma": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Hodgkin lymphoma"
       },
       "Myelodysplastic, myeloproliferative, and other hematopoietic neoplasms": {
         "l1_cause_name": "Non-communicable diseases",
@@ -4075,11 +4080,6 @@
         "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
         "l2_cause_name": "Enteric infections",
         "l3_cause_name": "Invasive Non-typhoidal Salmonella (iNTS)"
-      },
-      "l3-Hodgkin lymphoma": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Hodgkin lymphoma"
       },
       "Gastroesophageal reflux disease": {
         "l1_cause_name": "Non-communicable diseases",
@@ -4116,6 +4116,21 @@
         "l2_cause_name": "Neoplasms",
         "l3_cause_name": "Uterine cancer"
       },
+      "Non-rheumatic calcific aortic valve disease": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Cardiovascular diseases",
+        "l3_cause_name": "Non-rheumatic valvular heart disease"
+      },
+      "l3-Fungal skin diseases": {
+        "l1_cause_name": "Non-communicable diseases",
+        "l2_cause_name": "Skin and subcutaneous diseases",
+        "l3_cause_name": "Fungal skin diseases"
+      },
+      "l3-Upper respiratory infections": {
+        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
+        "l2_cause_name": "Respiratory infections and tuberculosis",
+        "l3_cause_name": "Upper respiratory infections"
+      },
       "Chronic kidney disease due to other and unspecified causes": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Diabetes and kidney diseases",
@@ -4136,30 +4151,15 @@
         "l2_cause_name": "Musculoskeletal disorders",
         "l3_cause_name": "Rheumatoid arthritis"
       },
-      "Non-rheumatic calcific aortic valve disease": {
+      "Benign and in situ cervical and uterine neoplasms": {
         "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Cardiovascular diseases",
-        "l3_cause_name": "Non-rheumatic valvular heart disease"
-      },
-      "l3-Fungal skin diseases": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Skin and subcutaneous diseases",
-        "l3_cause_name": "Fungal skin diseases"
-      },
-      "l3-Upper respiratory infections": {
-        "l1_cause_name": "Communicable, maternal, neonatal, and nutritional diseases",
-        "l2_cause_name": "Respiratory infections and tuberculosis",
-        "l3_cause_name": "Upper respiratory infections"
+        "l2_cause_name": "Neoplasms",
+        "l3_cause_name": "Other neoplasms"
       },
       "Other pneumoconiosis": {
         "l1_cause_name": "Non-communicable diseases",
         "l2_cause_name": "Chronic respiratory diseases",
         "l3_cause_name": "Pneumoconiosis"
-      },
-      "Benign and in situ cervical and uterine neoplasms": {
-        "l1_cause_name": "Non-communicable diseases",
-        "l2_cause_name": "Neoplasms",
-        "l3_cause_name": "Other neoplasms"
       }
     }
   }

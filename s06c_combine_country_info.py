@@ -84,13 +84,13 @@ df_joined = df_country_gbd.assign(un_country_name=lambda x: x.location_name.repl
     df_country_un_clean, how="left", left_on="un_country_name", right_on="country_or_area", validate="1:1"
 )
 
-con.register("df_tmp", df_joined)  # NEW
+con.register("df_tmp", df_joined)
 con.execute(
     """
     CREATE OR REPLACE TABLE db03_clean_tables.un_country_info AS
     SELECT * FROM df_tmp;
 """
-)  # NEW
-con.unregister("df_tmp")  # NEW
+)
+con.unregister("df_tmp")
 
-con.close()  # NEW
+con.close()
