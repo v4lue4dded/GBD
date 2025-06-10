@@ -7,14 +7,13 @@ from sqlalchemy import text
 
 con = config.duckdb_con
 
-prep_table = "db04_modelling.export_cachefilter_agg"
+merge_table = "db04_modelling.export_cachefilter_merged"
+agg_table = "db04_modelling.export_cachefilter_agg"
 table_types = ["population", "long"]
 
 # ----------------------------------------------------------------------
 # 1) Create aggregate table including priority-level chunks
 # ----------------------------------------------------------------------
-
-# Build merged subqueries
 union_queries = "\n    UNION ALL\n".join(
     [
         f"""SELECT
@@ -26,52 +25,44 @@ union_queries = "\n    UNION ALL\n".join(
     ]
 )
 
-full_sql = f"""
-DROP TABLE IF EXISTS {prep_table} CASCADE;
-
-CREATE TABLE {prep_table} AS
-WITH merged AS (
+merge_query = f"""
+CREATE OR REPLACE TABLE {merge_table} AS
+select *
+from (
     {union_queries}
 )
+"""
+
+print(merge_query)
+con.execute(merge_query)
+
+create_chunk_json_string = """json_group_object(identifying_string_hash, json_column)::VARCHAR AS chunk_json_string"""
+
+agg_sql = f"""
+CREATE OR REPLACE TABLE {agg_table} AS
 SELECT * FROM (
     SELECT
-        substr(identifying_string_hash, 0, 4) AS file_id,
-        json_object_agg(
-            identifying_string_hash,
-            json_column
-            ORDER BY identifying_string_hash
-        )::varchar AS chunk_json_string
-    FROM merged
-    GROUP BY substr(identifying_string_hash, 0, 4)
-
-    UNION
-
+        left(identifying_string_hash, 5) AS file_id
+        , {create_chunk_json_string}
+    FROM {merge_table}
+    GROUP BY left(identifying_string_hash, 5)
+    UNION ALL
     SELECT
-        'priority_1' AS file_id,
-        json_object_agg(
-            identifying_string_hash,
-            json_column
-            ORDER BY identifying_string_hash
-        )::varchar AS chunk_json_string
-    FROM merged
+        'priority_1'                        AS file_id
+        , {create_chunk_json_string}
+    FROM {merge_table}
     WHERE priority <= 1
-
-    UNION
-
+    UNION ALL
     SELECT
-        'priority_2' AS file_id,
-        json_object_agg(
-            identifying_string_hash,
-            json_column
-            ORDER BY identifying_string_hash
-        )::varchar AS chunk_json_string
-    FROM merged
+        'priority_2'                        AS file_id
+        , {create_chunk_json_string}
+    FROM {merge_table}
     WHERE priority <= 2
 ) combined;
 """
 
-print(full_sql)
-con.execute(full_sql)
+print(agg_sql)
+con.execute(agg_sql)
 print("Aggregation complete.")
 
 # ----------------------------------------------------------------------
@@ -81,12 +72,14 @@ print("Aggregation complete.")
 export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", "cachefilter_hash_db_2")
 os.makedirs(export_dir, exist_ok=True)
 
-file_id_agg_query = f"""
+df_chunks = con.execute(
+    f"""
     SELECT *
-    FROM {prep_table}
+    FROM {agg_table}
     ORDER BY file_id
 """
-df_chunks = con.execute(file_id_agg_query).df() 
+).df()
+
 metadata = {}
 
 for idx, row in df_chunks.iterrows():
