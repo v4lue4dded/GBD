@@ -1,17 +1,25 @@
 {
-    "table_types": [
-        "population",
-        "long"
-    ],
-    "higher_order_cat_dict": {
-        "population": {
+    "population": {
+        "higher_order_cat_dict": {
             "sex_name": "sex_name__age_group_name_sorted",
             "age_cluster_name_sorted": "sex_name__age_group_name_sorted",
             "age_group_name_sorted": "sex_name__age_group_name_sorted",
             "region_name": "location_name",
             "sub_region_name": "location_name"
         },
-        "long": {
+        "base_cat_ordered_list": [
+            "year",
+            "location_name",
+            "sex_name__age_group_name_sorted"
+        ],
+        "aggregated_cols_renaming_dict": {
+            "pop_val": "c0",
+            "pop_upper": "c1",
+            "pop_lower": "c2"
+        }
+    },
+    "long": {
+        "higher_order_cat": {
             "sex_name": "sex_name__age_group_name_sorted",
             "age_cluster_name_sorted": "sex_name__age_group_name_sorted",
             "age_group_name_sorted": "sex_name__age_group_name_sorted",
@@ -20,40 +28,26 @@
             "l1_cause_name": "l4_cause_name",
             "l2_cause_name": "l4_cause_name",
             "l3_cause_name": "l4_cause_name"
-        }
-    },
-    "base_cat_ordered_dict": {
-        "population": [
-            "year",
-            "location_name",
-            "sex_name__age_group_name_sorted"
-        ],
-        "long": [
+        },
+        "base_cat_ordered_list": [
             "year",
             "location_name",
             "sex_name__age_group_name_sorted",
             "l4_cause_name"
-        ]
-    },
-    "aggregated_cols_dict": {
-        "population": [
-            "pop_val",
-            "pop_upper",
-            "pop_lower"
         ],
-        "long": [
-            "daly_val",
-            "daly_upper",
-            "daly_lower",
-            "yld_val",
-            "yld_upper",
-            "yld_lower",
-            "yll_val",
-            "yll_upper",
-            "yll_lower",
-            "deaths_val",
-            "deaths_upper",
-            "deaths_lower"
-        ]
+        "aggregated_cols_renaming_dict": {
+            "daly_val": "c0",
+            "daly_upper": "c1",
+            "daly_lower": "c2",
+            "yld_val": "c3",
+            "yld_upper": "c4",
+            "yld_lower": "c5",
+            "yll_val": "c6",
+            "yll_upper": "c7",
+            "yll_lower": "c8",
+            "deaths_val": "c9",
+            "deaths_upper": "c10",
+            "deaths_lower": "c11"
+        }
     }
 }

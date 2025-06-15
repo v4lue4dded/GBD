@@ -14,11 +14,98 @@ with open(opj(data_directory, "gbd_setup_info.json"), "r") as fh:
     setup_dict = json.load(fh)
 
 table_types = setup_dict["table_types"]
-rollup_cols_dict = setup_dict["rollup_cols_dict"]
-dimension_cols_ordered_dict = setup_dict["dimension_cols_ordered_dict"]
-aggregated_cols_dict = setup_dict["aggregated_cols_dict"]
 
 priority_exclude_cols = {"year"}
+
+# ==============================================================================
+# 1.  DISTINCT-VALUE METADATA FOR EVERY DIMENSION COLUMN
+# ==============================================================================
+
+distinct_values_dict = {}
+
+for table_type in table_types:
+    source_table = f"db04_modelling.export_{table_type}"
+
+    setup_dict[table_type]["higher_categories_dict"]
+    setup_dict[table_type]["base_categories_ordered_dict"]
+    dim_cols = 
+
+    for col in dim_cols:
+        sql = f"SELECT DISTINCT {col}::varchar AS val FROM {source_table}"
+        df_vals = con.execute(sql).df()
+        # Assert no NULLs present
+        if df_vals["val"].isna().any():
+            raise ValueError(f"Null value detected in column '{col}' of table type '{table_type}'")
+
+        values = sorted(df_vals["val"].astype(str).tolist())
+        distinct_values_dict.setdefault(table_type, {})[col] = values
+
+with open(opj(data_directory, "gbd_dim_distinct_values.json"), "w", encoding="utf-8") as fh:
+    json.dump(distinct_values_dict, fh, indent=2, ensure_ascii=False)
+
+
+# ==============================================================================
+# 2.  HIERARCHICAL (n:1) ROLL-UP METADATA
+# ==============================================================================
+metadata_dict = {}
+
+for table_type in table_types:
+    source_table = f"db04_modelling.export_{table_type}"
+
+    for rollup_list in rollup_cols_dict[table_type]:
+        if len(rollup_list) < 2:
+            continue  # skip single-col groups like ["year"]
+
+        for lvl in range(1, len(rollup_list)):
+            lower_col = rollup_list[lvl]
+            higher_cols = rollup_list[:lvl]
+            all_cols = [lower_col] + higher_cols
+
+            cols_sql = ", ".join(all_cols)
+            partition_col = lower_col
+            is_unique_col_sql = (
+                f"SELECT *, COUNT(*) OVER (PARTITION BY {partition_col}) AS is_unique_col\n"
+                f"FROM (\n"
+                f"  SELECT DISTINCT {cols_sql} FROM {source_table}\n"
+                f") x"
+            )
+
+            df = con.execute(is_unique_col_sql).df()
+
+            # ── check n:1 assumption ───────────────────────────────────────
+            violating_rows = df[df["is_unique_col"] > 1].sort_values(
+                by=["is_unique_col", lower_col], ascending=[False, True]
+            )
+
+            if not violating_rows.empty:
+                error_string = (
+                    f"\nViolation detected for: {table_type}.{lower_col}"
+                    + "Rows with multiple parent mappings:\n"
+                    + violating_rows.to_string(index=False)
+                    + f"\n{table_type}.{lower_col} has non-unique mappings to parents. "
+                )
+                raise ValueError(error_string)
+
+            # ── build nested mapping ────────────────────────────────────────
+            clean_mapping = {row[lower_col]: {col: row[col] for col in higher_cols} for _, row in df.iterrows()}
+
+            metadata_dict.setdefault(table_type, {}).setdefault(lower_col, {}).update(clean_mapping)
+
+# save hierarchical metadata
+with open(opj(data_directory, "gbd_rollup_higher_values.json"), "w", encoding="utf-8") as fh:
+    json.dump(metadata_dict, fh, indent=2, ensure_ascii=False)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -135,79 +222,6 @@ from {rollup_table}"""
     con.execute(cachefilter_prep_query)
 
 
-# ==============================================================================
-# 2.  HIERARCHICAL (n:1) ROLL-UP METADATA
-# ==============================================================================
-metadata_dict = {}
-
-for table_type in table_types:
-    source_table = f"db04_modelling.export_{table_type}"
-
-    for rollup_list in rollup_cols_dict[table_type]:
-        if len(rollup_list) < 2:
-            continue  # skip single-col groups like ["year"]
-
-        for lvl in range(1, len(rollup_list)):
-            lower_col = rollup_list[lvl]
-            higher_cols = rollup_list[:lvl]
-            all_cols = [lower_col] + higher_cols
-
-            cols_sql = ", ".join(all_cols)
-            partition_col = lower_col
-            is_unique_col_sql = (
-                f"SELECT *, COUNT(*) OVER (PARTITION BY {partition_col}) AS is_unique_col\n"
-                f"FROM (\n"
-                f"  SELECT DISTINCT {cols_sql} FROM {source_table}\n"
-                f") x"
-            )
-
-            df = con.execute(is_unique_col_sql).df()
-
-            # ── check n:1 assumption ───────────────────────────────────────
-            violating_rows = df[df["is_unique_col"] > 1].sort_values(
-                by=["is_unique_col", lower_col], ascending=[False, True]
-            )
-
-            if not violating_rows.empty:
-                error_string = (
-                    f"\nViolation detected for: {table_type}.{lower_col}"
-                    + "Rows with multiple parent mappings:\n"
-                    + violating_rows.to_string(index=False)
-                    + f"\n{table_type}.{lower_col} has non-unique mappings to parents. "
-                )
-                raise ValueError(error_string)
-
-            # ── build nested mapping ────────────────────────────────────────
-            clean_mapping = {row[lower_col]: {col: row[col] for col in higher_cols} for _, row in df.iterrows()}
-
-            metadata_dict.setdefault(table_type, {}).setdefault(lower_col, {}).update(clean_mapping)
-
-# save hierarchical metadata
-with open(opj(data_directory, "gbd_rollup_higher_values.json"), "w", encoding="utf-8") as fh:
-    json.dump(metadata_dict, fh, indent=2, ensure_ascii=False)
-
-# ==============================================================================
-# 3.  DISTINCT-VALUE METADATA FOR EVERY DIMENSION COLUMN
-# ==============================================================================
-
-distinct_values_dict = {}
-
-for table_type in table_types:
-    source_table = f"db04_modelling.export_{table_type}"
-    dim_cols = dimension_cols_ordered_dict[table_type]
-
-    for col in dim_cols:
-        sql = f"SELECT DISTINCT {col}::varchar AS val FROM {source_table}"
-        df_vals = con.execute(sql).df()
-        # Assert no NULLs present
-        if df_vals["val"].isna().any():
-            raise ValueError(f"Null value detected in column '{col}' of table type '{table_type}'")
-
-        values = sorted(df_vals["val"].astype(str).tolist())
-        distinct_values_dict.setdefault(table_type, {})[col] = values
-
-with open(opj(data_directory, "gbd_dim_distinct_values.json"), "w", encoding="utf-8") as fh:
-    json.dump(distinct_values_dict, fh, indent=2, ensure_ascii=False)
 
 # ── tidy up ────────────────────────────────────────────────────────────────────
 con.close()

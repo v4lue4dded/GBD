@@ -9,6 +9,7 @@ select
 , eb.age_cluster_name_sorted
 , eb.sex_id
 , eb.sex_name
+, concat(eb.sex_name, '--', eb.age_group_name_sorted) as sex_name__age_group_name_sorted
 , eb.population_id
 , eb.l1_cause_id
 , eb.l1_cause_name

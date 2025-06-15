@@ -9,6 +9,7 @@ select
 , eb.age_cluster_name_sorted
 , eb.sex_id
 , eb.sex_name
+, concat(eb.sex_name, '--', eb.age_group_name_sorted) as sex_name__age_group_name_sorted
 , concat(eb.year, '--', eb.location_id, '--', eb.age_group_id, '--', eb.sex_id) as population_id
 , po.val     as pop_val
 , po.upper   as pop_upper
