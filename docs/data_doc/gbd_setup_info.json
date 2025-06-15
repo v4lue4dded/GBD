@@ -16,7 +16,8 @@
             "pop_val": "c0",
             "pop_upper": "c1",
             "pop_lower": "c2"
-        }
+        },
+        "all_agg_value": "_All_"
     },
     "long": {
         "derived_categories_dict": {
@@ -48,6 +49,7 @@
             "deaths_val": "c9",
             "deaths_upper": "c10",
             "deaths_lower": "c11"
-        }
+        },
+        "all_agg_value": "_All_"
     }
 }
