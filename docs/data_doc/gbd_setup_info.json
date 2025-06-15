@@ -1,25 +1,25 @@
 {
     "population": {
-        "higher_order_cat_dict": {
+        "derived_categories_dict": {
             "sex_name": "sex_name__age_group_name_sorted",
             "age_cluster_name_sorted": "sex_name__age_group_name_sorted",
             "age_group_name_sorted": "sex_name__age_group_name_sorted",
             "region_name": "location_name",
             "sub_region_name": "location_name"
         },
-        "base_cat_ordered_list": [
+        "base_categories_ordered_list": [
             "year",
             "location_name",
             "sex_name__age_group_name_sorted"
         ],
-        "aggregated_cols_renaming_dict": {
+        "aggregated_cols_incl_renaming_dict": {
             "pop_val": "c0",
             "pop_upper": "c1",
             "pop_lower": "c2"
         }
     },
     "long": {
-        "higher_order_cat": {
+        "derived_categories_dict": {
             "sex_name": "sex_name__age_group_name_sorted",
             "age_cluster_name_sorted": "sex_name__age_group_name_sorted",
             "age_group_name_sorted": "sex_name__age_group_name_sorted",
@@ -29,13 +29,13 @@
             "l2_cause_name": "l4_cause_name",
             "l3_cause_name": "l4_cause_name"
         },
-        "base_cat_ordered_list": [
+        "base_categories_ordered_list": [
             "year",
             "location_name",
             "sex_name__age_group_name_sorted",
             "l4_cause_name"
         ],
-        "aggregated_cols_renaming_dict": {
+        "aggregated_cols_incl_renaming_dict": {
             "daly_val": "c0",
             "daly_upper": "c1",
             "daly_lower": "c2",

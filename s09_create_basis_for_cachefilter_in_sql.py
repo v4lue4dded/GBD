@@ -13,7 +13,7 @@ data_directory = opj(config.REPO_DIRECTORY, "docs", "data_doc")
 with open(opj(data_directory, "gbd_setup_info.json"), "r") as fh:
     setup_dict = json.load(fh)
 
-table_types = setup_dict["table_types"]
+table_types = setup_dict.keys()
 
 priority_exclude_cols = {"year"}
 
@@ -26,10 +26,7 @@ distinct_values_dict = {}
 for table_type in table_types:
     source_table = f"db04_modelling.export_{table_type}"
 
-    setup_dict[table_type]["higher_categories_dict"]
-    setup_dict[table_type]["base_categories_ordered_dict"]
-    dim_cols = 
-
+    dim_cols = list(setup_dict[table_type]["derived_categories_dict"].keys()) + setup_dict[table_type]["base_categories_ordered_list"]
     for col in dim_cols:
         sql = f"SELECT DISTINCT {col}::varchar AS val FROM {source_table}"
         df_vals = con.execute(sql).df()
@@ -52,21 +49,11 @@ metadata_dict = {}
 for table_type in table_types:
     source_table = f"db04_modelling.export_{table_type}"
 
-    for rollup_list in rollup_cols_dict[table_type]:
-        if len(rollup_list) < 2:
-            continue  # skip single-col groups like ["year"]
-
-        for lvl in range(1, len(rollup_list)):
-            lower_col = rollup_list[lvl]
-            higher_cols = rollup_list[:lvl]
-            all_cols = [lower_col] + higher_cols
-
-            cols_sql = ", ".join(all_cols)
-            partition_col = lower_col
+    for derived_col, base_col in setup_dict[table_type]["derived_categories_dict"].items():
             is_unique_col_sql = (
-                f"SELECT *, COUNT(*) OVER (PARTITION BY {partition_col}) AS is_unique_col\n"
+                f"SELECT *, COUNT(*) OVER (PARTITION BY {base_col}) AS is_unique_col\n"
                 f"FROM (\n"
-                f"  SELECT DISTINCT {cols_sql} FROM {source_table}\n"
+                f"  SELECT DISTINCT {derived_col}, {base_col} FROM {source_table}\n"
                 f") x"
             )
 
@@ -74,22 +61,22 @@ for table_type in table_types:
 
             # ── check n:1 assumption ───────────────────────────────────────
             violating_rows = df[df["is_unique_col"] > 1].sort_values(
-                by=["is_unique_col", lower_col], ascending=[False, True]
+                by=["is_unique_col", base_col], ascending=[False, True]
             )
 
             if not violating_rows.empty:
                 error_string = (
-                    f"\nViolation detected for: {table_type}.{lower_col}"
+                    f"\nViolation detected for: {table_type}.{base_col}"
                     + "Rows with multiple parent mappings:\n"
                     + violating_rows.to_string(index=False)
-                    + f"\n{table_type}.{lower_col} has non-unique mappings to parents. "
+                    + f"\n{table_type}.{base_col} has non-unique mappings to parents. "
                 )
                 raise ValueError(error_string)
 
             # ── build nested mapping ────────────────────────────────────────
-            clean_mapping = {row[lower_col]: {col: row[col] for col in higher_cols} for _, row in df.iterrows()}
+            clean_mapping = {row[base_col]: {col: row[col] for col in derived_col} for _, row in df.iterrows()}
 
-            metadata_dict.setdefault(table_type, {}).setdefault(lower_col, {}).update(clean_mapping)
+            metadata_dict.setdefault(table_type, {}).setdefault(base_col, {}).update(clean_mapping)
 
 # save hierarchical metadata
 with open(opj(data_directory, "gbd_rollup_higher_values.json"), "w", encoding="utf-8") as fh:
