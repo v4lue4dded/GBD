@@ -3,69 +3,35 @@
         "population",
         "long"
     ],
-    "rollup_cols_dict": {
-        "population": [
-            [
-                "year"
-            ],
-            [
-                "sex_name"
-            ],
-            [
-                "region_name",
-                "sub_region_name",
-                "location_name"
-            ],
-            [
-                "age_cluster_name_sorted",
-                "age_group_name_sorted"
-            ]
-        ],
-        "long": [
-            [
-                "year"
-            ],
-            [
-                "sex_name"
-            ],
-            [
-                "region_name",
-                "sub_region_name",
-                "location_name"
-            ],
-            [
-                "age_cluster_name_sorted",
-                "age_group_name_sorted"
-            ],
-            [
-                "l1_cause_name",
-                "l2_cause_name",
-                "l3_cause_name",
-                "l4_cause_name"
-            ]
-        ]
+    "higher_order_cat_dict": {
+        "population": {
+            "sex_name": "sex_name__age_group_name_sorted",
+            "age_cluster_name_sorted": "sex_name__age_group_name_sorted",
+            "age_group_name_sorted": "sex_name__age_group_name_sorted",
+            "region_name": "location_name",
+            "sub_region_name": "location_name"
+        },
+        "long": {
+            "sex_name": "sex_name__age_group_name_sorted",
+            "age_cluster_name_sorted": "sex_name__age_group_name_sorted",
+            "age_group_name_sorted": "sex_name__age_group_name_sorted",
+            "region_name": "location_name",
+            "sub_region_name": "location_name",
+            "l1_cause_name": "l4_cause_name",
+            "l2_cause_name": "l4_cause_name",
+            "l3_cause_name": "l4_cause_name"
+        }
     },
-    "dimension_cols_ordered_dict": {
+    "base_cat_ordered_dict": {
         "population": [
             "year",
-            "sex_name",
-            "region_name",
-            "sub_region_name",
             "location_name",
-            "age_cluster_name_sorted",
-            "age_group_name_sorted"
+            "sex_name__age_group_name_sorted"
         ],
         "long": [
             "year",
-            "sex_name",
-            "region_name",
-            "sub_region_name",
             "location_name",
-            "age_cluster_name_sorted",
-            "age_group_name_sorted",
-            "l1_cause_name",
-            "l2_cause_name",
-            "l3_cause_name",
+            "sex_name__age_group_name_sorted",
             "l4_cause_name"
         ]
     },
