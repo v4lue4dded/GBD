@@ -10,7 +10,7 @@ table_types = ["population", "long"]
 
 union_queries = "\n    UNION ALL\n".join(
     [
-        f"""SELECT
+        f"""    SELECT
         identifying_string_hash,
         priority,
         json_column
@@ -23,7 +23,7 @@ merge_query = f"""
 CREATE OR REPLACE TABLE {merge_table} AS
 SELECT *
 FROM (
-    {union_queries}
+{union_queries}
 )
 """
 
@@ -49,22 +49,21 @@ file_where["priority_2"] = "priority <= 2"
 metadata = {}
 items = list(file_where.items())
 
-for file_id, where_clause in items:
-    filepath = opj(export_dir, f"{file_id}.parquet")
-    con.execute(
+for file_id, where_clause in file_where.items():
+    print(file_id)
+    chunk_json_string = con.execute(
         f"""
-        COPY (
-            SELECT
-                identifying_string_hash,
-                json_column
-            FROM {merge_table}
-            WHERE {where_clause}
-        ) TO '{filepath}' (FORMAT 'parquet')
+        SELECT
+            json_group_object(identifying_string_hash, json_column)::VARCHAR
+                AS chunk_json_string
+        FROM {merge_table}
+        WHERE {where_clause}
         """
-    )
-    file_size = os.path.getsize(filepath)
-    metadata[file_id] = file_size
-    print(f"Wrote {file_id}.parquet ({file_size} bytes)")
+    ).fetchone()[0]
+
+    filepath = opj(export_dir, f"{file_id}.json")
+    with open(filepath, "w") as f:
+        f.write(chunk_json_string)
 
 metadata_path = opj(export_dir, "file_sizes.json")
 with open(metadata_path, "w") as meta_file:

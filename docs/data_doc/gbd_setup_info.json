@@ -13,9 +13,9 @@
             "sex_name__age_group_name_sorted"
         ],
         "aggregated_cols_incl_renaming_dict": {
-            "pop_val": "c0",
-            "pop_upper": "c1",
-            "pop_lower": "c2"
+            "pop_val": "c12",
+            "pop_upper": "c13",
+            "pop_lower": "c14"
         },
         "all_agg_value": "_All_"
     },
