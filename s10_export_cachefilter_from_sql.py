@@ -53,25 +53,35 @@ file_where["priority_3"] = "priority = 3"
 metadata = {}
 items = list(file_where.items())
 
-for file_id, where_clause in file_where.items():
-    print(file_id)
+BATCH_SIZE = 100
+for i in range(0, len(items), BATCH_SIZE):
+    batch = items[i:i + BATCH_SIZE]
+    case_expr = "CASE\n"
+    for file_id, where_clause in batch:
+        case_expr += f"    WHEN {where_clause} THEN '{file_id}'\n"
+    case_expr += "END AS file_id"
+
+    print(f"Processing batch {i // BATCH_SIZE + 1}")
     fetch_start = time.time()
-    chunk_json_string = con.execute(
+    batch_result = con.execute(
         f"""
         SELECT
-            json_group_object(identifying_string_hash, json_column)::VARCHAR
+            {case_expr},
+            json_group_object(identifying_string_hash, json_column)
                 AS chunk_json_string
         FROM {merge_table}
-        WHERE {where_clause}
+        where file_id is not null
+        GROUP BY file_id
         """
-    ).fetchone()[0]
-    print(f"Fetched dataframe in {time.time() - fetch_start:.2f} seconds")
+    ).fetchall()
+    print(f"Fetched batch in {time.time() - fetch_start:.2f} seconds")
 
     write_start = time.time()
-    filepath = opj(export_dir, f"{file_id}.json")
-    with open(filepath, "w") as f:
-        f.write(chunk_json_string)
-    print(f"Written dataframe in {time.time() - write_start:.2f} seconds")
+    for file_id, chunk_json_string in batch_result:
+        filepath = opj(export_dir, f"{file_id}.json")
+        with open(filepath, "w") as f:
+            f.write(chunk_json_string)
+    print(f"Written batch in {time.time() - write_start:.2f} seconds")
 
 metadata_path = opj(export_dir, "file_sizes.json")
 with open(metadata_path, "w") as meta_file:
