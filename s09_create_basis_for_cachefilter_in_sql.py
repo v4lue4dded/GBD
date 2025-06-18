@@ -154,7 +154,7 @@ for table_type in table_types:
 
     base_col_pairs = [f"'{bc}: ' || {bc}::varchar" for bc in base_columns]
     identifying_string_expr = "(" + " " * 11 + ("\n" + " " * 6 + "|| ' | ' || ").join(base_col_pairs) + ")"
-    agg_pairs = [f"'{col_rename}', CASE WHEN {col_name} <> 0 THEN {col_name} END" for col_name, col_rename in aggregated_columns.items()]
+    agg_pairs = [f"'{col_rename}', nullif({col_name}, 0)" for col_name, col_rename in aggregated_columns.items()]
     aggregator_expr = ("\n" + " " * 14 + ", ").join(agg_pairs)
 
     cachefilter_query = f"""

@@ -11,7 +11,7 @@ table_types = ["population", "long"]
 
 union_queries = "\n    UNION ALL\n".join(
     [
-        f"""
+        f"""x
             SELECT
                   identifying_string_hash
                 , priority
