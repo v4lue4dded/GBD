@@ -43,6 +43,12 @@ print("Merge table created.")
 # 2. high-speed export with partitioned COPY
 # ----------------------------------------------------------------------
 export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", "cachefilter_hash_db_2")
+
+# --- wipe any previous run completely ---------------------------
+if os.path.exists(export_dir):
+    shutil.rmtree(export_dir)
+# ---------------------------------------------------------------------
+
 os.makedirs(export_dir, exist_ok=True)
 
 con.execute("SET partitioned_write_max_open_files = 5000;")
@@ -66,7 +72,7 @@ COPY (
     FROM   {merge_table}
     where priority <= 2
     )
-    order by file_id, identifying_string_hash
+    ORDER BY identifying_string_hash
 )
 TO '{export_dir}'
 (
@@ -83,7 +89,7 @@ con.execute(copy_sql)
 print(f"partitioned COPY in {time.time() - copy_start:.2f} seconds")
 
 # ----------------------------------------------------------------------
-# 3. rearange output
+# 3. rearrange output
 # ----------------------------------------------------------------------
 rearrange_start = time.time()
 metadata = {}
@@ -99,11 +105,12 @@ for part_dir in os.scandir(export_dir):
         assert len(pieces) == 1, (
             f"Expected 1 data file in {part_dir.path}, found {len(pieces)}: {pieces}"
         )
+
         shutil.copyfile(pieces[0].path, outfile_path)
         metadata[fid] = getsize(outfile_path)
         shutil.rmtree(part_dir.path)
 
-print(f"rearrangeed files in {time.time() - rearrange_start:.2f} seconds")
+print(f"rearranged files in {time.time() - rearrange_start:.2f} seconds")
 
 # ----------------------------------------------------------------------
 # 4. dump per-file byte sizes
