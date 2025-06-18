@@ -154,8 +154,8 @@ for table_type in table_types:
 
     base_col_pairs = [f"'{bc}: ' || {bc}::varchar" for bc in base_columns]
     identifying_string_expr = "(" + " " * 11 + ("\n" + " " * 6 + "|| ' | ' || ").join(base_col_pairs) + ")"
-    agg_pairs = [f"'{col_rename}', {col_name}" for col_name, col_rename in aggregated_columns.items()]
-    aggregator_expr = ("\n" + " " * 4 + ", ").join(agg_pairs)
+    agg_pairs = [f"'{col_rename}', CASE WHEN {col_name} <> 0 THEN {col_name} END" for col_name, col_rename in aggregated_columns.items()]
+    aggregator_expr = ("\n" + " " * 14 + ", ").join(agg_pairs)
 
     cachefilter_query = f"""
     CREATE OR REPLACE TABLE {target_table} AS
@@ -164,8 +164,14 @@ for table_type in table_types:
     , substr(sha256(identifying_string), 1, 32) AS identifying_string_hash
     , priority
     , json_object(
-      {aggregator_expr}
-      ) AS json_column
+        identifying_string_hash
+      , json_merge_patch(
+            '{{}}',     -- start from empty object
+            json_object(-- add keys (NULL means "drop")
+                {aggregator_expr}
+            )
+        )
+      )::VARCHAR AS json_column
     from {source_table}
     ;"""
     print(cachefilter_query)
