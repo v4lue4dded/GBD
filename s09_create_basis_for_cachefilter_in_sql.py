@@ -168,7 +168,8 @@ for table_type in table_types:
       , json_merge_patch(
             '{{}}',     -- start from empty object
             json_object(-- add keys (NULL means "drop")
-                {aggregator_expr}
+                'i', '{table_type[:1]}' -- indicator show what to fill the missing columns with
+              , {aggregator_expr}
             )
         )
       )::VARCHAR AS json_column
