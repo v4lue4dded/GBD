@@ -8,6 +8,9 @@ import my_config as config
 
 con = config.duckdb_con
 
+# ----------------------------------------------------------------------
+# 1. build the merged staging table
+# ----------------------------------------------------------------------
 merge_table = "db04_modelling.export_cachefilter_merged"
 table_types = ["population", "long"]
 
@@ -36,6 +39,9 @@ con.execute(merge_query)
 print(f"merged tables in {time.time() - merge_start:.2f} seconds")
 print("Merge table created.")
 
+# ----------------------------------------------------------------------
+# 2. high-speed export with partitioned COPY
+# ----------------------------------------------------------------------
 export_dir = opj(config.REPO_DIRECTORY, "docs", "data_doc", "cachefilter_hash_db_2")
 os.makedirs(export_dir, exist_ok=True)
 
@@ -50,14 +56,17 @@ COPY (
     SELECT
           json_column         
         , left(identifying_string_hash, 3) AS file_id
+        , identifying_string_hash
     FROM   {merge_table}
     union all 
     SELECT
           json_column
         , 'priority_' || priority AS file_id
+        , identifying_string_hash
     FROM   {merge_table}
     where priority <= 2
     )
+    order by file_id, identifying_string_hash
 )
 TO '{export_dir}'
 (
@@ -74,9 +83,9 @@ con.execute(copy_sql)
 print(f"partitioned COPY in {time.time() - copy_start:.2f} seconds")
 
 # ----------------------------------------------------------------------
-# 3. glue the per-thread chunks back together → <fid>.jsonl
+# 3. rearange output
 # ----------------------------------------------------------------------
-stitch_start = time.time()
+rearrange_start = time.time()
 metadata = {}
 
 for part_dir in os.scandir(export_dir):
@@ -84,17 +93,21 @@ for part_dir in os.scandir(export_dir):
         fid = part_dir.name.split("=", 1)[1]
         outfile_path = opj(export_dir, f"{fid}.jsonl")
 
-        with open(outfile_path, "wb") as outfile:
-            count = 0
-            for piece in sorted(os.scandir(part_dir.path), key=lambda e: e.name):
-                if piece.is_file() and piece.name.endswith(".jsonl"):
-                    with open(piece.path, "rb") as infile:
-                        shutil.copyfileobj(infile, outfile)
+        pieces = [
+            p for p in os.scandir(part_dir.path)
+        ]
+        assert len(pieces) == 1, (
+            f"Expected 1 data file in {part_dir.path}, found {len(pieces)}: {pieces}"
+        )
+        shutil.copyfile(pieces[0].path, outfile_path)
         metadata[fid] = getsize(outfile_path)
         shutil.rmtree(part_dir.path)
 
-print(f"stitched files in {time.time() - stitch_start:.2f} seconds")
+print(f"rearrangeed files in {time.time() - rearrange_start:.2f} seconds")
 
+# ----------------------------------------------------------------------
+# 4. dump per-file byte sizes
+# ----------------------------------------------------------------------
 metadata_path = opj(export_dir, "file_sizes.json")
 with open(metadata_path, "w") as meta_file:
     json.dump(metadata, meta_file, indent=1)
