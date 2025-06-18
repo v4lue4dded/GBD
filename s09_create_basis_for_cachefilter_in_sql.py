@@ -26,7 +26,10 @@ distinct_values_dict = {}
 for table_type in table_types:
     source_table = f"db04_modelling.export_{table_type}"
 
-    dim_cols = list(setup_dict[table_type]["derived_categories_dict"].keys()) + setup_dict[table_type]["base_categories_ordered_list"]
+    dim_cols = (
+        list(setup_dict[table_type]["derived_categories_dict"].keys())
+        + setup_dict[table_type]["base_categories_ordered_list"]
+    )
     for col in dim_cols:
         sql = f"SELECT DISTINCT {col}::varchar AS val FROM {source_table}"
         df_vals = con.execute(sql).df()
@@ -52,32 +55,32 @@ for table_type in table_types:
 
     derived_col_dict[table_type] = {}
     for derived_col, base_col in setup_dict[table_type]["derived_categories_dict"].items():
-            is_unique_col_sql = (
-                f"SELECT *, COUNT(*) OVER (PARTITION BY {base_col}) AS is_unique_col\n"
-                f"FROM (\n"
-                f"  SELECT DISTINCT {derived_col}, {base_col} FROM {source_table}\n"
-                f") x"
+        is_unique_col_sql = (
+            f"SELECT *, COUNT(*) OVER (PARTITION BY {base_col}) AS is_unique_col\n"
+            f"FROM (\n"
+            f"  SELECT DISTINCT {derived_col}, {base_col} FROM {source_table}\n"
+            f") x"
+        )
+
+        df = con.execute(is_unique_col_sql).df()
+
+        # ── check n:1 assumption ───────────────────────────────────────
+        violating_rows = df[df["is_unique_col"] > 1].sort_values(
+            by=["is_unique_col", base_col], ascending=[False, True]
+        )
+
+        if not violating_rows.empty:
+            error_string = (
+                f"\nViolation detected for: {table_type}.{base_col}"
+                + "Rows with multiple parent mappings:\n"
+                + violating_rows.to_string(index=False)
+                + f"\n{table_type}.{base_col} has non-unique mapping. "
             )
+            raise ValueError(error_string)
 
-            df = con.execute(is_unique_col_sql).df()
+        base_to_derived_mapping = df.sort_values(base_col).set_index(base_col)[derived_col].to_dict()
 
-            # ── check n:1 assumption ───────────────────────────────────────
-            violating_rows = df[df["is_unique_col"] > 1].sort_values(
-                by=["is_unique_col", base_col], ascending=[False, True]
-            )
-
-            if not violating_rows.empty:
-                error_string = (
-                    f"\nViolation detected for: {table_type}.{base_col}"
-                    + "Rows with multiple parent mappings:\n"
-                    + violating_rows.to_string(index=False)
-                    + f"\n{table_type}.{base_col} has non-unique mapping. "
-                )
-                raise ValueError(error_string)
-
-            base_to_derived_mapping = df.sort_values(base_col).set_index(base_col)[derived_col].to_dict()
-
-            derived_col_dict[table_type][derived_col] = base_to_derived_mapping
+        derived_col_dict[table_type][derived_col] = base_to_derived_mapping
 
 with open(opj(data_directory, "gbd_derived_col_dict.json"), "w", encoding="utf-8") as fh:
     json.dump(derived_col_dict, fh, indent=2, ensure_ascii=False)
@@ -111,13 +114,15 @@ for table_type in table_types:
 
     priority_select_list = []
     for base_col in base_columns:
-        if base_col != 'year':
+        if base_col != "year":
             priority_select_list.append(f"""CASE WHEN {base_col} IS NOT NULL THEN 1 ELSE 0 END""")
 
     max_year = max(distinct_values_dict[table_type]["year"])
     min_year = min(distinct_values_dict[table_type]["year"])
 
-    priority_select_list.append(f"""CASE WHEN YEAR IS NOT NULL AND YEAR NOT IN ({min_year}, {max_year}) THEN 1 ELSE 0 END""")
+    priority_select_list.append(
+        f"""CASE WHEN YEAR IS NOT NULL AND YEAR NOT IN ({min_year}, {max_year}) THEN 1 ELSE 0 END"""
+    )
     priority_select = ("\n    + ".join(priority_select_list)) + " AS PRIORITY"
 
     cube_query = f"""
@@ -145,14 +150,12 @@ for table_type in table_types:
     target_table = f"db04_modelling.export_{table_type}_cachefilter"
 
     base_columns = setup_dict[table_type]["base_categories_ordered_list"]
-    agggregated_columns = setup_dict[table_type]["aggregated_cols_incl_renaming_dict"]
-
+    aggregated_columns = setup_dict[table_type]["aggregated_cols_incl_renaming_dict"]
 
     base_col_pairs = [f"'{bc}: ' || {bc}::varchar" for bc in base_columns]
-    identifying_string_expr = "(" + " " * 11 + ("\n" + " "*6 + "|| ' | ' || ").join(base_col_pairs) + ")"
-    agg_pairs = [f"'{col_rename}', {col_name}" for col_name, col_rename in agggregated_columns.items()]
+    identifying_string_expr = "(" + " " * 11 + ("\n" + " " * 6 + "|| ' | ' || ").join(base_col_pairs) + ")"
+    agg_pairs = [f"'{col_rename}', {col_name}" for col_name, col_rename in aggregated_columns.items()]
     aggregator_expr = ("\n" + " " * 4 + ", ").join(agg_pairs)
-
 
     cachefilter_query = f"""
     CREATE OR REPLACE TABLE {target_table} AS
@@ -170,4 +173,3 @@ for table_type in table_types:
 
 print("Cachefilter tables created successfully.")
 con.close()
-
